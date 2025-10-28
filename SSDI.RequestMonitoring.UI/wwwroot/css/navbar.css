@@ -1,0 +1,154 @@
+﻿/* nav */
+.navbar {
+    height: 65px;
+    padding: 1.5rem 1rem 1.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--color-darkmidnightblue) !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999 !important;
+}
+
+.navbar__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .navbar__logo p {
+        color: var(--color-white) !important;
+        font-size: 1.25rem;
+        white-space: nowrap;
+    }
+
+    .navbar__logo img {
+        filter: brightness(0) invert(1);
+        width: 50px;
+    }
+
+.navbar .menu {
+    display: none;
+}
+
+.navbar__right__section {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+/*search*/
+.navbar__search {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
+    border-radius: 25px;
+    background-color: var(--color-white);
+}
+
+.navbar__search-input {
+    width: 300px;
+    border: none;
+    outline: none;
+}
+
+/*navbar search notification message icon*/
+.navbar__search-icon, .navbar__notification-icon, .navbar__message-icon {
+    font-size: 1.25rem !important;
+    color: var(--color-white);
+    cursor: pointer;
+}
+
+.navbar__search-icon {
+    color: var(--color-darkmidnightblue) !important;
+}
+
+.navbar__notification-icon {
+    position: relative;
+}
+
+.navbar__notification-count {
+    font-size: 0.65rem;
+    border-radius: 50%;
+    padding: 0.010rem 0.5rem;
+    position: absolute;
+    top: -7px;
+    right: 1px;
+    color: var(--color-white);
+    background-color: var(--color-red);
+}
+
+/*account*/
+.navbar__account {
+    cursor: pointer !important;
+}
+
+.navbar__right__section .navbar__account {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    margin-left: 1rem;
+}
+
+.navbar__account-profile {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.65rem 0.85rem 0.65rem;
+    border-radius: 8px;
+    background-color: var(--color-whitesmoke);
+}
+
+.navbar__account__profile-img {
+    width: 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    height: 40px;
+    border-radius: 25px;
+}
+
+.navbar__account__profile-username {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--color-black);
+}
+
+.navbar__account__profile-gmail {
+    color: var(--color-black);
+}
+
+.navbar__account .bi-caret-down-fill {
+    margin: 0.25rem 0 0 0.25rem;
+    cursor: pointer;
+}
+
+.navbar .stack-vertical {
+    margin-top: 1.35rem;
+}
+
+.navbar__user__account .fluent-typography:nth-last-child(3) {
+    padding: 0.25rem 1rem;
+    border-radius: 15px;
+    background-color: var(--color-whitesmoke);
+}
+
+.navbar__user__account .fluent-typography:nth-last-child(2) {
+    color: var(--color-darkmidnightblue);
+}
+
+/* Small devices (phones, up to 600px) */
+@media (max-width: 600px) {
+    .navbar__logo {
+        display: none;
+    }
+}

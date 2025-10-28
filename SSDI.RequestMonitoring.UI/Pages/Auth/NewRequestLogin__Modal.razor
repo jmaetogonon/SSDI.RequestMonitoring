@@ -1,0 +1,70 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.JComponents.Alerts
+@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.Models.Requests
+@inject IPurchaseRequestSvc purchaseRequestSvc
+
+<div class="modal__overlay" id="@(IsNewRequestModalFormVisible ? "show__new__incident-modal" : "hide__new__incident-modal")">
+    <div class="modal">
+        <div class="modal__header">
+            <h5 class="modal__header-title">NEW PURCHASE REQUEST </h5>
+        </div>
+
+        <div class="modal__alert">
+            <Alert Message="@AlertMessage" Type="error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+        </div>
+
+        <EditForm Model="RequestModel" OnValidSubmit="HandleSave" FormName="AddRequest">
+            <DataAnnotationsValidator />
+            <div class="modal__body">
+                <div class="modal__form-group position-relative">
+                    <!-- Name -->
+                    <div class="form-group full-width">
+                        <label for="name">Name</label>
+                        <input id="name" @bind="RequestModel.Name" class="form-control" placeholder="Enter your full name" required />
+                    </div>
+
+                    <!-- Division / Department -->
+                    <div class="form-group">
+                        <label for="division">Division / Department</label>
+                        <input id="division" @bind="RequestModel.Division_Department" class="form-control" placeholder="e.g., FAD / IT Department" required />
+                    </div>
+
+                    <!-- Nature of Request -->
+                    <div class="form-group">
+                        <label for="nature">Nature of Request</label>
+                        <input id="nature" @bind="RequestModel.Nature_Of_Request" class="form-control" placeholder="e.g., Purchase of Equipment" required />
+                    </div>
+
+                    <!-- Justification -->
+                    <div class="form-group full-width">
+                        <label for="justification">Justification</label>
+                        <textarea id="justification" @bind="RequestModel.Justification" class="form-control" placeholder="Describe the reason for this request..." rows="2" required />
+                    </div>
+
+                    <!-- Priority -->
+                    <div class="form-group full-width">
+                        <label>Priority</label>
+                        <FluentRadioGroup Class="radio-group" Name="priority" @bind-Value="RequestModel.Priority">
+                            <FluentRadio Class="radio-option" Value="1">Must be done within 24 hours</FluentRadio>
+                            <FluentRadio Class="radio-option" Value="2">Must be done within the week</FluentRadio>
+                            <FluentRadio Class="radio-option" Value="3">Others, please specify</FluentRadio>
+                        </FluentRadioGroup>
+                        <ValidationMessage For="() => RequestModel.Priority" />
+
+                        @if (RequestModel.Priority == "3")
+                        {
+                            <input @bind="RequestModel.OtherPriority" class="form-control" placeholder="Enter specific priority" required />
+                        }
+                    </div>
+
+                    <LoadingOverlay IsVisible="@_isDisabledBtns" Message="Saving, please wait..." />
+                </div>
+            </div>
+            <div class="modal__footer">
+                <button type="button" class="modal__footer-btn modal__footer-btn-cancel" disabled="@_isDisabledBtns" @onclick="CloseModal">Cancel</button>
+                <button type="submit" class="modal__footer-btn modal__footer-btn-save" disabled="@_isDisabledBtns"> @(_isDisabledBtns ? "Saving..." : "Save") </button>
+            </div>
+        </EditForm>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+﻿.custom-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 8px;
+    padding: 0.75rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    animation: fadeInDown 0.4s ease-in-out;
+    margin-bottom: 1rem;
+}
+
+.alert-content {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.custom-alert i {
+    font-size: 1.25rem;
+}
+
+.btn-close {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.1rem;
+    opacity: 0.7;
+}
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+/* Color variants like Bootstrap */
+.alert-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.alert-info {
+    background-color: #cff4fc;
+    color: #055160;
+    border: 1px solid #b6effb;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+/* Animation */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

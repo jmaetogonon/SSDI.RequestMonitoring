@@ -1,0 +1,110 @@
+﻿@page "/purchase-requests/"
+@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.JComponents.Alerts
+@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
+@inject IPurchaseRequestSvc purchaseRequestSvc
+@attribute [Authorize]
+
+<PageTitle>Purchase Requests</PageTitle>
+
+<div class="page__header">
+    <div class="page__title-section">
+        <p class="page__header-title">Purchase Requests</p>
+        <p class="page__header-subtitle">View and manage purchase requests.</p>
+    </div>
+
+    <div class="page__header-cta">
+        <button class="page__primary-btn" @onclick="ToggleAddRequestModal">
+            <i class="bi bi-plus-lg"></i> New Request
+        </button>
+        <button class="page__secondary-btn" @onclick="ToggleAddRequestModal">
+            <i class="bi bi-plus-lg"></i> Test
+        </button>
+    </div>
+</div>
+<NewRequest__Modal IsNewRequestModalFormVisible="@_isNewRequestModalFormVisible" />
+
+<div class="page__main__section">
+    <div class="page__cards">
+        @foreach (var summary in StatusSummaries)
+        {
+            <StatusWBar__Card Label="@summary.Label"
+                              Count="@summary.Count"
+                              TotalCount="@summary.TotalCount"
+                              Status="@summary.Status"
+                              Icon="@summary.Icon" />
+        }
+    </div>
+
+    <div class="page__filters">
+        <FluentSearch @bind-Value="@_searchValue"
+                      @bind-Value:after="HandleSearch"
+                      Immediate="true"
+                      Placeholder="Search"
+                      Class="page__filters-search" />
+
+        <button id="myPopoverButtonStatus" class="page__filters-btn" @onclick="() => _isVisibleStatus = !_isVisibleStatus">
+            Status <span>@DisplayedStatuses</span> <i class="bi bi-chevron-down" />
+        </button>
+        <FluentPopover Style="width: 300px; margin-top: 4px;border-radius: 8px;" Class="page__filterBy-lists" VerticalThreshold="170" AnchorId="myPopoverButtonStatus" @bind-Open="_isVisibleStatus">
+            <Body>
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="2">
+                    <!-- All checkbox -->
+                    <FluentCheckbox Class="page__filter-checkbox" @bind-Value="@_isAllStatusSelected" Disabled="@(_isAllStatusSelected)"
+                                    @bind-Value:after="@ToggleAll">
+                        All
+                    </FluentCheckbox>
+
+                    <div class="page__filterBy-lists-divider"></div>
+
+                    <!-- Individual status checkboxes -->
+                    @foreach (var status in individualStatuses)
+                    {
+                        <FluentCheckbox Class="page__filter-checkbox" @bind-Value="@_statusChecked[status]"
+                                        @bind-Value:after="@(() => ToggleStatus(status))">
+                            @status
+                        </FluentCheckbox>
+                    }
+                </FluentStack>
+            </Body>
+        </FluentPopover>
+    </div>
+
+    <div class="page__table-container" tabindex="-1">
+        @if (Requests == null)
+        {
+            <p>Loading Data...</p>
+        }
+        else
+        {
+            <FluentDataGrid Class="page__table"
+                            ShowHover="true"
+                            Pagination="@pagination"
+                            GenerateHeader="GenerateHeaderOption.Sticky"
+                            RowSize="DataGridRowSize.Medium"
+                            Items="Requests">
+                <TemplateColumn Title="View" Align="@Align.Start">
+                    <button type="button" class="page__table-btn page__view__details__btn">
+                        <i class="bi bi-eye-fill" />
+                    </button>
+                </TemplateColumn>
+                <PropertyColumn Title="ID" Property="@(c => c.Id)" />
+                <PropertyColumn Title="Requested By" Property="@(c => c.Name)" />
+                <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
+                <PropertyColumn Title="Justification" Property="@(c => c.Justification)" />
+                <PropertyColumn Title="Division/Department" Property="@(c => c.Division_Department)" />
+                <PropertyColumn Title="Requested On" Property="@(c => c.DateRequested)" />
+                <PropertyColumn Title="Status" Property="@(c => c.Status)" />
+            </FluentDataGrid>
+
+            <div class="page__pagination">
+                <FluentPaginator State="@pagination">
+                    <PaginationTextTemplate>
+                        Page <strong>@(pagination.CurrentPageIndex + 1)</strong> out of <strong>@(pagination.LastPageIndex + 1)</strong> pages
+                    </PaginationTextTemplate>
+                </FluentPaginator>
+            </div>
+        }
+    </div>
+</div>

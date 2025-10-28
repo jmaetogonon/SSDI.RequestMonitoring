@@ -1,0 +1,11 @@
+﻿@inject NavigationManager Navigation
+
+
+@code {
+    protected override void OnInitialized()
+    {
+        var currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var encodedReturnUrl = Uri.EscapeDataString("/" + currentUrl);
+        Navigation.NavigateTo($"/?returnUrl={encodedReturnUrl}", true);
+    }
+}

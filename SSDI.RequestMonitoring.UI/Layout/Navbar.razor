@@ -1,0 +1,66 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts
+@inject IAuthenticationSvc authService
+@inject NavigationManager navManager
+@inject CurrentUser currentUser
+
+<div class="navbar">
+    <div class="navbar__logo">
+        <img src="/images/logo/app-logo-square-trans.png" />
+        <p> Requests Monitoring</p>
+    </div>
+    <div class="navbar__right__section">
+        <div class="navbar__user__account">
+            <FluentStack HorizontalAlignment="@HorizontalAlignment.End"
+                         VerticalAlignment="@VerticalAlignment.Center"
+                         Style="height: 50px;">
+                <FluentProfileMenu Status="@PresenceStatus.Available"
+                                   HeaderLabel="@currentUser.Username"
+                                   Initials="@GetInitials(currentUser.FullName)"
+                                   FullName="@currentUser.FullName"
+                                   EMail="@currentUser.Username"
+                                   PopoverStyle="min-width: 330px;"
+                                   OnHeaderButtonClick="Logout" />
+            </FluentStack>
+        </div>
+    </div>
+</div>
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await currentUser.InitializeAsync();
+        currentUser.OnUserChanged += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "--";
+
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 1)
+            return parts[0][0].ToString().ToUpper();
+
+        var first = parts.First()[0];
+        var last = parts.Last()[0];
+
+        return $"{char.ToUpper(first)}{char.ToUpper(last)}";
+    }
+
+
+    private async Task Logout()
+    {
+        await authService.Logout();
+        navManager.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        currentUser.OnUserChanged -= Refresh;
+    }
+}

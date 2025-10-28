@@ -1,0 +1,33 @@
+﻿<div class="page__card">
+    <div class="page__card-header">
+        <div class="page__card-icon">
+            <i class="@Icon"></i>
+        </div>
+        <h4 class="page__card-count">@Count</h4>
+    </div>
+
+    <div class="page__card-footer">
+        <label>@Label</label>
+        <div class="page__card-progress">
+            <div class="page__card-progress-bar @ProgressBarClass" style="width: @ProgressPercent%;"></div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public int Count { get; set; }
+    [Parameter] public int TotalCount { get; set; }
+    [Parameter] public string Status { get; set; } = "Pending"; // Pending, Ongoing, Completed
+    [Parameter] public string Icon { get; set; } = "bi bi-circle";
+
+    private string ProgressBarClass => Status.ToLower() switch
+    {
+        "completed" => "page__card-progress-bar--completed",
+        "ongoing" => "page__card-progress-bar--ongoing",
+        _ => "page__card-progress-bar--pending"
+    };
+
+    private double ProgressPercent => TotalCount == 0 ? 0 : (double)Count / TotalCount * 100;
+}

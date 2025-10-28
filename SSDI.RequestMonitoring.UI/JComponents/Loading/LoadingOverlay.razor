@@ -1,0 +1,14 @@
+﻿@if (IsVisible)
+{
+    <div class="loading__overlay">
+        <div class="loading__content">
+            <div class="loading__ring"></div>
+            <p class="loading__text">@Message</p>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; } = false;
+    [Parameter] public string Message { get; set; } = "Loading...";
+}

@@ -1,0 +1,65 @@
+﻿/* Overlay only covers parent container (like form body) */
+.loading__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(1px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000; /* higher than form content but below header/footer */
+    border-radius: 8px;
+}
+
+/* Centered content */
+.loading__content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Spinner */
+.loading__ring {
+    width: 60px;
+    height: 60px;
+    border: 5px solid transparent;
+    border-top: 5px solid var(--color-shadefofblue);
+    border-right: 5px solid var(--color-dodgerBlue);
+    border-left: 5px solid var(--color-deepSkyBlue);
+    border-radius: 50%;
+    animation: loadingoverlayspin 1.2s linear infinite;
+    box-shadow: 0 0 8px rgba(30, 144, 255, 0.4);
+}
+
+/* Text */
+.loading__text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-darkmidnightblue);
+    animation: loadingoverlaypulse 1.6s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes loadingoverlayspin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes loadingoverlaypulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+}

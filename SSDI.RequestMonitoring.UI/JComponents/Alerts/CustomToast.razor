@@ -1,0 +1,99 @@
+﻿@if (Visible && !string.IsNullOrWhiteSpace(Message))
+{
+    <div class="toast @Type.ToLower() @animationClass" style="@PositionStyle">
+        <div class="toast-content">
+            <div class="toast-icon">
+                @if (Type == "Success")
+                {
+                    <i class="bi bi-check-circle-fill"></i>
+                }
+                else if (Type == "Info")
+                {
+                    <i class="bi bi-info-circle-fill"></i>
+                }
+                else if (Type == "Warning")
+                {
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                }
+                else if (Type == "Error")
+                {
+                    <i class="bi bi-x-circle-fill"></i>
+                }
+            </div>
+
+            <div class="toast-text">
+                <strong>@Title</strong>
+                <p>@((MarkupString)Message)</p>
+            </div>
+
+            @if (ShowCloseButton)
+            {
+                <button class="toast-close" @onclick="HideToast">×</button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Type { get; set; } = "Info";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public bool AutoClose { get; set; } = true;
+    [Parameter] public int AutoCloseSeconds { get; set; } = 4;
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public string Position { get; set; } = "top-right";
+
+    private bool Visible { get; set; }
+    private string animationClass = "";
+
+    private CancellationTokenSource? cancelToken;
+
+    private string PositionStyle => Position switch
+    {
+        "top-right" => "top: 1rem; right: 1rem;",
+        "top-left" => "top: 1rem; left: 1rem;",
+        "bottom-right" => "bottom: 1rem; right: 1rem;",
+        "bottom-left" => "bottom: 1rem; left: 1rem;",
+        _ => "top: 1rem; right: 1rem;"
+    };
+
+    public async Task ShowToast(string type, string title, string message, bool showCloseButton = false, bool autoClose = true, int autoCloseSeconds = 6)
+    {
+        // Cancel any previous auto-close timer
+        cancelToken?.Cancel();
+        cancelToken = new CancellationTokenSource();
+
+        Type = type;
+        Title = title;
+        Message = message;
+        AutoClose = autoClose;
+        AutoCloseSeconds = autoCloseSeconds;
+        ShowCloseButton = showCloseButton;
+        Visible = true;
+        animationClass = "toast-slide-in";
+        StateHasChanged();
+
+        if (AutoClose)
+        {
+            try
+            {
+                await Task.Delay(AutoCloseSeconds * 1000, cancelToken.Token);
+                await HideToast();
+            }
+            catch (TaskCanceledException)
+            {
+                // do nothing
+            }
+        }
+    }
+
+    private async Task HideToast()
+    {
+        animationClass = "toast-fade-out";
+        StateHasChanged();
+
+        await Task.Delay(400);
+        Visible = false;
+        StateHasChanged();
+    }
+}

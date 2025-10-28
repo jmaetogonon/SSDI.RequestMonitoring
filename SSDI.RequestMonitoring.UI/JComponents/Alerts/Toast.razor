@@ -1,0 +1,82 @@
+﻿@if (Visible)
+{
+    <div class="toast @Type.ToLower() @animationClass" style="@PositionStyle">
+        <div class="toast-content">
+            <div class="toast-icon">
+                @if (Type == "Success")
+                {
+                    <i class="fa-solid fa-circle-check"></i>
+                }
+                else if (Type == "Info")
+                {
+                    <i class="fa-solid fa-circle-info"></i>
+                }
+                else if (Type == "Warning")
+                {
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                }
+                else if (Type == "Error")
+                {
+                    <i class="fa-solid fa-circle-xmark"></i>
+                }
+            </div>
+
+            <div class="toast-text">
+                <strong>@Title</strong>
+                <p>@Message</p>
+            </div>
+
+            @if (ShowCloseButton)
+            {
+                <button class="toast-close" @onclick="HideToast">×</button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Type { get; set; } = "Info"; // Success, Info, Warning, Error
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public bool AutoClose { get; set; } = true;
+    [Parameter] public int AutoCloseSeconds { get; set; } = 3;
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public string Position { get; set; } = "top-right"; // top-right, etc.
+
+    private bool Visible { get; set; } = true;
+    private string animationClass = "slide-in";
+
+    private string PositionStyle => Position switch
+    {
+        "top-right" => "top: 1rem; right: 1rem;",
+        "top-left" => "top: 1rem; left: 1rem;",
+        "bottom-right" => "bottom: 1rem; right: 1rem;",
+        "bottom-left" => "bottom: 1rem; left: 1rem;",
+        _ => "top: 1rem; right: 1rem;"
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (AutoClose)
+        {
+            await Task.Delay(AutoCloseSeconds * 1000);
+            animationClass = "fade-out";
+            StateHasChanged();
+
+            await Task.Delay(400); // match fade animation
+            Visible = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HideToast()
+    {
+        animationClass = "fade-out";
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(400);
+            Visible = false;
+           await InvokeAsync(StateHasChanged);
+        });
+    }
+}

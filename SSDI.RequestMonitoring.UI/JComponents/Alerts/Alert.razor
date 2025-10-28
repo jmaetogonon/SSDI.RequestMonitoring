@@ -1,0 +1,54 @@
+﻿@if (IsVisible)
+{
+    <div class="custom-alert @GetAlertClass() animate__fadeInDown">
+        <div class="alert-content">
+            <i class="@GetIconClass()"></i>
+            <span>@Message</span>
+        </div>
+
+        @if (ShowCloseButton)
+        {
+            <button type="button" class="btn-close" @onclick="CloseAlert" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public string Type { get; set; } = "info"; // success | info | warning | error
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public int AutoCloseAfter { get; set; } = 0; // milliseconds (0 = disabled)
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public bool IsVisible { get; set; } = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && AutoCloseAfter > 0)
+        {
+            await Task.Delay(AutoCloseAfter);
+            await CloseAlert();
+        }
+    }
+
+    private async Task CloseAlert()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+
+    private string GetAlertClass() => Type switch
+    {
+        "success" => "alert-success",
+        "error" => "alert-danger",
+        "warning" => "alert-warning",
+        _ => "alert-info"
+    };
+
+    private string GetIconClass() => Type switch
+    {
+        "success" => "bi bi-check-circle-fill",
+        "error" => "bi bi-x-circle-fill",
+        "warning" => "bi bi-exclamation-triangle-fill",
+        _ => "bi bi-info-circle-fill"
+    };
+}

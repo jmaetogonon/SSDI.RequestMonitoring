@@ -1,0 +1,13 @@
+﻿<div class="new__incident-modal-overlay @(IsNewRequestModalFormVisible ? "show__new__incident-modal" : "hide__new__incident-modal")">
+    <div class="new__incident-modal">
+        <div class="new__incident-modal-header">
+            <h5 class="new__incident-modal-header-title">NEW PURCHASE REQUEST </h5>
+        </div>
+</div>
+</div>
+
+
+@code {
+    [Parameter] public bool IsNewRequestModalFormVisible { get; set; }
+
+}

@@ -1,0 +1,223 @@
+﻿.modal__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 10000;
+}
+
+.modal {
+    width: 800px;
+    background-color: white;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 12px;
+    z-index: 1100;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 24px;
+}
+
+/*header*/
+
+.modal__header {
+    padding: 1rem;
+    text-align: center;
+    color: var(--color-darkmidnightblue);
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+    margin: 1rem;
+    border-radius: 8px;
+}
+
+.modal__header-title {
+    color: var(--color-darkmidnightblue);
+    text-align: center;
+}
+
+/*alert*/
+.modal__alert {
+    margin: 1rem;
+}
+
+/*body*/
+.modal__body {
+    height: fit-content;
+    max-height: 60vh !important;
+    background-color: var(--color-white);
+    overflow: auto;
+}
+
+/*form*/
+.modal__form-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+    margin: 1px 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 0.5rem;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+}
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group.half-width {
+        grid-column: span 1; /* occupy one column only */
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 6px;
+        transition: color 0.3s;
+    }
+
+.form-control {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background-color: var(--color-whitesmoke);
+    border: 1px solid var(--color-whitesmoke);
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: #0078d4;
+        box-shadow: 0 0 4px rgba(0, 120, 212, 0.3);
+    }
+
+/*radio button*/
+
+.radio-group::part(positioning-region) {
+    flex-direction: column;
+    width: 100%;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+}
+
+    .radio-option:hover {
+        background-color: rgba(0, 120, 212, 0.05);
+    }
+
+    .radio-option::part(label) {
+        color: #444;
+        transition: color 0.3s;
+    }
+
+    .radio-option::part(control) {
+        background: #fff;
+        width: 18px;
+        height: 18px;
+    }
+
+    .radio-option.checked::part(control) {
+        background: #0078d4;
+    }
+
+/*footer*/
+
+.modal__footer {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    margin: 1.5rem 1rem 1rem 1rem;
+}
+
+.modal__footer-btn {
+    padding: 0.75rem 1.75rem;
+    border-radius: 8px;
+    color: var(--color-darkmidnightblue);
+    background-color: var(--color-white);
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+    transition: 0.25s ease-in-out;
+    outline: none;
+    width: 100%;
+}
+
+    .modal__footer-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+        background-color: var(--color-whitesmoke);
+        color: #777;
+        border: 1px solid #ddd;
+        box-shadow: none;
+        transition: none;
+    }
+
+.modal__footer-btn-save {
+    color: var(--color-white);
+    background-color: var(--color-darkmidnightblue);
+    border: 1px solid var(--color-darkmidnightblue);
+}
+
+    .modal__footer-btn-save:hover {
+        background-color: var(--color-darkimperialblue);
+        border: 1px solid var(--color-darkimperialblue);
+    }
+
+    .modal__footer-btn-save:disabled {
+        background-color: #8aa2c0; /* a soft muted version of your darkmidnightblue */
+        color: #fff;
+        border: 1px solid #8aa2c0;
+        opacity: 0.6;
+    }
+
+.modal__footer-btn-cancel {
+    border: 1px solid var(--color-white);
+}
+
+    .modal__footer-btn-cancel:hover {
+        border: 1px solid var(--color-darkmidnightblue);
+    }
+
+/*form validation*/
+.validation-message {
+    display: flex !important;
+    align-items: center !important;
+    align-content: center;
+    vertical-align: middle;
+    color: rgb(223, 53, 69) !important;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+    .validation-message::before {
+        content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="rgb(223, 53, 69)" class="bi bi-exclamation-circle-fill" viewBox="0 0 16 16"> <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/> </svg>');
+        margin-top: 4px;
+        margin-right: 6px;
+    }
+
+/* Small devices (phones, up to 600px) */
+@media (max-width: 600px) {
+    .modal {
+        width: 96%;
+    }
+
+    .modal__form-group {
+        grid-template-columns: 1fr; /* stack all */
+    }
+}

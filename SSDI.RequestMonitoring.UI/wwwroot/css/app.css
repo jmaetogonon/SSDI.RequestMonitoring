@@ -1,0 +1,218 @@
+/*@import '_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css';*/
+
+.content {
+    padding: 5.5rem 2rem 1rem 2rem !important;
+    background-color: var(--color-whitesmoke);
+    position: relative;
+    min-height: 100vh;
+    max-height: auto;
+}
+
+a {
+    text-decoration: none;
+}
+
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, p {
+    margin: 0px;
+}
+
+:root {
+    /*COLORS*/
+    /*WHITE*/
+    --color-white: #ffffff;
+    --color-whitesmoke: #f5f5f5;
+    /*LIGHT GRAY*/
+    --color-gray: #808080;
+    --color-darkGray: #a9a9a9;
+    --color-lightGray: #d3d3d3;
+    --color-silver: #c0c0c0;
+    --color-isabelline: #f4f0ec;
+    --color-payneGray: #536878;
+    /*BLACK*/
+    --color-black: #000000;
+    /*BLUE*/
+    --color-blue: #0000ff;
+    --color-lightSkyBlue: #87cefa;
+    --color-darkmidnightblue: #003366;
+    --color-darkimperialblue: #00416a;
+    --color-paleaqua: #bcd4e6;
+    --color-dodgerBlue: #1e90ff;
+    --color-deepSkyBlue: #00bfff;
+    --color-shadefofblue: #036ac4;
+    /*RED*/
+    --color-red: #ff0000;
+    --color-indianred: #cd5c5c;
+    --color-lightCoral: #f08080;
+    /*GREEN*/
+    --color-green: #008000;
+    --color-lightGreen: #90ee90;
+    --color-laurelGreen: #a9ba9d;
+    --color-nyanza: #e9ffdb;
+    --color-genericViridian: #007f66;
+    /*YELLOW*/
+    --color-lightYellow: #ffffe0;
+    --color-safetyYellow: #eed202;
+    /*ORANGE*/
+    --color-darkOrange: #ff8c00;
+    --color-papayaWhip: #ffefd5;
+    /*PURPLE*/
+    --color-plum: #dda0dd;
+}
+
+body, html {
+    --body-font: "Segoe UI","SegoeUI","Helvetica Neue","Helvetica","Arial",sans-serif;
+    /*--body-font: "Segoe UI Variable", "Segoe UI", sans-serif;*/
+    font-family: var(--body-font);
+    font-size: var(--type-ramp-base-font-size);
+    line-height: var(--type-ramp-base-line-height);
+    margin: 0;
+}
+
+.mt-1 {
+    margin-top: 4px;
+}
+
+.mt-2 {
+    margin-top: 8px;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.alert {
+    border: 1px dashed var(--accent-fill-rest);
+    padding: 5px;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    margin: 20px 0;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::before {
+        content: "An error has occurred. "
+    }
+
+code {
+    color: #c02d76;
+}
+
+@media (max-width: 600px) {
+    .main {
+        row-gap: 0 !important;
+    }
+
+    .content {
+        padding: 5.5rem 1rem 1rem 1rem !important;
+    }
+}
+
+/* loading */
+.loading__screen {
+    position: fixed;
+    inset: 0;
+    background: var(--color-whitesmoke);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 9999;
+}
+
+/* Centered container */
+.loading__content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Sonic GIF */
+.loading__gif {
+    width: 120px;
+    height: auto;
+    animation: run-in 1.2s ease-in-out infinite alternate;
+    margin-bottom: -2rem;
+}
+
+/* Modern gradient ring */
+.loading__ring {
+    width: 85px;
+    height: 85px;
+    border: 5px solid transparent;
+    border-top: 5px solid var(--color-shadefofblue);
+    border-right: 5px solid var(--color-dodgerBlue);
+    border-left: 5px solid var(--color-deepSkyBlue);
+    border-radius: 50%;
+    animation: spin 1.2s linear infinite;
+    box-shadow: 0 0 12px rgba(30, 144, 255, 0.4);
+}
+
+/* Text */
+.loading__text {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-darkmidnightblue);
+    letter-spacing: 0.5px;
+    animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes run-in {
+    0% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(10px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+}

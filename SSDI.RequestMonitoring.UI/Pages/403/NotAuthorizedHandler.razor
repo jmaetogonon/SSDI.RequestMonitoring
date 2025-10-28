@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+
+<LayoutView >
+    @if (isLoading)
+    {
+        <FluentProgressRing Size="Large" />
+        <p>Checking authorization...</p>
+    }
+    else if (!isAuthenticated)
+    {
+        <!-- 🚫 Not authenticated -->
+        <RedirectToLogin />
+    }
+    else
+    {
+        <!-- ✅ Authenticated but missing role -->
+        <NotAuthorizedPage />
+    }
+</LayoutView>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+    private bool isAuthenticated;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateTask is null)
+        {
+            isLoading = false;
+            return;
+        }
+
+        var authState = await AuthStateTask;
+        var user = authState.User;
+
+        isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+
+        isLoading = false;
+    }
+}
