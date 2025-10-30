@@ -57,7 +57,7 @@
         _ => "top: 1rem; right: 1rem;"
     };
 
-    public async Task ShowToast(string type, string title, string message, bool showCloseButton = false, bool autoClose = true, int autoCloseSeconds = 6)
+    public async Task ShowToast(string type, string title, string message, bool showCloseButton = false, bool autoClose = true, int autoCloseSeconds = 4)
     {
         // Cancel any previous auto-close timer
         cancelToken?.Cancel();

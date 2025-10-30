@@ -1,0 +1,63 @@
+﻿@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.Models.Requests
+<EditForm Model="Model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="modal__body">
+        <div class="modal__form-group position-relative">
+            <!-- Name -->
+            <div class="form-group full-width">
+                <label for="name">Name</label>
+                <input id="name" @bind="Model.Name" class="form-control" placeholder="Enter your full name" required />
+            </div>
+
+            <!-- Division / Department -->
+            <div class="form-group">
+                <label for="division">Division / Department</label>
+                <input id="division" @bind="Model.Division_Department" class="form-control" placeholder="e.g., FAD / IT Department" required />
+            </div>
+
+            <!-- Nature of Request -->
+            <div class="form-group">
+                <label for="nature">Nature of Request</label>
+                <input id="nature" @bind="Model.Nature_Of_Request" class="form-control" placeholder="e.g., Purchase of Equipment" required />
+            </div>
+
+            <!-- Justification -->
+            <div class="form-group full-width">
+                <label for="justification">Justification</label>
+                <textarea id="justification" @bind="Model.Justification" class="form-control" placeholder="Describe the reason for this request..." rows="2" required />
+            </div>
+
+            <!-- Priority -->
+            <div class="form-group full-width">
+                <label>Priority</label>
+                <FluentRadioGroup Class="radio-group" Name="priority" @bind-Value="Model.Priority">
+                    <FluentRadio Class="radio-option" Value="1">Must be done within 24 hours</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="2">Must be done within the week</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="3">Others, please specify</FluentRadio>
+                </FluentRadioGroup>
+                <ValidationMessage For="() => Model.Priority" />
+
+                @if (Model.Priority == "3")
+                {
+                    <input @bind="Model.OtherPriority" class="form-control" placeholder="Enter specific priority" required />
+                }
+            </div>
+
+            <LoadingOverlay IsVisible="@IsDisabledBtns" Message="Saving, please wait..." />
+        </div>
+    </div>
+    <div class="modal__footer">
+        <button type="button" class="modal__footer-btn modal__footer-btn-cancel" disabled="@IsDisabledBtns" @onclick="OnCloseModal">Cancel</button>
+        <button type="submit" class="modal__footer-btn modal__footer-btn-save" disabled="@IsDisabledBtns"> @(IsDisabledBtns ? "Saving..." : "Save") </button>
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public Purchase_RequestVM Model { get; set; } = new();
+    [Parameter] public bool IsDisabledBtns { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCloseModal { get; set; }
+}

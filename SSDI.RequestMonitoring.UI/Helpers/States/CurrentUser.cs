@@ -2,7 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace SSDI.RequestMonitoring.UI.Helpers;
+namespace SSDI.RequestMonitoring.UI.Helpers.States;
 
 public class CurrentUser : IDisposable
 {

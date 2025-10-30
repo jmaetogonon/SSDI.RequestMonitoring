@@ -5,15 +5,15 @@
 @using SSDI.RequestMonitoring.UI.Models.Requests
 @inject IPurchaseRequestSvc purchaseRequestSvc
 
-<div class="modal__overlay" id="@(IsNewRequestModalFormVisible ? "show__new__incident-modal" : "hide__new__incident-modal")">
+<div class="modal__overlay" id="@(IsModalVisible ? "show__new__edit-purchase-request-modal" : "hide__new__edit-purchase-request-modal")">
     <div class="modal">
         <div class="modal__header">
-            <div class="modal__header-content">
-                <h5 class="modal__header-title">UPDATE REQUEST</h5>
-                <div class="modal__header-subtitle">
-                    <i class="bi bi-clock-history"></i>
-                    <span>Last modified: @RequestModel?.DateModified</span>
-                </div>
+            <h5 class="modal__header-title">UPDATE REQUEST</h5>
+            <div class="modal__header-date">
+                <i class="bi bi-clock-history"></i>
+                <span title="@RequestModel?.DateModified?.ToString("MMMM dd, yyyy 'at' h:mm tt")">
+                    @GetLastModifiedDisplay(RequestModel?.DateModified)
+                </span>
             </div>
         </div>
 
@@ -22,6 +22,5 @@
         </div>
 
         <New_Purchase__Form Model="RequestModel" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />
-
     </div>
 </div>

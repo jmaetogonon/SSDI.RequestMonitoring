@@ -33,9 +33,17 @@ public class PurchaseRequestSvc : BaseHttpService, IPurchaseRequestSvc
         }
     }
 
-    public Task<Response<Guid>> DeletePurchaseRequest(int id)
+    public async Task<Response<Guid>> DeletePurchaseRequest(int id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _client.DeletePurchaseRequestAsync(id);
+            return new Response<Guid>() { Success = true };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
     }
 
     public async Task<List<Purchase_RequestVM>> GetAllPurchaseRequests()
@@ -53,8 +61,20 @@ public class PurchaseRequestSvc : BaseHttpService, IPurchaseRequestSvc
         return _mapper.Map<Purchase_RequestVM>(request);
     }
 
-    public Task<Response<Guid>> UpdatePurchaseRequest(int id, Purchase_RequestVM PurchaseRequest)
+    public async Task<Response<Guid>> UpdatePurchaseRequest(int id, Purchase_RequestVM PurchaseRequest)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var updateRequestCommand = _mapper.Map<UpdatePurchaseRequestCommand>(PurchaseRequest);
+            await _client.UpdatePurchaseRequestAsync(updateRequestCommand);
+            return new Response<Guid>()
+            {
+                Success = true,
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
     }
 }

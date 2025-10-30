@@ -1,0 +1,85 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="confirmation-modal @(_isVisible ? "confirmation-modal--visible" : "") @Variant">
+    <div class="confirmation-modal__overlay" @onclick="OnOverlayClick"></div>
+
+    <div class="confirmation-modal__container">
+        <div class="confirmation-modal__content">
+            <!-- Header -->
+            <div class="confirmation-modal__header">
+                @if (ShowIcon)
+                {
+                    <div class="confirmation-modal__icon @($"confirmation-modal__icon--{Variant}")">
+                        <i class="@Icon"></i>
+                    </div>
+                }
+                <div class="confirmation-modal__header-content">
+                    <h3 class="confirmation-modal__title">@Title</h3>
+                    @if (!string.IsNullOrEmpty(Subtitle))
+                    {
+                        <p class="confirmation-modal__subtitle">@((MarkupString)Subtitle)</p>
+                    }
+                </div>
+                @if (ShowCloseButton)
+                {
+                    <button class="confirmation-modal__close" @onclick="Close" title="Close" disabled="@IsLoading">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                }
+            </div>
+
+            <!-- Body -->
+            <div class="confirmation-modal__body">
+                @if (ChildContent != null)
+                {
+                    @ChildContent
+                }
+                else if (!string.IsNullOrEmpty(Message))
+                {
+                   <p class="confirmation-modal__message">@((MarkupString)Message)</p>
+                }
+
+                @if (IsLoading)
+                {
+                    <div class="confirmation-modal__loading">
+                        <div class="confirmation-modal__spinner"></div>
+                        <span>@LoadingText</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Footer -->
+            @if (ShowActions)
+            {
+                <div class="confirmation-modal__footer">
+                    @if (ShowCancelButton)
+                    {
+                        <button class="confirmation-modal__btn confirmation-modal__btn--cancel"
+                                @onclick="Cancel"
+                                disabled="@IsLoading"
+                                type="button">
+                            <i class="@CancelIcon"></i>
+                            @CancelText
+                        </button>
+                    }
+
+                    <button class="confirmation-modal__btn confirmation-modal__btn--confirm @($"confirmation-modal__btn--{Variant}")"
+                            @onclick="Confirm"
+                            disabled="@IsLoading"
+                            type="button">
+                        @if (IsLoading && ShowLoadingOnConfirm)
+                        {
+                            <div class="confirmation-modal__spinner"></div>
+                        }
+                        else
+                        {
+                            <i class="@ConfirmIcon"></i>
+                        }
+                        @ConfirmText
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

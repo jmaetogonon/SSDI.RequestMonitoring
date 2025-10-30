@@ -1,7 +1,9 @@
 ﻿@page "/purchase-requests/"
 @using SSDI.RequestMonitoring.UI.Contracts.Requests
-@using SSDI.RequestMonitoring.UI.JComponents.Alerts
 @using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
+@using SSDI.RequestMonitoring.UI.JComponents.Filters
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
 @inject IPurchaseRequestSvc purchaseRequestSvc
 @attribute [Authorize]
@@ -15,15 +17,15 @@
     </div>
 
     <div class="page__header-cta">
-        <button class="page__primary-btn" @onclick="ToggleAddRequestModal">
+        <button class="page__primary-btn" @onclick="OnAddNewRequest">
             <i class="bi bi-plus-lg"></i> New Request
-        </button>
-        <button class="page__secondary-btn" @onclick="ToggleAddRequestModal">
-            <i class="bi bi-plus-lg"></i> Test
         </button>
     </div>
 </div>
-<NewRequest__Modal IsNewRequestModalFormVisible="@_isNewRequestModalFormVisible" />
+
+<Confirmation__Modal @ref="confirmModal" />
+<NewRequest__Modal IsModalVisible="@isNewRequestModalVisible" OnSave="@OnSaveNewReqModal" OnClose="OnCloseNewReqModal" />
+<EditRequest__Modal IsModalVisible="@isEditRequestModalVisible" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="editModel" />
 
 <div class="page__main__section">
     <div class="page__cards">
@@ -38,73 +40,92 @@
     </div>
 
     <div class="page__filters">
-        <FluentSearch @bind-Value="@_searchValue"
+        <FluentSearch @bind-Value="@searchValue"
                       @bind-Value:after="HandleSearch"
                       Immediate="true"
                       Placeholder="Search"
                       Class="page__filters-search" />
 
-        <button id="myPopoverButtonStatus" class="page__filters-btn" @onclick="() => _isVisibleStatus = !_isVisibleStatus">
-            Status <span>@DisplayedStatuses</span> <i class="bi bi-chevron-down" />
-        </button>
-        <FluentPopover Style="width: 300px; margin-top: 4px;border-radius: 8px;" Class="page__filterBy-lists" VerticalThreshold="170" AnchorId="myPopoverButtonStatus" @bind-Open="_isVisibleStatus">
-            <Body>
-                <FluentStack Orientation="Orientation.Vertical" VerticalGap="2">
-                    <!-- All checkbox -->
-                    <FluentCheckbox Class="page__filter-checkbox" @bind-Value="@_isAllStatusSelected" Disabled="@(_isAllStatusSelected)"
-                                    @bind-Value:after="@ToggleAll">
-                        All
-                    </FluentCheckbox>
-
-                    <div class="page__filterBy-lists-divider"></div>
-
-                    <!-- Individual status checkboxes -->
-                    @foreach (var status in individualStatuses)
-                    {
-                        <FluentCheckbox Class="page__filter-checkbox" @bind-Value="@_statusChecked[status]"
-                                        @bind-Value:after="@(() => ToggleStatus(status))">
-                            @status
-                        </FluentCheckbox>
-                    }
-                </FluentStack>
-            </Body>
-        </FluentPopover>
+        <Status__Filter @ref="statusFilter" SelectedStatusesChanged="@OnStatusFilterChanged" AnchorId="purchaseRequestStatusFilter" />
+        <Priority__Filter @ref="priorityFilter" SelectedPrioritiesChanged="@OnPriorityFilterChanged" AnchorId="purchaseRequestPriorityFilter" />
+        <Clear__Filters OnClear="@ClearAllFilters" />
     </div>
 
-    <div class="page__table-container" tabindex="-1">
-        @if (Requests == null)
+    <div class="page__table-container @(uiStateSvc.IsStriped ? "striped-grid" : "")" tabindex="-1">
+        @if (Requests == null || isLoading)
         {
-            <p>Loading Data...</p>
+            <div class="page__table-loading">
+                <p>Loading purchase requests...</p>
+            </div>
+        }
+        else if (!Requests.Any())
+        {
+            <div class="page__table-empty">
+                <i class="bi bi-inbox"></i>
+                <p>No purchase requests found</p>
+                <p class="text-muted">Create your first request to get started</p>
+            </div>
         }
         else
         {
-            <FluentDataGrid Class="page__table"
-                            ShowHover="true"
-                            Pagination="@pagination"
-                            GenerateHeader="GenerateHeaderOption.Sticky"
-                            RowSize="DataGridRowSize.Medium"
-                            Items="Requests">
-                <TemplateColumn Title="View" Align="@Align.Start">
-                    <button type="button" class="page__table-btn page__view__details__btn">
-                        <i class="bi bi-eye-fill" />
-                    </button>
-                </TemplateColumn>
-                <PropertyColumn Title="ID" Property="@(c => c.Id)" />
-                <PropertyColumn Title="Requested By" Property="@(c => c.Name)" />
-                <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
-                <PropertyColumn Title="Justification" Property="@(c => c.Justification)" />
-                <PropertyColumn Title="Division/Department" Property="@(c => c.Division_Department)" />
-                <PropertyColumn Title="Requested On" Property="@(c => c.DateRequested)" />
-                <PropertyColumn Title="Status" Property="@(c => c.Status)" />
-            </FluentDataGrid>
-
-            <div class="page__pagination">
-                <FluentPaginator State="@pagination">
-                    <PaginationTextTemplate>
-                        Page <strong>@(pagination.CurrentPageIndex + 1)</strong> out of <strong>@(pagination.LastPageIndex + 1)</strong> pages
-                    </PaginationTextTemplate>
-                </FluentPaginator>
+            <div class="page__table-wrapper">
+                <FluentDataGrid Class="page__table"
+                                ShowHover="true"
+                                Pagination="@pagination"
+                                GenerateHeader="GenerateHeaderOption.Sticky"
+                                RowSize="DataGridRowSize.Medium"
+                                Items="Requests">
+                    <TemplateColumn Title="View" Width="100px">
+                        <button type="button" class="page__table-btn page__view__details__btn" title="View details">
+                            <i class="bi bi-eye-fill"></i>
+                            @* <span class="btn-text">View</span> *@
+                        </button>
+                    </TemplateColumn>
+                    <PropertyColumn Title="ID" Property="@(c => c.Id)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
+                    <PropertyColumn Title="Requested By" Property="@(c => c.Name)" Sortable="true" />
+                    <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
+                    <PropertyColumn Title="Justification" Property="@(c => c.Justification)" />
+                    <PropertyColumn Title="Division/Department" Property="@(c => c.Division_Department)" />
+                    <TemplateColumn Title="Requested On" Width="140px" Sortable="true">
+                        <div class="page__table-date">
+                            <span class="page__table-date-main">
+                                @context.DateRequested?.ToString("MMM dd, yyyy")
+                            </span>
+                            <span class="page__table-date-relative">
+                                @(GetRelativeTime(context.DateRequested))
+                            </span>
+                        </div>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Priority" Align="Align.Center">
+                        <div class="page__table-priority">
+                            <div class="priority-dot" data-prio="@context.Priority"></div>
+                            <span>@(GetPriorityDisplay(context.Priority, context.OtherPriority))</span>
+                        </div>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Status" Align="Align.Center" Sortable="true" SortBy="sortStatus">
+                        <div class="page__table-status" data-status="@context.Status.ToLower()">
+                            <i class="@GetStatusIcon(context.Status)"></i>
+                            <span class="page__table-status-text">@GetStatusDisplay(context.Status)</span>
+                        </div>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Actions" Width="140px" Align="Align.Center">
+                        <div class="page__table-actions">
+                            <button type="button" @onclick="(() => OnEditRequest(context))"
+                                    class="page__table-action-btn page__table-edit-btn"
+                                    title="Edit request">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button type="button" @onclick="(() => OnDeleteRequest(context.Id))"
+                                    class="page__table-action-btn page__table-delete-btn"
+                                    title="Delete request">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    </TemplateColumn>
+                </FluentDataGrid>
             </div>
+
+            <Pagination__Control Pagination="@pagination" PageSizeChanged="@OnPageSizeChanged" IsStripedChanged="@(() => StateHasChanged())" />
         }
     </div>
 </div>

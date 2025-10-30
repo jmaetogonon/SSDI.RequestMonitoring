@@ -74,21 +74,21 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task PurchaseRequestPUTAsync(int id, string body);
+        System.Threading.Tasks.Task UpdatePurchaseRequestAsync(UpdatePurchaseRequestCommand body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task PurchaseRequestPUTAsync(int id, string body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task UpdatePurchaseRequestAsync(UpdatePurchaseRequestCommand body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task PurchaseRequestDELETEAsync(int id);
+        System.Threading.Tasks.Task DeletePurchaseRequestAsync(int? id);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task PurchaseRequestDELETEAsync(int id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task DeletePurchaseRequestAsync(int? id, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -584,19 +584,16 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task PurchaseRequestPUTAsync(int id, string body)
+        public virtual System.Threading.Tasks.Task UpdatePurchaseRequestAsync(UpdatePurchaseRequestCommand body)
         {
-            return PurchaseRequestPUTAsync(id, body, System.Threading.CancellationToken.None);
+            return UpdatePurchaseRequestAsync(body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task PurchaseRequestPUTAsync(int id, string body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task UpdatePurchaseRequestAsync(UpdatePurchaseRequestCommand body, System.Threading.CancellationToken cancellationToken)
         {
-            if (id == null)
-                throw new System.ArgumentNullException("id");
-
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -611,9 +608,8 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                 
-                    // Operation Path: "api/PurchaseRequest/{id}"
-                    urlBuilder_.Append("api/PurchaseRequest/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    // Operation Path: "api/PurchaseRequest/UpdatePurchaseRequest"
+                    urlBuilder_.Append("api/PurchaseRequest/UpdatePurchaseRequest");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -641,6 +637,16 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
                         if (status_ == 204)
                         {
                             return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
                         }
                         else
                         if (status_ == 404)
@@ -678,19 +684,16 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task PurchaseRequestDELETEAsync(int id)
+        public virtual System.Threading.Tasks.Task DeletePurchaseRequestAsync(int? id)
         {
-            return PurchaseRequestDELETEAsync(id, System.Threading.CancellationToken.None);
+            return DeletePurchaseRequestAsync(id, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task PurchaseRequestDELETEAsync(int id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task DeletePurchaseRequestAsync(int? id, System.Threading.CancellationToken cancellationToken)
         {
-            if (id == null)
-                throw new System.ArgumentNullException("id");
-
             var client_ = _httpClient;
             var disposeClient_ = false;
             try
@@ -701,9 +704,14 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                 
-                    // Operation Path: "api/PurchaseRequest/{id}"
-                    urlBuilder_.Append("api/PurchaseRequest/");
-                    urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+                    // Operation Path: "api/PurchaseRequest/DeletePurchaseRequest"
+                    urlBuilder_.Append("api/PurchaseRequest/DeletePurchaseRequest");
+                    urlBuilder_.Append('?');
+                    if (id != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -1420,11 +1428,20 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         public string Status { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("priority")]
+        public string Priority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
+        public string OtherPriority { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
         public System.DateTimeOffset? DateRequested { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("dateAdminNotified")]
         public System.DateTimeOffset? DateAdminNotified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
 
     }
 
@@ -1440,6 +1457,42 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("roleName")]
         public string RoleName { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class UpdatePurchaseRequestCommand
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
+        public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
+        public string Nature_Of_Request { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("justification")]
+        public string Justification { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("priority")]
+        public string Priority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
+        public string OtherPriority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
+        public System.DateTimeOffset? DateRequested { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateAdminNotified")]
+        public System.DateTimeOffset? DateAdminNotified { get; set; }
 
     }
 

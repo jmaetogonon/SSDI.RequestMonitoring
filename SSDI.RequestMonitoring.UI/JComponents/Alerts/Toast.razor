@@ -1,29 +1,31 @@
-﻿@if (Visible)
+﻿@implements IDisposable
+
+@if (Visible && !string.IsNullOrWhiteSpace(Message))
 {
     <div class="toast @Type.ToLower() @animationClass" style="@PositionStyle">
         <div class="toast-content">
             <div class="toast-icon">
                 @if (Type == "Success")
                 {
-                    <i class="fa-solid fa-circle-check"></i>
+                    <i class="bi bi-check-circle-fill"></i>
                 }
                 else if (Type == "Info")
                 {
-                    <i class="fa-solid fa-circle-info"></i>
+                    <i class="bi bi-info-circle-fill"></i>
                 }
                 else if (Type == "Warning")
                 {
-                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <i class="bi bi-exclamation-triangle-fill"></i>
                 }
                 else if (Type == "Error")
                 {
-                    <i class="fa-solid fa-circle-xmark"></i>
+                    <i class="bi bi-x-circle-fill"></i>
                 }
             </div>
 
             <div class="toast-text">
                 <strong>@Title</strong>
-                <p>@Message</p>
+                <p>@((MarkupString)Message)</p>
             </div>
 
             @if (ShowCloseButton)
@@ -35,16 +37,18 @@
 }
 
 @code {
-    [Parameter] public string Type { get; set; } = "Info"; // Success, Info, Warning, Error
-    [Parameter] public string Title { get; set; } = "";
-    [Parameter] public string Message { get; set; } = "";
-    [Parameter] public bool AutoClose { get; set; } = true;
-    [Parameter] public int AutoCloseSeconds { get; set; } = 3;
-    [Parameter] public bool ShowCloseButton { get; set; } = true;
-    [Parameter] public string Position { get; set; } = "top-right"; // top-right, etc.
+    [Parameter] public string Position { get; set; } = "top-right";
 
-    private bool Visible { get; set; } = true;
-    private string animationClass = "slide-in";
+    private string Type { get; set; } = "Info";
+    private string Title { get; set; } = "";
+    private string Message { get; set; } = "";
+    private bool AutoClose { get; set; } = true;
+    private int AutoCloseSeconds { get; set; } = 4;
+    private bool ShowCloseButton { get; set; } = true;
+
+    private bool Visible { get; set; }
+    private string animationClass = "";
+    private CancellationTokenSource? cancelToken;
 
     private string PositionStyle => Position switch
     {
@@ -55,28 +59,60 @@
         _ => "top: 1rem; right: 1rem;"
     };
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
+        // ToastService.OnShowToast += ShowToastAsync;
+    }
+
+    private async Task ShowToastAsync(string type, string title, string message)
+    {
+        await ShowToast(type, title, message);
+    }
+
+    public async Task ShowToast(string type, string title, string message, bool showCloseButton = true, bool autoClose = true, int autoCloseSeconds = 4)
+    {
+        // Cancel any previous auto-close timer
+        cancelToken?.Cancel();
+        cancelToken = new CancellationTokenSource();
+
+        Type = type;
+        Title = title;
+        Message = message;
+        AutoClose = autoClose;
+        AutoCloseSeconds = autoCloseSeconds;
+        ShowCloseButton = showCloseButton;
+        Visible = true;
+        animationClass = "toast-slide-in";
+        StateHasChanged();
+
         if (AutoClose)
         {
-            await Task.Delay(AutoCloseSeconds * 1000);
-            animationClass = "fade-out";
-            StateHasChanged();
-
-            await Task.Delay(400); // match fade animation
-            Visible = false;
-            StateHasChanged();
+            try
+            {
+                await Task.Delay(AutoCloseSeconds * 1000, cancelToken.Token);
+                await HideToast();
+            }
+            catch (TaskCanceledException)
+            {
+                // Task was cancelled - do nothing
+            }
         }
     }
 
-    private void HideToast()
+    private async Task HideToast()
     {
-        animationClass = "fade-out";
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(400);
-            Visible = false;
-           await InvokeAsync(StateHasChanged);
-        });
+        animationClass = "toast-fade-out";
+        StateHasChanged();
+
+        await Task.Delay(400);
+        Visible = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        // ToastService.OnShowToast -= ShowToastAsync;
+        cancelToken?.Cancel();
+        cancelToken?.Dispose();
     }
 }

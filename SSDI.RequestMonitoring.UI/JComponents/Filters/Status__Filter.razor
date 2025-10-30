@@ -1,0 +1,34 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+
+<button id="@AnchorId" class="page__filters-btn" @onclick="ToggleVisibility">
+    Status <span>@DisplayedStatuses</span> <i class="bi bi-chevron-down" />
+</button>
+<FluentPopover Style="width: 300px; margin-top: 4px; border-radius: 8px;"
+               Class="page__filterBy-lists"
+               VerticalThreshold="170"
+               AnchorId="@AnchorId"
+               @bind-Open="_isVisible">
+    <Body>
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="2">
+            <!-- All checkbox -->
+            <FluentCheckbox Class="page__filter-checkbox"
+                            @bind-Value="@IsAllSelected"
+                            Disabled="@IsAllSelected"
+                            @bind-Value:after="@ToggleAll">
+                All
+            </FluentCheckbox>
+
+            <div class="page__filterBy-lists-divider"></div>
+
+            <!-- Individual status checkboxes -->
+            @foreach (var status in StatusOptions)
+            {
+                <FluentCheckbox Class="page__filter-checkbox"
+                                @bind-Value:get="@status.IsChecked"
+                                @bind-Value:set="@((isChecked) => HandleStatusChecked(status, isChecked))">
+                    @status.DisplayName
+                </FluentCheckbox>
+            }
+        </FluentStack>
+    </Body>
+</FluentPopover>

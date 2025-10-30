@@ -1,0 +1,18 @@
+﻿
+<button class="page__secondary-btn page__clear-filters-btn"
+        @onclick="ClearAll"
+        title="Clear all filters">
+    <FluentIcon Value="@(new Icons.Regular.Size20.FilterDismiss())" Class="clear-icon"/>
+</button>
+
+@code {
+
+    [Parameter] public EventCallback OnClear { get; set; }
+    [Parameter] public string? ButtonText { get; set; } = "Clear";
+    [Parameter] public string? CssClass { get; set; }
+
+    private async Task ClearAll()
+    {
+        await OnClear.InvokeAsync();
+    }
+}

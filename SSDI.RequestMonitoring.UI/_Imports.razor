@@ -10,6 +10,11 @@
 
 @using Microsoft.JSInterop
 @using SSDI.RequestMonitoring.UI
+@using SSDI.RequestMonitoring.UI.Helpers.States
 @using SSDI.RequestMonitoring.UI.Layout
 
 @using Microsoft.AspNetCore.Authorization
+@using SSDI.RequestMonitoring.UI.JComponents.Alerts
+
+@inject IUIStateService uiStateSvc
+@inject IToastService toastSvc

@@ -4,7 +4,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     display: none;
     z-index: 10000;
 }
@@ -31,11 +32,28 @@
     margin: 1rem;
     border-radius: 8px;
 }
-
 .modal__header-title {
     color: var(--color-darkmidnightblue);
-    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
 }
+
+.modal__header-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    /*background: #f8fafc;*/
+    /*border-radius: 6px;
+    border: 1px solid #e5e7eb;*/
+}
+
+    .modal__header-date i {
+        color: #9ca3af;
+    }
 
 /*alert*/
 .modal__alert {

@@ -1,60 +1,8 @@
-﻿.new__incident-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    z-index: 10000;
-}
-
-.show__new__incident-modal {
+﻿
+#show__new__purchase-request-modal {
     display: block;
 }
 
-.hide__new__incident-modal {
+#hide__new__purchase-request-modal {
     display: none;
-}
-
-.new__incident-modal {
-    width: 800px;
-    background-color: white;
-    padding: 1rem;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 4px;
-    z-index: 1100;
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 24px;
-}
-
-.new__incident-modal-header {
-    padding: 1.25rem 0 0.5rem 1rem;
-    text-align: center;
-    color: var(--color-darkmidnightblue);
-    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
-}
-
-.new__incident-modal-header-tile {
-    color: var(--color-darkmidnightblue);
-    text-align: center;
-}
-
-.new__incident-modal-body {
-    height: fit-content !important;
-    max-height: 650px !important;
-    background-color: var(--color-white);
-}
-/* Small devices (phones, up to 600px) */
-@media (max-width: 600px) {
-    .new__incident-modal {
-        width: 96%;
-        padding: 0.5rem;
-    }
-
-    .new__incident-modal-input-group input, .new__incident-modal-input-group select {
-        padding: 0.5rem 0.2rem;
-    }
 }

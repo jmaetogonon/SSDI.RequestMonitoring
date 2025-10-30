@@ -15,4 +15,6 @@ public class Purchase_RequestVM
     public string OtherPriority { get; set; } = string.Empty;
     public DateTime? DateRequested { get; set; }
     public DateTime? DateAdminNotified { get; set; }
+
+    public DateTime? DateModified { get; set; }
 }

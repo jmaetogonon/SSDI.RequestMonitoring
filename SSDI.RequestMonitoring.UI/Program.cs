@@ -9,6 +9,7 @@ using SSDI.RequestMonitoring.UI.Contracts;
 using SSDI.RequestMonitoring.UI.Contracts.Requests;
 using SSDI.RequestMonitoring.UI.Contracts.Users;
 using SSDI.RequestMonitoring.UI.Handlers;
+using SSDI.RequestMonitoring.UI.Helpers.States;
 using SSDI.RequestMonitoring.UI.Providers;
 using SSDI.RequestMonitoring.UI.Services;
 using SSDI.RequestMonitoring.UI.Services.Base;
@@ -35,6 +36,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 builder.Services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
 
 
+builder.Services.AddScoped<IUIStateService, UIStateService>();
 builder.Services.AddScoped<CurrentUser>();
 
 builder.Services.AddScoped<IPurchaseRequestSvc, PurchaseRequestSvc>();

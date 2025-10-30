@@ -1,0 +1,33 @@
+﻿
+<button id="@AnchorId" class="page__filters-btn" @onclick="ToggleVisibility">
+    Priority <span>@DisplayedPriorities</span> <i class="bi bi-chevron-down" />
+</button>
+<FluentPopover Style="width: 250px; margin-top: 4px; border-radius: 8px;"
+               Class="page__filterBy-lists"
+               VerticalThreshold="170"
+               AnchorId="@AnchorId"
+               @bind-Open="_isVisible">
+    <Body>
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="2">
+            <!-- All checkbox -->
+            <FluentCheckbox Class="page__filter-checkbox"
+                            @bind-Value="@IsAllSelected"
+                            Disabled="@IsAllSelected"
+                            @bind-Value:after="@ToggleAll">
+                All
+            </FluentCheckbox>
+
+            <div class="page__filterBy-lists-divider"></div>
+
+            <!-- Individual priority checkboxes -->
+            @foreach (var priority in PriorityOptions)
+            {
+                <FluentCheckbox Class="page__filter-checkbox"
+                                @bind-Value:get="@priority.IsChecked"
+                                @bind-Value:set="@((isChecked) => HandlePriorityChecked(priority, isChecked))">
+                    @priority.DisplayName
+                </FluentCheckbox>
+            }
+        </FluentStack>
+    </Body>
+</FluentPopover>

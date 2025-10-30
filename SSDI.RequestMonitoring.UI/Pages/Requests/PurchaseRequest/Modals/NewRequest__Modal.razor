@@ -1,13 +1,21 @@
-﻿<div class="new__incident-modal-overlay @(IsNewRequestModalFormVisible ? "show__new__incident-modal" : "hide__new__incident-modal")">
-    <div class="new__incident-modal">
-        <div class="new__incident-modal-header">
-            <h5 class="new__incident-modal-header-title">NEW PURCHASE REQUEST </h5>
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.JComponents.Forms
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+
+
+@inject IPurchaseRequestSvc purchaseRequestSvc
+
+<Confirmation__Modal @ref="confirmModal" />
+<div class="modal__overlay" id="@(IsModalVisible ? "show__new__purchase-request-modal" : "hide__new__purchase-request-modal")">
+    <div class="modal">
+        <div class="modal__header">
+            <h5 class="modal__header-title">NEW PURCHASE REQUEST </h5>
         </div>
+
+        <div class="modal__alert">
+            <Alert Message="@AlertMessage" Type="error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+        </div>
+
+        <New_Purchase__Form Model="RequestModel" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />
+    </div>
 </div>
-</div>
-
-
-@code {
-    [Parameter] public bool IsNewRequestModalFormVisible { get; set; }
-
-}

@@ -1,4 +1,5 @@
 ﻿@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
 <div class="sidebar">
     <button class="sidebar__toggle-btn" @onclick="ToggleSidebar">
@@ -8,30 +9,33 @@
     <div class="sidebar__links @(isSidebarOpen ? "sidebar__links--open" : "sidebar__links--closed")">
         <div class="sidebar__section">
             <div class="sidebar__section-title" style="margin-top: 0.5rem !important;">General</div>
-            <a href="/dashboard" class="sidebar__link" @onclick="ToggleSidebarIfMobile">
+            <a href="/dashboard" class="sidebar__link @GetNavLinkClass("/dashboard")" @onclick="ToggleSidebarIfMobile" >
                 <i class="bi bi-house-door-fill sidebar__icon" /> <span>Dashboard</span>
             </a>
-            <a href="/purchase-requests" class="sidebar__link" @onclick="ToggleSidebarIfMobile">
+            <a href="/purchase-requests" class="sidebar__link @GetNavLinkClass("/purchase-requests")" @onclick="ToggleSidebarIfMobile">
                 <i class="bi bi-bag-fill sidebar__icon" /> <span>Purchase Requests</span>
             </a>
-            <a href="/job-orders" class="sidebar__link" @onclick="ToggleSidebarIfMobile">
+            <a href="/job-orders" class="sidebar__link @GetNavLinkClass("/job-orders")" @onclick="ToggleSidebarIfMobile">
                 <i class="bi bi-archive-fill sidebar__icon" /> <span>Job Orders</span>
             </a>
-        </div>
-        @* <div class="sidebar__section">
-            <div class="sidebar__section-title">Settings</div>
+
+
+            <!-- Settings Section with Submenu -->
+           @*  <div class="sidebar__section-title">Settings</div>
             <button class="sidebar__link sidebar__link--settings" @onclick="ToggleSettingsMenu">
                 <i class="bi bi-gear-fill sidebar__icon"></i> <span>Settings</span> <i class="bi bi-chevron-right"></i>
             </button>
             <div class="sidebar__submenu @(isSettingsMenuOpen ? "sidebar__submenu--open" : "sidebar__submenu--closed")">
-                <a href="/manage-users" class="sidebar__submenu-link" @onclick="ToggleSidebarIfMobile">
-                    <i class="bi bi-person-lines-fill sidebar__icon" /> <span>Manage Users</span>
+                <a href="/settings/users" class="sidebar__submenu-link @(GetNavLinkClass("/settings/users"))">
+                    <i class="bi bi-people-fill"></i>
+                    <span>User Management</span>
                 </a>
-                <a href="/help-support" class="sidebar__submenu-link" @onclick="ToggleSidebarIfMobile">
-                    <i class="bi bi-person-lines-fill sidebar__icon" /> <span>Help & Support</span>
+                <a href="/settings/roles" class="sidebar__submenu-link @(GetNavLinkClass("/settings/roles"))">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Role Management</span>
                 </a>
-            </div>
-        </div> *@
+            </div> *@
+        </div>
     </div>
 </div>
 
@@ -69,5 +73,11 @@
             isSidebarOpen = width > 600;
             StateHasChanged();
         }
+    }
+
+    private string GetNavLinkClass(string path)
+    {
+        return NavigationManager.Uri.EndsWith(path) ? "active" : "";
+
     }
 }

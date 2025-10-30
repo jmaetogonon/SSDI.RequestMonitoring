@@ -3,7 +3,7 @@
     <div class="custom-alert @GetAlertClass() animate__fadeInDown">
         <div class="alert-content">
             <i class="@GetIconClass()"></i>
-            <span>@Message</span>
+            <span>@((MarkupString)Message)</span>
         </div>
 
         @if (ShowCloseButton)
