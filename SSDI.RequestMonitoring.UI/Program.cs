@@ -1,5 +1,6 @@
 global using SSDI.RequestMonitoring.UI.Helpers;
 using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -29,6 +30,7 @@ builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = n
     .AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
@@ -38,6 +40,7 @@ builder.Services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
 
 builder.Services.AddScoped<IUIStateService, UIStateService>();
 builder.Services.AddScoped<CurrentUser>();
+builder.Services.AddScoped<Utils>();
 
 builder.Services.AddScoped<IPurchaseRequestSvc, PurchaseRequestSvc>();
 builder.Services.AddScoped<IJobOrderSvc, JobOrderSvc>();

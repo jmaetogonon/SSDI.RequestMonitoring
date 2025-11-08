@@ -16,6 +16,8 @@ public class CurrentUser : IDisposable
     public string FullName { get; private set; } = string.Empty;
     public string Role { get; private set; } = string.Empty;
     public string RoleDesc { get; private set; } = string.Empty;
+    public int DepartmentHeadId { get; private set; }
+    public int DivisionHeadId { get; private set; }
     public bool IsAuthenticated { get; private set; }
 
     public CurrentUser(AuthenticationStateProvider authenticationStateProvider)
@@ -42,12 +44,16 @@ public class CurrentUser : IDisposable
         if (user?.Identity is { IsAuthenticated: true })
         {
             var idString = user.Claims.FirstOrDefault(x => x.Type == "uid")?.Value;
+            var deptHead = user.Claims.FirstOrDefault(x => x.Type == "departmentHeadId")?.Value;
+            var divHead = user.Claims.FirstOrDefault(x => x.Type == "divisionHeadId")?.Value;
 
             UserId = int.TryParse(idString, out var parsedId) ? parsedId : 0;
             Username = user.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)!.Value;
             FullName = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)!.Value;
             Role = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)!.Value;
             RoleDesc = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)!.Value;
+            DepartmentHeadId = int.TryParse(deptHead, out var parseddeptHeadId) ? parseddeptHeadId : 0;
+            DivisionHeadId = int.TryParse(divHead, out var parseddivHeadId) ? parseddivHeadId : 0;
             IsAuthenticated = true;
         }
         else

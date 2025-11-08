@@ -397,7 +397,7 @@
     display: flex;
     flex-direction: column;
     min-height: 550px;
-    max-height: 60vh;
+    max-height: calc(100vh - 28rem);
     scroll-behavior: smooth;
 }
 
@@ -799,29 +799,25 @@ tr[row-type='sticky-header'] > th {
     }
 
     /* Status Color Variants with Icons */
-    .page__table-status[data-status="1"],
-    .page__table-status[data-status="@TokenCons.Status__PreparedBy"] {
+    .page__table-status[data-status="Draft"] {
         border-color: #fed7aa;
         background: #fffbeb;
         color: #92400e;
     }
 
-    .page__table-status[data-status="2"],
-    .page__table-status[data-status="@TokenCons.Status__PurchaseRequest"] {
+    .page__table-status[data-status="ForEndorsement"] {
         border-color: #bfdbfe;
         background: #eff6ff;
         color: #1e40af;
     }
 
-    .page__table-status[data-status="3"],
-    .page__table-status[data-status="@TokenCons.Status__EndorsedBy"] {
+    .page__table-status[data-status="ForAdminVerification"] {
         border-color: #ddd6fe;
         background: #faf5ff;
         color: #6b21a8;
     }
 
-    .page__table-status[data-status="4"],
-    .page__table-status[data-status="@TokenCons.Status__Verfied"] {
+    .page__table-status[data-status="ForCeoApproval"] {
         /*  background: linear-gradient(135deg, #10b981, #34d399);
         color: #064e3b;
         box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);*/
@@ -830,15 +826,13 @@ tr[row-type='sticky-header'] > th {
         color: #047857;
     }
 
-    .page__table-status[data-status="5"],
-    .page__table-status[data-status="@TokenCons.Status__Approved"] {
+    .page__table-status[data-status="ForFinanceApproval"] {
         border-color: #86efac;
         background: #f0fdf4;
         color: #166534;
     }
 
-    .page__table-status[data-status="6"],
-    .page__table-status[data-status="@TokenCons.Status__Rejected"] {
+    .page__table-status[data-status="Rejected"] {
         border-color: #fecaca;
         background: #fef2f2;
         color: #dc2626;
@@ -858,6 +852,12 @@ tr[row-type='sticky-header'] > th {
         color: #6b7280;
     }
 
+    .page__table-status[data-status="Cancelled"] {
+        border-color: #9ca3af;
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
 /* Priority Badge Styles */
 .page__table-priority {
     display: flex;
@@ -874,15 +874,15 @@ tr[row-type='sticky-header'] > th {
     border-radius: 50%;
 }
 
-    .priority-dot[data-prio="1"] {
+    .priority-dot[data-prio="Hrs24"] {
         background: #ef4444;
     }
 
-    .priority-dot[data-prio="2"] {
+    .priority-dot[data-prio="ThisWeek"] {
         background: #f59e0b;
     }
 
-    .priority-dot[data-prio="3"] {
+    .priority-dot[data-prio="Others"] {
         background: #5096f8;
     }
 
@@ -1221,74 +1221,4 @@ tr[row-type='sticky-header'] > th {
     .page__table-status {
         padding: 0.1rem 0.5rem;
     }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    .page__primary-btn,
-    .page__secondary-btn {
-        transition: none;
-    }
-
-        .page__primary-btn::before,
-        .page__secondary-btn::before {
-            display: none;
-        }
-
-        .page__primary-btn:hover,
-        .page__secondary-btn:hover {
-            transform: none;
-        }
-
-        .page__primary-btn i,
-        .page__secondary-btn i {
-            transition: none;
-        }
-
-    .page__filters-search::part(root),
-    .page__filters-btn,
-    .page__filter-checkbox,
-    .page__filterBy-lists {
-        transition: none;
-        animation: none;
-    }
-
-        .page__filters-btn::before,
-        .page__filter-checkbox::before {
-            display: none;
-        }
-
-        .page__filters-btn:hover,
-        .page__filter-checkbox:hover {
-            transform: none;
-        }
-
-    .page__table tr[role='row'] > td,
-    .page__table-btn,
-    .page__table tr[role='row']:hover > td {
-        transition: none;
-        transform: none;
-    }
-
-    .page__table-loading::before {
-        animation: none;
-        border: 3px solid #1e3a8a;
-    }
-
-    .page__table-status,
-    .page__table-action-btn,
-    .page__view__details__btn {
-        transition: none;
-    }
-
-        .page__table-status::before,
-        .page__table-action-btn::before {
-            display: none;
-        }
-
-        .page__table-status:hover,
-        .page__table-action-btn:hover,
-        .page__view__details__btn:hover {
-            transform: none;
-        }
 }

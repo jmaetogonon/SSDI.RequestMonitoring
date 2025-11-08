@@ -7,7 +7,7 @@
             <!-- Name -->
             <div class="form-group full-width">
                 <label for="name">Name</label>
-                <input id="name" @bind="Model.Name" class="form-control" placeholder="Enter your full name" required />
+                <input id="name" @bind="Model.Name" class="form-control" style="font-weight: 500;" placeholder="Enter your full name" disabled="@(utils.IsUser())" required />
             </div>
 
             <!-- Division / Department -->
@@ -32,13 +32,13 @@
             <div class="form-group full-width">
                 <label>Priority</label>
                 <FluentRadioGroup Class="radio-group" Name="priority" @bind-Value="Model.Priority">
-                    <FluentRadio Class="radio-option" Value="1">Must be done within 24 hours</FluentRadio>
-                    <FluentRadio Class="radio-option" Value="2">Must be done within the week</FluentRadio>
-                    <FluentRadio Class="radio-option" Value="3">Others, please specify</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="RequestPriority.Hrs24">Must be done within 24 hours</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="RequestPriority.ThisWeek">Must be done within the week</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="RequestPriority.Others">Others, please specify</FluentRadio>
                 </FluentRadioGroup>
                 <ValidationMessage For="() => Model.Priority" />
 
-                @if (Model.Priority == "3")
+                @if (Model.Priority == RequestPriority.Others)
                 {
                     <input @bind="Model.OtherPriority" class="form-control" placeholder="Enter specific priority" required />
                 }

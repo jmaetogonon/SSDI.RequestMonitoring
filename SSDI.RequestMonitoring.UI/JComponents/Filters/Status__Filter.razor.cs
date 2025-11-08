@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
+using SSDI.RequestMonitoring.UI.Models.Enums;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Filters;
 
 public partial class Status__Filter : ComponentBase
 {
-    [Parameter] public EventCallback<HashSet<string>> SelectedStatusesChanged { get; set; }
+    [Parameter] public EventCallback<HashSet<RequestStatus>> SelectedStatusesChanged { get; set; }
     [Parameter] public string AnchorId { get; set; } = "statusFilter";
 
     private bool _isVisible = false;
@@ -12,14 +13,14 @@ public partial class Status__Filter : ComponentBase
 
     private List<StatusOption> StatusOptions =
     [
-        new StatusOption { Value = "1", DisplayName = TokenCons.Status__PreparedBy__Desc, IsChecked = false },
-        new StatusOption { Value = "2", DisplayName = TokenCons.Status__PurchaseRequest__Desc, IsChecked = false },
-        new StatusOption { Value = "3", DisplayName = TokenCons.Status__EndorsedBy__Desc, IsChecked = false },
-        new StatusOption { Value = "4", DisplayName = TokenCons.Status__Verfied__Desc, IsChecked = false },
-        new StatusOption { Value = "5", DisplayName = TokenCons.Status__Approved__Desc, IsChecked = false },
-        new StatusOption { Value = "6", DisplayName = TokenCons.Status__Rejected__Desc, IsChecked = false },
-        new StatusOption { Value = "7", DisplayName = TokenCons.Status__ApprovedToCanvas__Desc, IsChecked = false },
-        new StatusOption { Value = "8", DisplayName = TokenCons.Status__Closed__Desc, IsChecked = false }
+        new StatusOption { Value = RequestStatus.Draft, DisplayName = TokenCons.Status__Draft, IsChecked = false },
+        new StatusOption { Value = RequestStatus.ForEndorsement, DisplayName = TokenCons.Status__ForEndorsement, IsChecked = false },
+        new StatusOption { Value = RequestStatus.ForAdminVerification, DisplayName = TokenCons.Status__ForAdminVerification, IsChecked = false },
+        new StatusOption { Value = RequestStatus.ForCeoApproval, DisplayName = TokenCons.Status__ForCeoApproval, IsChecked = false },
+        new StatusOption { Value = RequestStatus.ForFinanceApproval, DisplayName = TokenCons.Status__ForFinanceApproval, IsChecked = false },
+        new StatusOption { Value = RequestStatus.Approved, DisplayName = TokenCons.Status__Approved, IsChecked = false },
+        new StatusOption { Value = RequestStatus.Rejected, DisplayName = TokenCons.Status__Rejected, IsChecked = false },
+        new StatusOption { Value = RequestStatus.Cancelled, DisplayName = TokenCons.Status__Closed, IsChecked = false }
     ];
 
     private string DisplayedStatuses => IsAllSelected ? "All" :
@@ -89,11 +90,11 @@ public partial class Status__Filter : ComponentBase
         }
     }
 
-    private HashSet<string> GetSelectedStatus()
+    private HashSet<RequestStatus> GetSelectedStatus()
     {
         if (IsAllSelected)
         {
-            return new HashSet<string>();
+            return new HashSet<RequestStatus>();
         }
 
         return StatusOptions
@@ -113,7 +114,7 @@ public partial class Status__Filter : ComponentBase
         ToggleAll();
     }
 
-    public void SetSelectedStatus(IEnumerable<string> items)
+    public void SetSelectedStatus(IEnumerable<RequestStatus> items)
     {
         var prioritySet = items.ToHashSet();
 
@@ -137,7 +138,7 @@ public partial class Status__Filter : ComponentBase
 
     private class StatusOption
     {
-        public string Value { get; set; } = string.Empty;
+        public RequestStatus Value { get; set; } 
         public string DisplayName { get; set; } = string.Empty;
         public bool IsChecked { get; set; }
     }

@@ -1,0 +1,16 @@
+﻿<li class="breadcrumb-item @(IsCurrent ? "breadcrumb-item--current" : "")">
+    @if (!IsCurrent && !string.IsNullOrEmpty(Href))
+    {
+        <a href="@Href" class="breadcrumb-link">@Label</a>
+    }
+    else
+    {
+        <span class="breadcrumb-text">@Label</span>
+    }
+</li>
+
+@code {
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string Href { get; set; } = string.Empty;
+    [Parameter] public bool IsCurrent { get; set; }
+}

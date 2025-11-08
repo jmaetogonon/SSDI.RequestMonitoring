@@ -15,6 +15,9 @@
 
 @using Microsoft.AspNetCore.Authorization
 @using SSDI.RequestMonitoring.UI.JComponents.Alerts
+@using SSDI.RequestMonitoring.UI.Models.Enums
 
 @inject IUIStateService uiStateSvc
 @inject IToastService toastSvc
+@inject CurrentUser currentUser
+@inject Utils utils

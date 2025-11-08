@@ -2,7 +2,6 @@
 @using SSDI.RequestMonitoring.UI.Helpers.States
 @inject IAuthenticationSvc authService
 @inject NavigationManager navManager
-@inject CurrentUser currentUser
 
 <div class="navbar">
     <div class="navbar__logo">
@@ -18,7 +17,7 @@
                                    HeaderLabel="@currentUser.Username"
                                    Initials="@GetInitials(currentUser.FullName)"
                                    FullName="@currentUser.FullName"
-                                   EMail="@currentUser.Username"
+                                   EMail="@currentUser.RoleDesc"
                                    PopoverStyle="min-width: 330px;"
                                    OnHeaderButtonClick="Logout" />
             </FluentStack>

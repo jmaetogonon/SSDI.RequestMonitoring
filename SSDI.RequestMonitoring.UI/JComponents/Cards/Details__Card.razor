@@ -1,0 +1,20 @@
+﻿<div class="details__card-body">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <div class="details__card-body-header">
+            <h2 class="details__card-body-title">@Title</h2>
+        </div>
+    }
+    <div class="details__card-body-content">
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+}

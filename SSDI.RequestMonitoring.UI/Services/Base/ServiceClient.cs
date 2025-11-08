@@ -56,6 +56,33 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqByUserDto>> GetAllPurchaseReqByUserAsync(int? userId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqByUserDto>> GetAllPurchaseReqByUserAsync(int? userId, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqByAdminDto>> GetAllPurchaseReqByAdminAsync();
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqByAdminDto>> GetAllPurchaseReqByAdminAsync(System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqBySupervisorDto>> GetAllPurchaseReqBySupervisorsAsync(int? supervisorId, bool? includeDepartmentMembers, bool? includeDivisionMembers);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqBySupervisorDto>> GetAllPurchaseReqBySupervisorsAsync(int? supervisorId, bool? includeDepartmentMembers, bool? includeDivisionMembers, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<PurchaseRequestByIdDto> GetByIdPurchaseRequestAsync(int? id);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -89,6 +116,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task DeletePurchaseRequestAsync(int? id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task ApprovePurchaseRequestAsync(ApprovePurchaseRequestCommand body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task ApprovePurchaseRequestAsync(ApprovePurchaseRequestCommand body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -404,6 +440,260 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqByUserDto>> GetAllPurchaseReqByUserAsync(int? userId)
+        {
+            return GetAllPurchaseReqByUserAsync(userId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqByUserDto>> GetAllPurchaseReqByUserAsync(int? userId, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/PurchaseRequest/GetAllPurchaseReqByUser"
+                    urlBuilder_.Append("api/PurchaseRequest/GetAllPurchaseReqByUser");
+                    urlBuilder_.Append('?');
+                    if (userId != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<PurchaseReqByUserDto>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqByAdminDto>> GetAllPurchaseReqByAdminAsync()
+        {
+            return GetAllPurchaseReqByAdminAsync(System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqByAdminDto>> GetAllPurchaseReqByAdminAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/PurchaseRequest/GetAllPurchaseReqByAdmin"
+                    urlBuilder_.Append("api/PurchaseRequest/GetAllPurchaseReqByAdmin");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<PurchaseReqByAdminDto>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqBySupervisorDto>> GetAllPurchaseReqBySupervisorsAsync(int? supervisorId, bool? includeDepartmentMembers, bool? includeDivisionMembers)
+        {
+            return GetAllPurchaseReqBySupervisorsAsync(supervisorId, includeDepartmentMembers, includeDivisionMembers, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PurchaseReqBySupervisorDto>> GetAllPurchaseReqBySupervisorsAsync(int? supervisorId, bool? includeDepartmentMembers, bool? includeDivisionMembers, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/PurchaseRequest/GetAllPurchaseReqBySupervisors"
+                    urlBuilder_.Append("api/PurchaseRequest/GetAllPurchaseReqBySupervisors");
+                    urlBuilder_.Append('?');
+                    if (supervisorId != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("supervisorId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(supervisorId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (includeDepartmentMembers != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("includeDepartmentMembers")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(includeDepartmentMembers, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (includeDivisionMembers != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("includeDivisionMembers")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(includeDivisionMembers, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<PurchaseReqBySupervisorDto>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<PurchaseRequestByIdDto> GetByIdPurchaseRequestAsync(int? id)
         {
             return GetByIdPurchaseRequestAsync(id, System.Threading.CancellationToken.None);
@@ -660,12 +950,8 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
                         }
                         else
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            throw new ApiException<ProblemDetails>("Error", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
                         }
                     }
                     finally
@@ -712,6 +998,102 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
                         urlBuilder_.Append(System.Uri.EscapeDataString("id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 204)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task ApprovePurchaseRequestAsync(ApprovePurchaseRequestCommand body)
+        {
+            return ApprovePurchaseRequestAsync(body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task ApprovePurchaseRequestAsync(ApprovePurchaseRequestCommand body, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/PurchaseRequest/ApprovePurchaseRequest"
+                    urlBuilder_.Append("api/PurchaseRequest/ApprovePurchaseRequest");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -1284,6 +1666,85 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ApplicationM
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("abbreviation")]
+        public string Abbreviation { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("ip")]
+        public string Ip { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("port")]
+        public int Port { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateUpdated")]
+        public System.DateTimeOffset DateUpdated { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum ApprovalAction
+    {
+
+        _0 = 0,
+
+        _1 = 1,
+
+        _2 = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum ApprovalStage
+    {
+
+        _0 = 0,
+
+        _1 = 1,
+
+        _2 = 2,
+
+        _3 = 3,
+
+        _4 = 4,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class ApprovePurchaseRequestCommand
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestId")]
+        public int RequestId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approverId")]
+        public int ApproverId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("stage")]
+        public ApprovalStage Stage { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("action")]
+        public ApprovalAction Action { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("remarks")]
+        public string Remarks { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class AuthRequest
     {
 
@@ -1330,13 +1791,16 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         public string Justification { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("status")]
-        public string Status { get; set; }
+        public RequestStatus Status { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("priority")]
         public string Priority { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
         public string OtherPriority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedById")]
+        public int? RequestedById { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
         public System.DateTimeOffset? DateRequested { get; set; }
@@ -1377,6 +1841,273 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PurchaseReqByAdminDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
+        public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
+        public string Nature_Of_Request { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("justification")]
+        public string Justification { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("priority")]
+        public RequestPriority Priority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
+        public string OtherPriority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public RequestStatus Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedById")]
+        public int? RequestedById { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByName")]
+        public string RequestedByName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadId")]
+        public int? RequestedByDeptHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadName")]
+        public string RequestedByDeptHeadName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
+        public System.DateTimeOffset? DateRequested { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
+        public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<PurchaseRequestApprovalByUserDto> Approvals { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PurchaseReqBySupervisorDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
+        public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
+        public string Nature_Of_Request { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("justification")]
+        public string Justification { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("priority")]
+        public RequestPriority Priority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
+        public string OtherPriority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public RequestStatus Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedById")]
+        public int? RequestedById { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByName")]
+        public string RequestedByName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadId")]
+        public int? RequestedByDeptHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadName")]
+        public string RequestedByDeptHeadName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
+        public System.DateTimeOffset? DateRequested { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
+        public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<PurchaseRequestApprovalBySupervisorDto> Approvals { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isDirectReport")]
+        public bool IsDirectReport { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("reportType")]
+        public string ReportType { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PurchaseReqByUserDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
+        public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
+        public string Nature_Of_Request { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("justification")]
+        public string Justification { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("priority")]
+        public RequestPriority Priority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
+        public string OtherPriority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public RequestStatus Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedById")]
+        public int? RequestedById { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByName")]
+        public string RequestedByName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadId")]
+        public int? RequestedByDeptHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadName")]
+        public string RequestedByDeptHeadName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
+        public System.DateTimeOffset? DateRequested { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
+        public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<PurchaseRequestApprovalByUserDto> Approvals { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PurchaseRequestApprovalByIdDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("stage")]
+        public ApprovalStage Stage { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approverId")]
+        public int ApproverId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approverName")]
+        public string ApproverName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("action")]
+        public ApprovalAction Action { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("remarks")]
+        public string Remarks { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("actionDate")]
+        public System.DateTimeOffset? ActionDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PurchaseRequestApprovalBySupervisorDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("stage")]
+        public ApprovalStage Stage { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approverId")]
+        public int ApproverId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approverName")]
+        public string ApproverName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("action")]
+        public ApprovalAction Action { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("remarks")]
+        public string Remarks { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("actionDate")]
+        public System.DateTimeOffset? ActionDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PurchaseRequestApprovalByUserDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("stage")]
+        public ApprovalStage Stage { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approverId")]
+        public int ApproverId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approverName")]
+        public string ApproverName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("action")]
+        public ApprovalAction Action { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("remarks")]
+        public string Remarks { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("actionDate")]
+        public System.DateTimeOffset? ActionDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class PurchaseRequestByIdDto
     {
 
@@ -1395,14 +2126,38 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("justification")]
         public string Justification { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("priority")]
+        public RequestPriority Priority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
+        public string OtherPriority { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("status")]
-        public string Status { get; set; }
+        public RequestStatus Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedById")]
+        public int? RequestedById { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByName")]
+        public string RequestedByName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadId")]
+        public int? RequestedByDeptHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadName")]
+        public string RequestedByDeptHeadName { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
         public System.DateTimeOffset? DateRequested { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("dateAdminNotified")]
-        public System.DateTimeOffset? DateAdminNotified { get; set; }
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
+        public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
 
     }
 
@@ -1425,28 +2180,251 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("justification")]
         public string Justification { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("status")]
-        public string Status { get; set; }
-
         [System.Text.Json.Serialization.JsonPropertyName("priority")]
-        public string Priority { get; set; }
+        public RequestPriority Priority { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
         public string OtherPriority { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public RequestStatus Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedById")]
+        public int? RequestedById { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByName")]
+        public string RequestedByName { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
         public System.DateTimeOffset? DateRequested { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("dateAdminNotified")]
-        public System.DateTimeOffset? DateAdminNotified { get; set; }
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
+        public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<Purchase_Request_Approval> Approvals { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Purchase_Request
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset? DateCreated { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
         public System.DateTimeOffset? DateModified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
+        public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
+        public string Nature_Of_Request { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("justification")]
+        public string Justification { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("priority")]
+        public RequestPriority Priority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
+        public string OtherPriority { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public RequestStatus Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedBy")]
+        public UserM RequestedBy { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedById")]
+        public int? RequestedById { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHead")]
+        public UserM RequestedByDeptHead { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestedByDeptHeadId")]
+        public int? RequestedByDeptHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
+        public System.DateTimeOffset? DateRequested { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
+        public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<Purchase_Request_Approval> Approvals { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Purchase_Request_Approval
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset? DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequest")]
+        public Purchase_Request PurchaseRequest { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequestId")]
+        public int PurchaseRequestId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("stage")]
+        public ApprovalStage Stage { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("action")]
+        public ApprovalAction Action { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approver")]
+        public UserM Approver { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approverId")]
+        public int ApproverId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("remarks")]
+        public string Remarks { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("actionDate")]
+        public System.DateTimeOffset? ActionDate { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum RequestPriority
+    {
+
+        _0 = 0,
+
+        _1 = 1,
+
+        _2 = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum RequestStatus
+    {
+
+        _0 = 0,
+
+        _1 = 1,
+
+        _2 = 2,
+
+        _3 = 3,
+
+        _4 = 4,
+
+        _5 = 5,
+
+        _6 = 6,
+
+        _7 = 7,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class RoleGroupDetailM
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roleGroupHeaderMId")]
+        public int RoleGroupHeaderMId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("application")]
+        public ApplicationM Application { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("applicationId")]
+        public int ApplicationId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("systemRole")]
+        public SystemRoleM SystemRole { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("systemRoleId")]
+        public int SystemRoleId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateUpdated")]
+        public System.DateTimeOffset DateUpdated { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class RoleGroupHeaderM
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roleCode")]
+        public string RoleCode { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roleName")]
+        public string RoleName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roleGrpDetails")]
+        public System.Collections.Generic.ICollection<RoleGroupDetailM> RoleGrpDetails { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateUpdated")]
+        public System.DateTimeOffset DateUpdated { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Status
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status_Name")]
+        public string Status_Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status_Desc")]
+        public string Status_Desc { get; set; }
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class SystemRoleFromApiDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roleCode")]
+        public string RoleCode { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roleName")]
+        public string RoleName { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class SystemRoleM
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
@@ -1480,10 +2458,10 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         public string Justification { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("status")]
-        public string Status { get; set; }
+        public RequestStatus Status { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("priority")]
-        public string Priority { get; set; }
+        public RequestPriority Priority { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("otherPriority")]
         public string OtherPriority { get; set; }
@@ -1493,6 +2471,96 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("dateAdminNotified")]
         public System.DateTimeOffset? DateAdminNotified { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class UserM
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userId")]
+        public string UserId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fullName")]
+        public string FullName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("username")]
+        public string Username { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("password")]
+        public string Password { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public Status Status { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("statusId")]
+        public int StatusId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("passwordHash")]
+        public byte[] PasswordHash { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("passwordSalt")]
+        public byte[] PasswordSalt { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("loginStatus")]
+        public string LoginStatus { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roleGroup")]
+        public RoleGroupHeaderM RoleGroup { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("roleGroupId")]
+        public int RoleGroupId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateStatus")]
+        public System.DateTimeOffset DateStatus { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("siteCodes")]
+        public System.Collections.Generic.ICollection<string> SiteCodes { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("siteIds")]
+        public System.Collections.Generic.ICollection<int> SiteIds { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isChangePassOnLogin")]
+        public bool IsChangePassOnLogin { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isCantChangePass")]
+        public bool IsCantChangePass { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isPasswordNeverExpires")]
+        public bool IsPasswordNeverExpires { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("expiryDate")]
+        public System.DateTimeOffset ExpiryDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("salesRoute")]
+        public string SalesRoute { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateUpdated")]
+        public System.DateTimeOffset DateUpdated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("departmentHead")]
+        public UserM DepartmentHead { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("departmentHeadId")]
+        public int? DepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("divisionHead")]
+        public UserM DivisionHead { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("divisionHeadId")]
+        public int? DivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("departmentMembers")]
+        public System.Collections.Generic.ICollection<UserM> DepartmentMembers { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("divisionMembers")]
+        public System.Collections.Generic.ICollection<UserM> DivisionMembers { get; set; }
 
     }
 

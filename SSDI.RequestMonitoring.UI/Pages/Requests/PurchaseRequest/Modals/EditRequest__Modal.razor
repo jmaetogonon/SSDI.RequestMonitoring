@@ -2,9 +2,12 @@
 @using SSDI.RequestMonitoring.UI.JComponents.Alerts
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Models.Requests
 @inject IPurchaseRequestSvc purchaseRequestSvc
 
+
+<Confirmation__Modal @ref="confirmModal" />
 <div class="modal__overlay" id="@(IsModalVisible ? "show__new__edit-purchase-request-modal" : "hide__new__edit-purchase-request-modal")">
     <div class="modal">
         <div class="modal__header">

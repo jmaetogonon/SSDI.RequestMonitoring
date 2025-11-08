@@ -1,11 +1,13 @@
-﻿@page "/purchase-requests/"
+﻿@page "/requests/purchase-requests/"
 @using SSDI.RequestMonitoring.UI.Contracts.Requests
 @using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
 @using SSDI.RequestMonitoring.UI.JComponents.Filters
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests
 @inject IPurchaseRequestSvc purchaseRequestSvc
+@inject NavigationManager navigationManager
 @attribute [Authorize]
 
 <PageTitle>Purchase Requests</PageTitle>
@@ -16,16 +18,18 @@
         <p class="page__header-subtitle">View and manage purchase requests.</p>
     </div>
 
-    <div class="page__header-cta">
-        <button class="page__primary-btn" @onclick="OnAddNewRequest">
-            <i class="bi bi-plus-lg"></i> New Request
-        </button>
-    </div>
+    @if (isShowNewBtn)
+    {
+        <div class="page__header-cta">
+            <button class="page__primary-btn" @onclick="OnAddNewRequest">
+                <i class="bi bi-plus-lg"></i> New Request
+            </button>
+        </div>
+    }
 </div>
 
 <Confirmation__Modal @ref="confirmModal" />
 <NewRequest__Modal IsModalVisible="@isNewRequestModalVisible" OnSave="@OnSaveNewReqModal" OnClose="OnCloseNewReqModal" />
-<EditRequest__Modal IsModalVisible="@isEditRequestModalVisible" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="editModel" />
 
 <div class="page__main__section">
     <div class="page__cards">
@@ -69,18 +73,19 @@
         else
         {
             <div class="page__table-wrapper">
-                <FluentDataGrid Class="page__table"
+                <FluentDataGrid Class="page__table" 
+                                TGridItem="Purchase_RequestVM"
                                 ShowHover="true"
                                 Pagination="@pagination"
+                                OnRowClick="@OnViewDetails"
                                 GenerateHeader="GenerateHeaderOption.Sticky"
                                 RowSize="DataGridRowSize.Medium"
                                 Items="Requests">
-                    <TemplateColumn Title="View" Width="100px">
+                    @* <TemplateColumn Title="View" Width="100px">
                         <button type="button" class="page__table-btn page__view__details__btn" title="View details">
                             <i class="bi bi-eye-fill"></i>
-                            @* <span class="btn-text">View</span> *@
                         </button>
-                    </TemplateColumn>
+                    </TemplateColumn> *@
                     <PropertyColumn Title="ID" Property="@(c => c.Id)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
                     <PropertyColumn Title="Requested By" Property="@(c => c.Name)" Sortable="true" />
                     <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
@@ -92,23 +97,26 @@
                                 @context.DateRequested?.ToString("MMM dd, yyyy")
                             </span>
                             <span class="page__table-date-relative">
-                                @(GetRelativeTime(context.DateRequested))
+                                @(utils.GetRelativeTime(context.DateRequested))
                             </span>
                         </div>
                     </TemplateColumn>
                     <TemplateColumn Title="Priority" Align="Align.Center">
                         <div class="page__table-priority">
                             <div class="priority-dot" data-prio="@context.Priority"></div>
-                            <span>@(GetPriorityDisplay(context.Priority, context.OtherPriority))</span>
+                            <span>@(utils.GetPriorityDisplay(context.Priority, context.OtherPriority, true))</span>
                         </div>
                     </TemplateColumn>
                     <TemplateColumn Title="Status" Align="Align.Center" Sortable="true" SortBy="sortStatus">
-                        <div class="page__table-status" data-status="@context.Status.ToLower()">
-                            <i class="@GetStatusIcon(context.Status)"></i>
-                            <span class="page__table-status-text">@GetStatusDisplay(context.Status)</span>
+                        <div class="page__table-status" data-status="@context.Status">
+                            <i class="@utils.GetStatusIcon(context.Status)"></i>
+                            <span class="page__table-status-text">@utils.GetStatusDisplay(context.Status)</span>
                         </div>
                     </TemplateColumn>
-                    <TemplateColumn Title="Actions" Width="140px" Align="Align.Center">
+                    <TemplateColumn Title="Type" Align="Align.Center" Sortable="true" SortBy="sortStatus">
+                        <span>@context.ReportType</span>
+                    </TemplateColumn>
+                    @* <TemplateColumn Title="Actions" Width="140px" Align="Align.Center">
                         <div class="page__table-actions">
                             <button type="button" @onclick="(() => OnEditRequest(context))"
                                     class="page__table-action-btn page__table-edit-btn"
@@ -121,7 +129,7 @@
                                 <i class="bi bi-trash-fill"></i>
                             </button>
                         </div>
-                    </TemplateColumn>
+                    </TemplateColumn> *@
                 </FluentDataGrid>
             </div>
 

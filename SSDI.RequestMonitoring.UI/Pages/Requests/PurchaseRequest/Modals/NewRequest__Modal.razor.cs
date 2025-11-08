@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.Enums;
 using SSDI.RequestMonitoring.UI.Models.Requests;
 using static SSDI.RequestMonitoring.UI.JComponents.Modals.Confirmation__Modal;
 
@@ -17,6 +18,14 @@ public partial class NewRequest__Modal : ComponentBase
     private bool _isDisabledBtns = false;
     private bool IsShowAlert { get; set; }
     private string AlertMessage { get; set; } = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (utils.IsUser())
+        {
+            RequestModel.Name = currentUser.FullName;
+        }
+    }
 
     private async void CloseModal()
     {
@@ -43,8 +52,9 @@ public partial class NewRequest__Modal : ComponentBase
             
             _isDisabledBtns = true;
             IsShowAlert = false;
-            RequestModel.Status = TokenCons.Status__PreparedBy;
+            RequestModel.Status = RequestStatus.Draft;
             RequestModel.DateRequested = DateTime.Now;
+            RequestModel.RequestedById = currentUser.UserId;
 
             var response = await purchaseRequestSvc.CreatePurchaseRequest(RequestModel);
             if (response.Success)

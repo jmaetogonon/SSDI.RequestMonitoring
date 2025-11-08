@@ -1,0 +1,9 @@
+﻿<nav class="breadcrumb-nav">
+    <ol class="breadcrumb-list">
+        @ChildContent
+    </ol>
+</nav>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

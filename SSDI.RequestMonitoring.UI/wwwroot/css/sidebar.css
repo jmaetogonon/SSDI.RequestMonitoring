@@ -353,27 +353,6 @@
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .sidebar,
-    .sidebar__links,
-    .sidebar__link,
-    .sidebar__icon,
-    .sidebar__toggle-btn,
-    .sidebar__submenu,
-    .sidebar__overlay {
-        transition: none;
-    }
-
-        .sidebar__link:hover,
-        .sidebar__submenu-link:hover {
-            transform: none;
-        }
-
-        .sidebar__link::before {
-            display: none;
-        }
-}
-
 /* Scrollbar Styling */
 .sidebar::-webkit-scrollbar {
     width: 4px;

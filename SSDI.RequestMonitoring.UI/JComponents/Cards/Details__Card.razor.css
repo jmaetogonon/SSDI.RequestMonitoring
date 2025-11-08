@@ -1,0 +1,29 @@
+﻿.details__card-body {
+    padding: 1.25rem;
+    background-color: var(--color-whitesmoke);
+    border-radius: 0.5rem;
+    border: 1px solid #f1f5f9;
+    margin-top: 1rem;
+}
+
+.details__card-body-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+}
+
+.details__card-body-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-darkmidnightblue);
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .details__card-body {
+        padding: 1rem;
+    }
+    .details__card-body-content {
+        grid-template-columns: 1fr;
+    }
+}

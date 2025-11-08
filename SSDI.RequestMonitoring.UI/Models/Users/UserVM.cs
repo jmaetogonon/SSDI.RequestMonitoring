@@ -11,4 +11,6 @@ public class UserVM
     public string Role { get; set; } = string.Empty;
     public string RoleDesc { get; set; } = string.Empty;
     public string IsHasAppAccess { get; set; } = string.Empty;
+    public int? DepartmentHeadId { get; set; }
+    public int? DivisionHeadId { get; set; }
 }

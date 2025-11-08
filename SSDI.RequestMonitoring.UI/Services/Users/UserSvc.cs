@@ -14,5 +14,4 @@ public class UserSvc : BaseHttpService, IUserSvc
     {
         _mapper = mapper;
     }
-
 }

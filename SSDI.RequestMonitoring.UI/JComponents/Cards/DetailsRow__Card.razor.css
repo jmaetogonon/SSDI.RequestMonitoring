@@ -1,0 +1,29 @@
+﻿.details__row-content {
+    background-color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.35rem;
+    padding: 1rem 1.25rem;
+}
+
+.details__row-full {
+    grid-column: 1 / -1; /* This makes it span all columns */
+}
+
+.details__row-label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.details__row-value {
+    color: #6b7280;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+
+@media (max-width: 768px) {
+    .details__row-content {
+        padding: 0.75rem 1rem;
+    }
+}

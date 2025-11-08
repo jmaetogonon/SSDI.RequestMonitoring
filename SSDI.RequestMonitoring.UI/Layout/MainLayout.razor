@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
-                
+@inject IUIStateService UIStateService
+
 <FluentLayout>
     <Navbar />
     <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
@@ -13,3 +14,9 @@
     </FluentStack>
 </FluentLayout>
 
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await UIStateService.LoadPreferencesAsync();
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using SSDI.RequestMonitoring.UI.Models.Enums;
 using SSDI.RequestMonitoring.UI.Models.Requests;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Auth;
@@ -26,7 +27,7 @@ public partial class NewRequestLogin__Modal : ComponentBase
         _isDisabledBtns = true;
         IsShowAlert = false;
 
-        RequestModel.Status = TokenCons.Status__PreparedBy;
+        RequestModel.Status = RequestStatus.Draft;
         RequestModel.DateRequested = DateTime.Now;
 
         var response = await purchaseRequestSvc.CreatePurchaseRequest(RequestModel);

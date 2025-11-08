@@ -1,0 +1,94 @@
+﻿
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.75rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e2e8f0;
+    }
+
+.timeline__item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline__point {
+    position: absolute;
+    left: -1.65rem;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #e2e8f0;
+}
+
+.timeline__point--primary {
+    background: var(--color-darkmidnightblue);
+    box-shadow: 0 0 0 2px var(--color-darkmidnightblue);
+}
+
+.timeline__point--success {
+    background: #10b981;
+    box-shadow: 0 0 0 2px #10b981;
+}
+
+.timeline__point--danger {
+    background: #ef4444;
+    box-shadow: 0 0 0 2px #ef4444;
+}
+
+.timeline__point--warning {
+    background: #f59e0b;
+    box-shadow: 0 0 0 2px #f59e0b;
+}
+
+.timeline__point--info {
+    background: #3b82f6;
+    box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.timeline__point--cancelled {
+    background: #6b7280;
+    box-shadow: 0 0 0 2px #6b7280;
+}
+
+.timeline__content {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #f1f5f9;
+}
+
+.timeline__title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.timeline__date {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.timeline__description {
+    color: #475569;
+    font-size: 0.875rem;
+}
+
+.timeline__remarks {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #f8fafc;
+    border-radius: 4px;
+    border-left: 3px solid #e2e8f0;
+}

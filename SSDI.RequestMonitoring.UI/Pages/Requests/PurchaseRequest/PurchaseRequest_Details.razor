@@ -1,0 +1,156 @@
+﻿@page "/requests/purchase-requests/{paramId:int}/{reportType?}"
+@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests
+@using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
+@inject IPurchaseRequestSvc purchaseRequestSvc
+@inject NavigationManager navigationManager
+
+<PageTitle>Purchase Request #@Request?.Id</PageTitle>
+
+<BreadcrumbNav>
+    <BreadcrumbItem Label="Purchase Requests" Href="/requests/purchase-requests" />
+    <BreadcrumbItem Label="Details" IsCurrent="true" />
+</BreadcrumbNav>
+
+<Confirmation__Modal @ref="confirmModal" />
+<EditRequest__Modal IsModalVisible="@isEditRequestModalVisible" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
+
+<div class="page__container">
+    <!-- Left Section - Main Content -->
+    <div class="page__left-section">
+        <div class="page__left-section-content">
+
+            <!-- Header Section -->
+            <div class="details-page__header">
+                <div class="details-page__title-section">
+                    <h1 class="details-page__title">Purchase Request #@Request?.Id</h1>
+                </div>
+            </div>
+
+            @if (IsLoading)
+            {
+                <div class="page__table-loading">
+                    <p>Loading request details...</p>
+                </div>
+            }
+            else if (Request == null)
+            {
+                <div class="error__container">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <h3>Request Not Found</h3>
+                    <p>The requested purchase request could not be found.</p>
+                    <button class="btn btn--primary" @onclick="NavigateBack">Back to Requests</button>
+                </div>
+            }
+            else
+            {
+                <div class="tabs">
+                    <div class="tabs__header">
+                        <button class="tabs__button @(ActiveTab == "details" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("details"))">
+                            <i class="bi bi-info-circle"></i>
+                            Details
+                        </button>
+                        <button class="tabs__button @(ActiveTab == "approval" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("approval"))">
+                            <i class="bi bi-clipboard-check"></i>
+                            Approval Process
+                            @* @if (Request.Approvals?.Any() == true)
+                            {
+                                <span class="tabs__badge">@Request.Approvals.Count</span>
+                            } *@
+                        </button>
+                        <button class="tabs__button @(ActiveTab == "timeline" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("timeline"))">
+                            <i class="bi bi-clock-history"></i>
+                            Timeline
+                        </button>
+                    </div>
+
+                    <div class="tabs__content">
+                        @if (ActiveTab == "details")
+                        {
+                            <RequestDetails__Control Request="Request" />
+                        }
+                        else if (ActiveTab == "approval")
+                        {
+                            <RequestApprovalProcess__Control Request="Request" />
+                        }
+                        else if (ActiveTab == "timeline")
+                        {
+                            <RequestTimeline__Control Request="Request" />
+                        }
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!-- Right Section - Actions Sidebar -->
+    <div class="page__right-section">
+        <div class="details-page__actions">
+
+            @if (CanApproveDeptHead)
+            {
+                if (!(Request?.Status == RequestStatus.Rejected))
+                {
+                    <button class="btn btn--success" @onclick="SubmitRequestByDept" title="Submit request">
+                        <i class="bi bi-check-lg"></i> Submit
+                    </button>
+                }
+                <button class="btn btn--danger" @onclick="CancelRequestByDept" title="Cancel request">
+                    <i class="bi bi-x-lg"></i> Cancel
+                </button>
+
+                <hr class="page__hr" />
+            }
+
+            @if (CanApproveDivtHead)
+            {
+                <button class="btn btn--success" @onclick="EndorseRequest" title="Endorse request">
+                    <i class="bi bi-check-lg"></i> Endorse
+                </button>
+                <button class="btn btn--danger" @onclick="RejectEndorseRequest" title="Reject request">
+                    <i class="bi bi-x-lg"></i> Reject
+                </button>
+
+                <hr class="page__hr" />
+            }
+
+            @if (CanApproveAdmin)
+            {
+                <button class="btn btn--success" @onclick="VerifyByadminRequest" title="Endorse request">
+                    <i class="bi bi-check-lg"></i> Verify
+                </button>
+                <button class="btn btn--danger" @onclick="RejectVerifyByAdminRequest" title="Reject request">
+                    <i class="bi bi-x-lg"></i> Reject
+                </button>
+
+                <hr class="page__hr" />
+            }
+
+            @if (CanEdit)
+            {
+                <button class="btn btn--secondary" @onclick="NavigateToEdit" title="Edit request">
+                    <i class="bi bi-pencil"></i> @EditBtnText
+                </button>
+            }
+
+            <button class="btn btn--outline" @onclick="PrintRequest" title="Print request">
+                <i class="bi bi-printer"></i> Print
+            </button>
+
+            <button class="btn btn--outline" @onclick="ExportToPdf" title="Export to PDF">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+
+            <button class="btn btn--ghost" @onclick="NavigateBack" title="Back to main page">
+                <i class="bi bi-chevron-left"></i> Back
+            </button>
+        </div>
+    </div>
+</div>

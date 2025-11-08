@@ -1,0 +1,10 @@
+﻿<div class="name-with-signature">
+    <div class="name-with-signature__name">@Name</div>
+    <div class="name-with-signature__line"></div>
+    <div class="name-with-signature__title">@Title</div>
+</div>
+
+@code {
+    [Parameter] public string Name { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
+}

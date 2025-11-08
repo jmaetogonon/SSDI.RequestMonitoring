@@ -316,7 +316,46 @@
     border-radius: 50%;
     animation: confirmation-spin 0.8s linear infinite;
 }
+.confirmation-modal__remarks {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
 
+.confirmation-modal__remarks-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.confirmation-modal__remarks-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 80px;
+}
+
+    .confirmation-modal__remarks-input:focus {
+        outline: none;
+        border-color: var(--color-darkmidnightblue);
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+.confirmation-modal__remarks-error {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Disable confirm button when remarks are required but empty */
+.confirmation-modal__btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 @keyframes confirmation-spin {
     to {
         transform: rotate(360deg);

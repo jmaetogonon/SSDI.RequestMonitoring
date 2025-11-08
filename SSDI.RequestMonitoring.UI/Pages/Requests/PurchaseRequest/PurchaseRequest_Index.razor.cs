@@ -2,6 +2,7 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Filters;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.Enums;
 using SSDI.RequestMonitoring.UI.Models.Requests;
 using static SSDI.RequestMonitoring.UI.JComponents.Modals.Confirmation__Modal;
 
@@ -17,19 +18,21 @@ public partial class PurchaseRequest_Index : ComponentBase
     private string searchValue = "";
     private Status__Filter? statusFilter;
     private Priority__Filter? priorityFilter;
-    private HashSet<string> selectedStatuses = [];
-    private HashSet<string> selectedPriorities = [];
+    private HashSet<RequestStatus> selectedStatuses = [];
+    private HashSet<RequestPriority> selectedPriorities = [];
 
     private PaginationState pagination = new() { ItemsPerPage = 10 };
     private GridSort<Purchase_RequestVM> sortStatus = GridSort<Purchase_RequestVM>.ByAscending(x => x.Status).ThenAscending(x => x.Status);
 
-
     private Confirmation__Modal? confirmModal;
-    private bool isNewRequestModalVisible, isEditRequestModalVisible = false;
+    private bool isNewRequestModalVisible = false;
     private bool isLoading = false;
+    private bool isShowNewBtn => CheckNewBtnPermission();
 
     protected override async Task OnInitializedAsync()
     {
+        await currentUser.InitializeAsync();
+        currentUser.OnUserChanged += Refresh;
         await LoadDataAsync();
     }
 
@@ -40,8 +43,25 @@ public partial class PurchaseRequest_Index : ComponentBase
         isLoading = true;
         try
         {
-            var requests = await purchaseRequestSvc.GetAllPurchaseRequests();
-            AllRequests = requests.AsQueryable();
+            if (utils.IsUser())
+            {
+                var requests = await purchaseRequestSvc.GetAllPurchaseRequestsByUser(currentUser.UserId);
+                AllRequests = requests.AsQueryable();
+            }
+            if (utils.IsAdmin())
+            {
+                var requests = await purchaseRequestSvc.GetAllPurchaseRequestsByAdmin();
+                AllRequests = requests.AsQueryable();
+            }
+            else
+            {
+                var requests = await purchaseRequestSvc.GetAllPurchaseReqBySupervisor(currentUser.UserId, true, true);
+                AllRequests = requests.AsQueryable();
+                if (requests.FirstOrDefault()?.ReportType == "Division")
+                {
+                    AllRequests = requests.Where(e=>e.Status == RequestStatus.ForEndorsement).AsQueryable();
+                }
+            }
             ApplyFilters();
             BuildStatusSummaries();
         }
@@ -51,9 +71,15 @@ public partial class PurchaseRequest_Index : ComponentBase
         }
     }
 
-    private void OnCloseNewReqModal() => isNewRequestModalVisible = false;
+    private void Refresh() => InvokeAsync(StateHasChanged);
 
-    private void OnCloseEditReqModal() => isEditRequestModalVisible = false;
+    private void OnViewDetails(FluentDataGridRow<Purchase_RequestVM>? row)
+    {
+        if (row?.Item is null) return;
+        navigationManager.NavigateTo($"/requests/purchase-requests/{row?.Item?.Id}/{row?.Item?.ReportType}");
+    }
+
+    private void OnCloseNewReqModal() => isNewRequestModalVisible = false;
 
     private async Task OnSaveNewReqModal()
     {
@@ -61,18 +87,6 @@ public partial class PurchaseRequest_Index : ComponentBase
         AllRequests = null;
         await LoadDataAsync();
         toastSvc.ShowSuccess("The request has been added successfully.");
-    }
-
-    private void OnSaveEditReqModal()
-    {
-        isEditRequestModalVisible = false;
-        toastSvc.ShowSuccess("The request has been updated successfully.");
-    }
-
-    private void OnEditRequest(Purchase_RequestVM requestVM)
-    {
-        editModel = requestVM;
-        isEditRequestModalVisible = true;
     }
 
     private async Task OnDeleteRequest(int id)
@@ -100,7 +114,6 @@ public partial class PurchaseRequest_Index : ComponentBase
                 AllRequests = null;
                 await LoadDataAsync();
                 toastSvc.ShowSuccess("The request has been deleted successfully.");
-
             }
             else
             {
@@ -108,7 +121,6 @@ public partial class PurchaseRequest_Index : ComponentBase
                 await confirmModal!.HideAsync();
                 toastSvc.ShowError(response.Message);
             }
-
         }
     }
 
@@ -143,97 +155,23 @@ public partial class PurchaseRequest_Index : ComponentBase
                 (r.Name != null && r.Name.Contains(searchValue, StringComparison.OrdinalIgnoreCase)) ||
                 (r.Nature_Of_Request != null && r.Nature_Of_Request.ToLower().Contains(searchValue, StringComparison.OrdinalIgnoreCase)) ||
                 (r.Justification != null && r.Justification.ToLower().Contains(searchValue, StringComparison.OrdinalIgnoreCase)) ||
-                (r.Division_Department != null && r.Division_Department.ToLower().Contains(searchValue, StringComparison.OrdinalIgnoreCase)) ||
-                (r.Status != null && r.Status.ToLower().Contains(searchValue, StringComparison.OrdinalIgnoreCase))
+                (r.Division_Department != null && r.Division_Department.ToLower().Contains(searchValue, StringComparison.OrdinalIgnoreCase))
             );
         }
 
         Requests = query;
     }
 
-    private void OnStatusFilterChanged(HashSet<string> _selectedStatuses)
+    private void OnStatusFilterChanged(HashSet<RequestStatus> _selectedStatuses)
     {
         selectedStatuses = _selectedStatuses;
         ApplyFilters();
     }
 
-    private void OnPriorityFilterChanged(HashSet<string> _selectedPriorities)
+    private void OnPriorityFilterChanged(HashSet<RequestPriority> _selectedPriorities)
     {
         selectedPriorities = _selectedPriorities;
         ApplyFilters();
-    }
-
-    private static string GetRelativeTime(DateTime? date)
-    {
-        if (date is null) return "Unknown";
-
-        var timeSpan = DateTime.Now - date.Value;
-
-        if (timeSpan.TotalSeconds < 0) return "Future";
-
-        return timeSpan.TotalSeconds switch
-        {
-            < 60 => "Just now",
-            < 3600 => $"{timeSpan.Minutes}m ago",
-            < 86400 => $"{timeSpan.Hours}h ago",
-            < 604800 => $"{timeSpan.Days}d ago",
-            < 2592000 => $"{timeSpan.Days / 7}w ago",
-            < 31536000 => $"{timeSpan.Days / 30}mo ago",
-            _ => $"{timeSpan.Days / 365}y ago"
-        };
-
-        //return timeSpan.TotalDays switch
-        //{
-        //    >= 365 => $"{(int)(timeSpan.TotalDays / 365)} year{(timeSpan.TotalDays / 365 >= 2 ? "s" : "")} ago",
-        //    >= 30 => $"{(int)(timeSpan.TotalDays / 30)} month{(timeSpan.TotalDays / 30 >= 2 ? "s" : "")} ago",
-        //    >= 7 => $"{(int)(timeSpan.TotalDays / 7)} week{(timeSpan.TotalDays / 7 >= 2 ? "s" : "")} ago",
-        //    >= 1 => $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays >= 2 ? "s" : "")} ago",
-        //    >= 1 / 24.0 => $"{(int)timeSpan.TotalHours} hour{(timeSpan.TotalHours >= 2 ? "s" : "")} ago",
-        //    >= 1 / 1440.0 => $"{(int)timeSpan.TotalMinutes} minute{(timeSpan.TotalMinutes >= 2 ? "s" : "")} ago",
-        //    _ => "Just now"
-        //};
-    }
-
-    private static string GetPriorityDisplay(string priority, string otherPriority)
-    {
-        return priority.ToLower() switch
-        {
-            "1" => "24 hours",
-            "2" => "This Week",
-            _ => string.IsNullOrWhiteSpace(otherPriority) ? "Other" : otherPriority
-        };
-    }
-
-    private static string GetStatusDisplay(string item)
-    {
-        return item switch
-        {
-            TokenCons.Status__PreparedBy => TokenCons.Status__PreparedBy__Desc,
-            TokenCons.Status__PurchaseRequest => TokenCons.Status__PurchaseRequest__Desc,
-            TokenCons.Status__EndorsedBy => TokenCons.Status__EndorsedBy__Desc,
-            TokenCons.Status__Verfied => TokenCons.Status__Verfied__Desc,
-            TokenCons.Status__Approved => TokenCons.Status__Approved__Desc,
-            TokenCons.Status__Rejected => TokenCons.Status__Rejected__Desc,
-            TokenCons.Status__ApprovedToCanvas => TokenCons.Status__ApprovedToCanvas__Desc,
-            TokenCons.Status__Closed => TokenCons.Status__Closed__Desc,
-            _ => "ambot"
-        };
-    }
-
-    private static string GetStatusIcon(string status)
-    {
-        return status switch
-        {
-            TokenCons.Status__PreparedBy => "bi bi-file-earmark-plus",
-            TokenCons.Status__PurchaseRequest => "bi bi-cart",
-            TokenCons.Status__EndorsedBy => "bi bi-send",
-            TokenCons.Status__Verfied => "bi bi-patch-check",
-            TokenCons.Status__Approved => "bi bi-check-circle",
-            TokenCons.Status__Rejected => "bi bi-x-circle",
-            TokenCons.Status__ApprovedToCanvas => "bi bi-file-check",
-            TokenCons.Status__Closed => "bi bi-archive",
-            _ => "bi bi-circle" // Default icon
-        };
     }
 
     private void BuildStatusSummaries()
@@ -249,11 +187,11 @@ public partial class PurchaseRequest_Index : ComponentBase
 
         StatusSummaries =
         [
-            new("Prepared Requests", statusCounts.GetValueOrDefault(TokenCons.Status__PreparedBy, 0), totalCount, "Pending", "bi bi-file-earmark-plus"),
-            new("Purchase Requests", statusCounts.GetValueOrDefault(TokenCons.Status__PurchaseRequest, 0), totalCount, "Pending", "bi bi-cart"),
-            new("Endorsed Requests", statusCounts.GetValueOrDefault(TokenCons.Status__EndorsedBy, 0), totalCount, "Pending", "bi bi-hourglass-split"),
-            new("Verified Requests", statusCounts.GetValueOrDefault(TokenCons.Status__Verfied, 0), totalCount, "Pending", "bi bi-patch-check"),
-            new("Completed Tasks", statusCounts.GetValueOrDefault(TokenCons.Status__Closed, 0), totalCount, "Completed", "bi bi-check2-circle")
+            new("Draft", statusCounts.GetValueOrDefault(RequestStatus.Draft, 0), totalCount, "Pending", "bi bi-file-earmark-plus"),
+            new("For Endorsing", statusCounts.GetValueOrDefault(RequestStatus.ForEndorsement, 0), totalCount, "Pending", "bi bi-cart"),
+            new("For Admin Verification", statusCounts.GetValueOrDefault(RequestStatus.ForAdminVerification, 0), totalCount, "Pending", "bi bi-hourglass-split"),
+            new("For Ceo Approval", statusCounts.GetValueOrDefault(RequestStatus.ForCeoApproval, 0), totalCount, "Pending", "bi bi-patch-check"),
+            new("For Finance Approval", statusCounts.GetValueOrDefault(RequestStatus.ForFinanceApproval, 0), totalCount, "Completed", "bi bi-check2-circle"),
         ];
     }
 
@@ -274,11 +212,17 @@ public partial class PurchaseRequest_Index : ComponentBase
         StateHasChanged();
     }
 
+    public bool CheckNewBtnPermission()
+    {
+        return utils.IsUser() || AllRequests?.FirstOrDefault()?.ReportType == "Department";
+    }
+
     public void Dispose()
     {
         AllRequests = null;
         Requests = null;
         StatusSummaries?.Clear();
+        currentUser.OnUserChanged -= Refresh;
     }
 
     private record StatusSummary(string Label, int Count, int TotalCount, string Status, string Icon);

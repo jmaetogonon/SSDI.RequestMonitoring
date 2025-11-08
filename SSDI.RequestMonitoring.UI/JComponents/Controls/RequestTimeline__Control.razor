@@ -1,0 +1,84 @@
+﻿@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.Models.Requests
+
+<!-- Timeline Tab -->
+<Details__Card>
+    <DetailsRow__Card Label="Request Timeline" FullRow="true" />
+    <DetailsRow__Card FullRow="true">
+        <div class="timeline">
+            <div class="timeline__item">
+                <div class="timeline__point timeline__point--primary"></div>
+                <div class="timeline__content">
+                    <div class="timeline__title">Request Created</div>
+                    <div class="timeline__date">@Request.DateCreated?.ToString("MMM dd, yyyy 'at' hh:mm tt")</div>
+                    <div class="timeline__description">Purchase request was drafted by @Request.RequestedByName</div>
+                </div>
+            </div>
+
+            @* @if (Request.DateModified.HasValue && Request.DateModified != Request.DateRequested)
+            {
+                <div class="timeline__item">
+                    <div class="timeline__point timeline__point--info"></div>
+                    <div class="timeline__content">
+                        <div class="timeline__title">Request Updated</div>
+                        <div class="timeline__date">@Request.DateModified?.ToString("MMM dd, yyyy 'at' hh:mm tt")</div>
+                        <div class="timeline__description">Request details were modified</div>
+                    </div>
+                </div>
+            } *@
+
+            @if (Request.Approvals?.Any() == true)
+            {
+                foreach (var approval in Request.Approvals.OrderBy(a => a.ActionDate ?? a.ActionDate))
+                {
+                    <div class="timeline__item">
+                        <div class="timeline__point @GetTimelinePointClass(approval)"></div>
+                        <div class="timeline__content">
+                            <div class="timeline__title">
+                                @utils.GetApprovalStagesDisplay(approval.Stage) - @utils.GetApprovalStatusText(approval)
+                            </div>
+                            @if (approval.ActionDate.HasValue)
+                            {
+                                <div class="timeline__date">@approval.ActionDate.Value.ToString("MMM dd, yyyy 'at' hh:mm tt")</div>
+                            }
+                            <div class="timeline__description">
+                                @if (approval.IsApproved)
+                                {
+                                    <text>@utils.GetApprovalByTimelineText(approval) @(approval.ApproverName)</text>
+                                }
+                                else if (approval.IsRejected)
+                                {
+                                    <text>Rejected by @(approval.ApproverName)</text>
+                                }
+                                else if (approval.IsCancelled)
+                                {
+                                    <text>Cancelled by @(approval.ApproverName)</text>
+                                }
+                                else 
+                                {
+                                    <text>Pending approval from @(approval.ApproverName)"</text>
+                                }
+                                @if (!string.IsNullOrEmpty(approval.Remarks))
+                                {
+                                    <div class="timeline__remarks">@approval.Remarks</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </DetailsRow__Card>
+</Details__Card>
+
+@code {
+    [Parameter] public Purchase_RequestVM Request { get; set; } = new();
+
+    private string GetTimelinePointClass(Purchase_Request_ApprovalVM approval)
+    {
+        return approval.IsApproved ? "timeline__point--success" :
+               approval.IsRejected ? "timeline__point--danger" : 
+               approval.IsCancelled ? "timeline__point--cancelled" : 
+               "timeline__point--warning";
+    }
+}

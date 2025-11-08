@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using SSDI.RequestMonitoring.UI.JComponents.Alerts;
-using SSDI.RequestMonitoring.UI.Services.Requests;
-using static SSDI.RequestMonitoring.UI.JComponents.Modals.Confirmation__Modal;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Modals;
 
@@ -48,6 +45,15 @@ public partial class Confirmation__Modal : ComponentBase
 
     [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
     [Parameter] public bool CloseOnEscape { get; set; } = true;
+
+    // Remarks
+    [Parameter] public bool ShowRemarksField { get; set; }
+
+    [Parameter] public bool RemarksRequired { get; set; }
+    [Parameter] public string Remarks { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> RemarksChanged { get; set; }
+    [Parameter] public string RemarksPlaceholder { get; set; } = "Enter your remarks here...";
+    [Parameter] public string RemarksLabel { get; set; } = "Remarks";
 
     // Events
     [Parameter] public EventCallback OnConfirm { get; set; }
@@ -117,6 +123,11 @@ public partial class Confirmation__Modal : ComponentBase
 
     private async Task Confirm()
     {
+        if (ShowRemarksField && RemarksRequired && string.IsNullOrWhiteSpace(Remarks?.Trim()))
+        {
+            return;
+        }
+
         if (_tcs != null)
         {
             _tcs.TrySetResult(true);
@@ -149,48 +160,9 @@ public partial class Confirmation__Modal : ComponentBase
     }
 
     // Public methods for programmatic usage
-    public async Task<bool> ShowAsync(
-        string message,
-        string title = "Confirm Action",
-        ConfirmationModalVariant variant = ConfirmationModalVariant.confirmation,
-        string confirmText = "Confirm",
-        string cancelText = "Cancel",
-        string icon = "",
-        string confirmIcon = "")
-    {
-        // Set the properties
-        Message = message;
-        Title = title;
-        Variant = variant;
-        ConfirmText = confirmText;
-        CancelText = cancelText;
-
-        if (!string.IsNullOrEmpty(icon)) Icon = icon;
-        if (!string.IsNullOrEmpty(confirmIcon)) ConfirmIcon = confirmIcon;
-
-        SetDefaultIcons();
-
-        // Create completion source
-        _tcs = new TaskCompletionSource<bool>();
-
-        // Show modal
-        _isVisible = true;
-        await IsVisibleChanged.InvokeAsync(true);
-        StateHasChanged();
-
-        // Wait for user decision
-        return await _tcs.Task;
-    }
-
-    public async Task ShowAsync() // Overload for declarative usage
-    {
-        _isVisible = true;
-        await IsVisibleChanged.InvokeAsync(true);
-        StateHasChanged();
-    }
-
     public async Task<bool> ShowAsync(ConfirmationModalOptions options)
     {
+        Remarks = string.Empty;
         Message = options.Message;
         Title = options.Title ?? "Confirm Action";
         Variant = options.Variant ?? ConfirmationModalVariant.confirmation;
@@ -201,6 +173,10 @@ public partial class Confirmation__Modal : ComponentBase
         Subtitle = options.Subtitle;
         ShowCancelButton = options.ShowCancelButton ?? true;
         ShowIcon = options.ShowIcon ?? true;
+        ShowRemarksField = options.ShowRemarksField ?? false;
+        RemarksRequired = options.RemarksRequired ?? false;
+        RemarksPlaceholder = options.RemarksPlaceholder ?? "Enter your remarks here...";
+        RemarksLabel = options.RemarksLabel ?? "Remarks";
 
         SetDefaultIcons();
 
@@ -212,18 +188,61 @@ public partial class Confirmation__Modal : ComponentBase
         return await _tcs.Task;
     }
 
-    public class ConfirmationModalOptions
+    public async Task<bool> ShowRejectAsync(int reqId)
     {
-        public string Message { get; set; } = string.Empty;
-        public string? Title { get; set; }
-        public string? Subtitle { get; set; }
-        public ConfirmationModalVariant? Variant { get; set; }
-        public string? ConfirmText { get; set; }
-        public string? CancelText { get; set; }
-        public string? Icon { get; set; }
-        public string? ConfirmIcon { get; set; }
-        public bool? ShowCancelButton { get; set; }
-        public bool? ShowIcon { get; set; }
+        Message = $"Are you sure you want to reject the purchase request '#{reqId}'?";
+        Title = "Reject Purchase Request";
+        Variant = ConfirmationModalVariant.error;
+        ConfirmText = "Yes, Reject";
+        CancelText = "No, Cancel";
+        ConfirmIcon = "bi bi-x-lg";
+        ShowRemarksField = true;
+        RemarksRequired = true;
+        RemarksLabel = "Rejection Reason";
+        RemarksPlaceholder = "Please provide a reason for rejecting this request...";
+
+        _tcs = new TaskCompletionSource<bool>();
+        _isVisible = true;
+        await IsVisibleChanged.InvokeAsync(true);
+        StateHasChanged();
+
+        return await _tcs.Task;
+    }
+
+    public async Task<bool> ShowApproveAsync(int reqId)
+    {
+        Message = $"Are you sure you want to approve the purchase request '#{reqId}'? Once approve, it will be forwarded for the next level of approval.";
+        Title = "Approve Purchase Request";
+        Variant = ConfirmationModalVariant.confirmation;
+        ConfirmText = "Yes, Approve";
+        CancelText = "No, Cancel";
+        ConfirmIcon = "bi bi-check-lg";
+        ShowRemarksField = false;
+
+        _tcs = new TaskCompletionSource<bool>();
+        _isVisible = true;
+        await IsVisibleChanged.InvokeAsync(true);
+        StateHasChanged();
+
+        return await _tcs.Task;
+    }
+
+    public async Task<bool> ShowSubmitAsync(int reqId)
+    {
+        Message = $"Are you sure you want to submit purchase request '#{reqId}'?<br>Once submitted, it will be forwarded for endorsement.";
+        Title = "Submit Purchase Request";
+        Variant = ConfirmationModalVariant.confirmation;
+        ConfirmText = "Yes, Submit";
+        CancelText = "No, Cancel";
+        ConfirmIcon = "bi bi-send-check";
+        ShowRemarksField = false;
+
+        _tcs = new TaskCompletionSource<bool>();
+        _isVisible = true;
+        await IsVisibleChanged.InvokeAsync(true);
+        StateHasChanged();
+
+        return await _tcs.Task;
     }
 
     public async Task HideAsync()
@@ -239,6 +258,24 @@ public partial class Confirmation__Modal : ComponentBase
     }
 }
 
+public class ConfirmationModalOptions
+{
+    public string Message { get; set; } = string.Empty;
+    public string? Title { get; set; }
+    public string? Subtitle { get; set; }
+    public ConfirmationModalVariant? Variant { get; set; }
+    public string? ConfirmText { get; set; }
+    public string? CancelText { get; set; }
+    public string? Icon { get; set; }
+    public string? ConfirmIcon { get; set; }
+    public bool? ShowCancelButton { get; set; }
+    public bool? ShowIcon { get; set; }
+    public bool? ShowRemarksField { get; set; }
+    public bool? RemarksRequired { get; set; }
+    public string? RemarksPlaceholder { get; set; }
+    public string? RemarksLabel { get; set; }
+}
+
 public enum ConfirmationModalVariant
 {
     info,
@@ -248,4 +285,3 @@ public enum ConfirmationModalVariant
     confirmation,
     delete
 }
-

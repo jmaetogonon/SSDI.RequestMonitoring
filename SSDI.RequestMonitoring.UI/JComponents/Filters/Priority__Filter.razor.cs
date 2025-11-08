@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
+using SSDI.RequestMonitoring.UI.Models.Enums;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Filters;
 
 public partial class Priority__Filter : ComponentBase
 {
-    [Parameter] public EventCallback<HashSet<string>> SelectedPrioritiesChanged { get; set; }
+    [Parameter] public EventCallback<HashSet<RequestPriority>> SelectedPrioritiesChanged { get; set; }
     [Parameter] public string AnchorId { get; set; } = "priorityFilter";
 
     private bool _isVisible = false;
@@ -12,9 +13,9 @@ public partial class Priority__Filter : ComponentBase
 
     private List<PriorityOption> PriorityOptions =
     [
-        new PriorityOption { Value = "1", DisplayName = "24 hours", IsChecked = false },
-        new PriorityOption { Value = "2", DisplayName = "This week", IsChecked = false },
-        new PriorityOption { Value = "3", DisplayName = "Others", IsChecked = false }
+        new PriorityOption { Value = RequestPriority.Hrs24, DisplayName = "24 hours", IsChecked = false },
+        new PriorityOption { Value = RequestPriority.ThisWeek, DisplayName = "This week", IsChecked = false },
+        new PriorityOption { Value = RequestPriority.Others, DisplayName = "Others", IsChecked = false }
     ];
 
     private string DisplayedPriorities => IsAllSelected ? "All" :
@@ -84,11 +85,11 @@ public partial class Priority__Filter : ComponentBase
         }
     }
 
-    private HashSet<string> GetSelectedPriorities()
+    private HashSet<RequestPriority> GetSelectedPriorities()
     {
         if (IsAllSelected)
         {
-            return new HashSet<string>();
+            return new HashSet<RequestPriority>();
         }
 
         return PriorityOptions
@@ -110,7 +111,7 @@ public partial class Priority__Filter : ComponentBase
     }
 
     // Public method to set specific priorities
-    public void SetSelectedPriorities(IEnumerable<string> priorities)
+    public void SetSelectedPriorities(IEnumerable<RequestPriority> priorities)
     {
         var prioritySet = priorities.ToHashSet();
 
@@ -134,7 +135,7 @@ public partial class Priority__Filter : ComponentBase
 
     private class PriorityOption
     {
-        public string Value { get; set; } = string.Empty;
+        public RequestPriority Value { get; set; }
         public string DisplayName { get; set; } = string.Empty;
         public bool IsChecked { get; set; }
     }
