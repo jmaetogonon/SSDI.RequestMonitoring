@@ -125,4 +125,63 @@ public class PurchaseRequestSvc : BaseHttpService, IPurchaseRequestSvc
             return ConvertApiExceptions<Guid>(ex);
         }
     }
+
+    public async Task<byte[]?> DownloadAttachmentAsync(int attachmentId)
+    {
+        try
+        {
+            var fileResponse = await _client.GetAttachmentAsync(attachmentId);
+            return fileResponse;
+        }
+        catch (ApiException ex)
+        {
+            Console.WriteLine($"Download failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<Response<Guid>> UploadAttachmentPurchaseAsync(UploadAttachmentPurchaseCommandVM command)
+    {
+        try
+        {
+            var uploadAttCommand = _mapper.Map<UploadAttachmentPurchaseCommand>(command);
+            await _client.UploadAttachmentPurchaseAsync(uploadAttCommand);
+            return new Response<Guid>()
+            {
+                Success = true,
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
+    }
+
+    public async Task<Response<Guid>> DeleteAttachmentRequest(int id)
+    {
+        try
+        {
+            await _client.DeleteAttachmentRequestAsync(id);
+            return new Response<Guid>() { Success = true };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
+    }
+
+    public async Task<byte[]> GeneratePurchaseRequestPdf(int id)
+    {
+        try
+        {
+            var requests = await _client.GeneratePdfAsync(id);
+            return requests;
+        }
+        catch (ApiException ex)
+        {
+            Console.WriteLine($"PDF Generation failed: {ex.Message}");
+            return null;
+        }
+    }
+
 }

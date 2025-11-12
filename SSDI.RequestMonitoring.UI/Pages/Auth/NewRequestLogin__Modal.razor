@@ -18,7 +18,7 @@
         </div>
 
         <div class="modal__alert">
-            <Alert Message="@AlertMessage" Type="error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
         </div>
 
         <New_Purchase__Form Model="RequestModel" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />

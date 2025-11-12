@@ -1,0 +1,511 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests
+@inject IPurchaseRequestSvc purchaseRequestSvc
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<Details__Card>
+    <DetailsRow__Card Label="Supporting Documents" FullRow="true">
+        <div class="attachments-header">
+            <div class="attachments-stats">
+                <i class="bi bi-paperclip"></i>
+                <span>@Request.Attachments.Count files attached</span>
+                @if (isDownloadingAll)
+                {
+                    <span class="download-progress">(@currentDownloadIndex/@Request.Attachments.Count)</span>
+                }
+            </div>
+
+            <div class="attachment-header-actions">
+                @if ((Request?.Status == RequestStatus.Draft || Request?.Status == RequestStatus.Rejected) && ReportType == "Department")
+                {
+                    <div class="attachment-add">
+                        <label for="file-upload-add" class="attachment-add__button" title="Add attachment">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Upload</span>
+                        </label>
+
+                        <InputFile id="file-upload-add"
+                                   multiple
+                                   OnChange="OnFilesSelected" style="display: none;" />
+                    </div>
+                }
+
+                <button class="attachment-download__button"
+                        @onclick="DownloadAll"
+                        title="Download all files"
+                        disabled="@isDownloadingAll">
+                    @if (isDownloadingAll)
+                    {
+                        <i class="bi bi-arrow-repeat spinning"></i>
+                        <span>Downloading...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-download"></i>
+                        <span>Download All</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </DetailsRow__Card>
+
+    @if (Request.Attachments?.Any() == true)
+    {
+        <div class="attachments-grid">
+            @foreach (var attachment in Request.Attachments)
+            {
+                var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
+                var isLoadingPreview = (loadingPreviewId == attachment.Id.ToString());
+
+                <div class="attachment-card" @onclick="() => ViewAttachment(attachment)" title="Click to view">
+                    <div class="attachment-card__icon">
+                        @if (isLoadingPreview)
+                        {
+                            <div class="attachment-loading-spinner"></div>
+                        }
+                        else
+                        {
+                            <i class="@GetFileIcon(attachment.FileName)"></i>
+                        }
+                    </div>
+                    <div class="attachment-card__content">
+                        <div class="attachment-card__name">@attachment.FileName</div>
+                        <div class="attachment-card__meta">
+                            <span class="attachment-card__size">@FormatFileSize(attachment.Size)</span>
+                            <span class="attachment-card__date">@attachment.DateCreated?.ToString("MMM dd, yyyy")</span>
+                        </div>
+                    </div>
+                    <div class="attachment-card__actions">
+                        <button class="attachment-card__btn"
+                                @onclick="(e) => DownloadAttachment(attachment, e)"
+                                @onclick:stopPropagation="true"
+                                title="Download"
+                                disabled="@isDownloadingThis">
+                            @if (isDownloadingThis)
+                            {
+                                <i class="bi bi-arrow-repeat spinning"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-download"></i>
+                            }
+                        </button>
+                        <button class="attachment-card__btn"
+                                @onclick="(e) => DeleteAttachment(attachment, e)"
+                                @onclick:stopPropagation="true"
+                                title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <DetailsRow__Card FullRow="true">
+            <div class="attachments-empty">
+                <i class="bi bi-folder-x"></i>
+                <h3>No Attachments</h3>
+                <p>No supporting documents have been uploaded for this request.</p>
+            </div>
+        </DetailsRow__Card>
+    }
+</Details__Card>
+
+<!-- Attachment Preview Modal -->
+@if (selectedAttachment != null)
+{
+    <div class="attachment-preview-modal @(showPreview ? "attachment-preview-modal--visible" : "")">
+        <div class="attachment-preview-modal__overlay" @onclick="ClosePreview"></div>
+        <div class="attachment-preview-modal__content">
+            <div class="attachment-preview-modal__header">
+                <h3>@selectedAttachment.FileName</h3>
+                <button class="attachment-preview-modal__close" @onclick="ClosePreview">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="attachment-preview-modal__body">
+                @if (isLoadingPreview)
+                {
+                    @*  <div class="preview-loading">
+                        <div class="preview-loading__spinner"></div>
+                        <p>Loading preview...</p>
+                    </div>  *@
+                    <LoadingScreen IsVisible="true" Text="Loading preview..." />
+                }
+                else if (IsImage(selectedAttachment.FileName))
+                {
+                    <div class="preview-image-container">
+                        <img src="@previewUrl" alt="@selectedAttachment.FileName" class="preview-image" />
+                        <div class="preview-controls">
+                            <button class="preview-controls__btn" @onclick="() => DownloadAttachment(selectedAttachment)">
+                                <i class="bi bi-download"></i>
+                                Download Image
+                            </button>
+                            <button class="preview-controls__btn preview-controls__btn--outline" @onclick="ClosePreview">
+                                <i class="bi bi-x"></i>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                }
+                else if (IsPdf(selectedAttachment.FileName))
+                {
+                    <object data="@previewUrl" type="application/pdf" class="pdf-preview">
+                        <div class="pdf-fallback">
+                            <i class="bi bi-file-pdf"></i>
+                            <h4>PDF Preview Not Available</h4>
+                            <p>Your browser doesn't support embedded PDF preview.</p>
+                            <button class="btn btn--primary" @onclick="() => DownloadAttachment(selectedAttachment)">
+                                <i class="bi bi-download"></i>
+                                Download PDF
+                            </button>
+                        </div>
+                    </object>
+                }
+                else
+                {
+                    <div class="attachment-preview__generic">
+                        <div class="generic-icon-container">
+                            <i class="@GetFileIcon(selectedAttachment.FileName)"></i>
+                        </div>
+                        <div class="generic-info">
+                            <h4>@selectedAttachment.FileName</h4>
+                            <p>Preview not available for this file type.</p>
+                        </div>
+                        <div class="generic-actions">
+                            <button class="generic-actions__btn" @onclick="() => DownloadAttachment(selectedAttachment)">
+                                <i class="bi bi-download"></i>
+                                Download File
+                            </button>
+                            <button class="generic-actions__btn generic-actions__btn--outline" @onclick="ClosePreview">
+                                <i class="bi bi-x"></i>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Purchase_RequestVM Request { get; set; } = new();
+    [Parameter] public Confirmation__Modal ConfirmModal { get; set; } = new();
+    [Parameter] public string ReportType { get; set; } = string.Empty;
+
+    private Purchase_Request_AttachVM? selectedAttachment;
+    private bool showPreview = false;
+    private string? previewUrl;
+    private List<string> blobUrls = new();
+
+    // Loading states
+    private bool isLoadingPreview = false;
+    private string? loadingPreviewId = null;
+    private bool isDownloadingAll = false;
+    private int currentDownloadIndex = 0;
+    private HashSet<string> downloadingAttachments = new();
+
+    private async Task OnFilesSelected(InputFileChangeEventArgs e)
+    {
+        var options = new ConfirmationModalOptions
+        {
+            Message = "Are you sure you want to upload the selected files/?",
+            Title = "Upload Attachments",
+            Variant = ConfirmationModalVariant.confirmation,
+            ConfirmText = "Yes, Upload",
+            CancelText = "No, Cancel",
+        };
+
+        var result = await ConfirmModal!.ShowAsync(options);
+        if (!result) return;
+
+        foreach (var file in e.GetMultipleFiles())
+        {
+            if (file.Size > 10 * 1024 * 1024)
+                continue; // skip >10MB
+
+            byte[] fileBytes;
+            using (var stream = file.OpenReadStream(10 * 1024 * 1024)) // 10MB limit
+            using (var ms = new MemoryStream())
+            {
+                await stream.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
+
+            var attachVM = new Purchase_Request_AttachVM
+            {
+                UniqId = utils.GenerateUniqId(),
+                PurchaseRequestId = Request.Id,
+                FileName = file.Name,
+                ContentType = file.ContentType,
+                ImgData = fileBytes,
+                Size = file.Size
+            };
+
+            Request.Attachments.Add(attachVM);
+        }
+
+        var command = new UploadAttachmentPurchaseCommandVM
+        {
+            PurchaseRequestId = Request.Id,
+            Files = Request.Attachments
+        };
+
+        var res = await purchaseRequestSvc.UploadAttachmentPurchaseAsync(command);
+        if (!res.Success)
+        {
+            toastSvc.ShowError("Error uploading attachments. Please try again.");
+        }
+
+        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(Request.Id);
+        StateHasChanged();
+    }
+
+    private async Task ViewAttachment(Purchase_Request_AttachVM attachment)
+    {
+        selectedAttachment = attachment;
+        loadingPreviewId = attachment.Id.ToString();
+        isLoadingPreview = true;
+        showPreview = true;
+        StateHasChanged();
+
+        try
+        {
+            if (IsPdf(attachment.FileName))
+            {
+                previewUrl = await GetPdfBlobUrl(attachment);
+            }
+            else if (IsImage(attachment.FileName))
+            {
+                previewUrl = await GetImageDataUrl(attachment);
+            }
+            else
+            {
+                previewUrl = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading preview: {ex.Message}");
+            previewUrl = null;
+        }
+        finally
+        {
+            isLoadingPreview = false;
+            loadingPreviewId = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<string> GetPdfBlobUrl(Purchase_Request_AttachVM attachment)
+    {
+        try
+        {
+            var bytes = await purchaseRequestSvc.DownloadAttachmentAsync(attachment.Id);
+            if (bytes == null || bytes.Length == 0)
+                return string.Empty;
+
+            var base64 = Convert.ToBase64String(bytes);
+            var blobUrl = await JS.InvokeAsync<string>("createBlobUrl", base64, "application/pdf");
+
+            if (!string.IsNullOrEmpty(blobUrl))
+            {
+                blobUrls.Add(blobUrl);
+            }
+
+            return blobUrl;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating blob URL: {ex.Message}");
+            return string.Empty;
+        }
+    }
+
+    private async Task<string> GetImageDataUrl(Purchase_Request_AttachVM attachment)
+    {
+        try
+        {
+            var bytes = await purchaseRequestSvc.DownloadAttachmentAsync(attachment.Id);
+            if (bytes == null || bytes.Length == 0)
+                return string.Empty;
+
+            var ext = Path.GetExtension(attachment.FileName).ToLower();
+            var contentType = ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".bmp" => "image/bmp",
+                _ => "application/octet-stream"
+            };
+
+            var base64 = Convert.ToBase64String(bytes);
+            return $"data:{contentType};base64,{base64}";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating data URL: {ex.Message}");
+            return string.Empty;
+        }
+    }
+
+    private void ClosePreview()
+    {
+        showPreview = false;
+        _ = Task.Delay(300).ContinueWith(_ =>
+        {
+            selectedAttachment = null;
+            previewUrl = null;
+            isLoadingPreview = false;
+            loadingPreviewId = null;
+            StateHasChanged();
+        });
+    }
+
+    private async Task DownloadAttachment(Purchase_Request_AttachVM attachment, MouseEventArgs? e = null)
+    {
+        if (downloadingAttachments.Contains(attachment.Id.ToString()))
+            return;
+
+        downloadingAttachments.Add(attachment.Id.ToString());
+        StateHasChanged();
+
+        try
+        {
+            var fileBytes = await purchaseRequestSvc.DownloadAttachmentAsync(attachment.Id);
+            var fileName = attachment.FileName;
+
+            if (fileBytes != null && fileBytes.Length > 0)
+            {
+                await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading attachment: {ex.Message}");
+        }
+        finally
+        {
+            downloadingAttachments.Remove(attachment.Id.ToString());
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteAttachment(Purchase_Request_AttachVM attachment, MouseEventArgs e)
+    {
+        var options = new ConfirmationModalOptions
+        {
+            Message = $"Are you sure you want to delete the attachment '{attachment.FileName}'?",
+            Title = "Delete Attachment",
+            Variant = ConfirmationModalVariant.confirmation,
+            ConfirmText = "Yes, Delete",
+            CancelText = "No, Cancel",
+        };
+
+        var result = await ConfirmModal!.ShowAsync(options);
+        if (!result) return;
+
+        await purchaseRequestSvc.DeleteAttachmentRequest(attachment.Id);
+        Request.Attachments.Remove(attachment);
+        toastSvc.ShowSuccess("Attachment deleted successfully.");
+    }
+
+    private async Task DownloadAll()
+    {
+        if (isDownloadingAll || Request.Attachments == null)
+            return;
+
+        isDownloadingAll = true;
+        currentDownloadIndex = 0;
+        StateHasChanged();
+
+        try
+        {
+            foreach (var attachment in Request.Attachments)
+            {
+                currentDownloadIndex++;
+                StateHasChanged();
+
+                await DownloadAttachment(attachment);
+                await Task.Delay(200); // Small delay between downloads
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading all attachments: {ex.Message}");
+        }
+        finally
+        {
+            isDownloadingAll = false;
+            currentDownloadIndex = 0;
+            StateHasChanged();
+        }
+    }
+
+    private string GetFileIcon(string fileName)
+    {
+        var extension = Path.GetExtension(fileName).ToLower();
+        return extension switch
+        {
+            ".pdf" => "bi bi-file-pdf",
+            ".doc" or ".docx" => "bi bi-file-word",
+            ".xls" or ".xlsx" => "bi bi-file-excel",
+            ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" => "bi bi-file-image",
+            ".zip" or ".rar" => "bi bi-file-zip",
+            ".txt" => "bi bi-file-text",
+            _ => "bi bi-file-earmark"
+        };
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        int order = 0;
+        double len = bytes;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private bool IsImage(string fileName)
+    {
+        var extension = Path.GetExtension(fileName).ToLower();
+        return extension is ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp";
+    }
+
+    private bool IsPdf(string fileName)
+    {
+        return Path.GetExtension(fileName).ToLower() == ".pdf";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var blobUrl in blobUrls)
+        {
+            if (!string.IsNullOrEmpty(blobUrl))
+            {
+                try
+                {
+                    await JS.InvokeVoidAsync("revokeBlobUrl", blobUrl);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error revoking blob URL: {ex.Message}");
+                }
+            }
+        }
+        blobUrls.Clear();
+    }
+}

@@ -35,6 +35,9 @@
 
             <EditForm Model="@_loginModel" OnValidSubmit="@HandleLogin">
                 <div class="login-body">
+
+                    <Alert Message="@AlertMessage" Type="@AlertType" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+
                     <div class="input-group">
                         <i class="bi bi-person"></i>
                         <input @bind="_loginModel.Username" placeholder="Username" class="input" />
@@ -61,5 +64,3 @@
 </div>
 
 <NewRequestLogin__Modal IsNewRequestModalFormVisible="@_isNewRequestModalFormVisible" OnSave="OnAddRequestModalSave" OnClose="OnAddRequestModalClose" />
-
-<CustomToast @ref="_toast" />

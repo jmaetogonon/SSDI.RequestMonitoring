@@ -47,8 +47,17 @@ public class RequestsMappingConfig : Profile
         CreateMap<PurchaseRequestApprovalByUserDto, Purchase_Request_ApprovalVM>()
             .ForMember(q => q.ActionDate, opt => opt.MapFrom(x => x.ActionDate!.Value.DateTime));
 
+        CreateMap<PurchaseRequestAttachByIdDto, Purchase_Request_AttachVM>()
+            .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated!.Value.DateTime));
+
+        CreateMap<PurchaseRequestAttachByUserDto, Purchase_Request_AttachVM>()
+            .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated!.Value.DateTime));
+
         CreateMap<CreatePurchaseRequestCommand, Purchase_RequestVM>().ReverseMap();
+        CreateMap<Purchase_Request_Attach, Purchase_Request_AttachVM>().ReverseMap();
+
         CreateMap<UpdatePurchaseRequestCommand, Purchase_RequestVM>().ReverseMap();
         CreateMap<ApprovePurchaseRequestCommand, ApprovePurchaseRequestCommandVM>().ReverseMap();
+        CreateMap<UploadAttachmentPurchaseCommand, UploadAttachmentPurchaseCommandVM>().ReverseMap();
     }
 }

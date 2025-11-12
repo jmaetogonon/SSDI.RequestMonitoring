@@ -1,4 +1,6 @@
 global using SSDI.RequestMonitoring.UI.Helpers;
+global using SSDI.RequestMonitoring.UI.Models.Enums;
+global using SSDI.RequestMonitoring.UI.Models.Enums.Components;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;

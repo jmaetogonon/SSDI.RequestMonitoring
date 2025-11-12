@@ -1,0 +1,94 @@
+﻿/* Loading Component Styles */
+.loading__box {
+    /*position: fixed;*/
+    inset: 0;
+    /*background: var(--color-whitesmoke);*/
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 9999;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.loading__box--visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.loading__box--hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Centered container */
+.loading__box-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Sonic GIF */
+.loading__box-gif {
+    width: 70px;
+    height: auto;
+    animation: run-in 1.2s ease-in-out infinite alternate;
+    margin-bottom: -2rem;
+}
+
+/* Modern gradient ring */
+.loading__box-ring {
+    width: 45px;
+    height: 45px;
+    border: 5px solid transparent;
+    border-top: 5px solid var(--color-shadefofblue);
+    border-right: 5px solid var(--color-dodgerBlue);
+    border-left: 5px solid var(--color-deepSkyBlue);
+    border-radius: 50%;
+    animation: spin 1.2s linear infinite;
+    box-shadow: 0 0 12px rgba(30, 144, 255, 0.4);
+}
+
+/* Text */
+.loading__box-text {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-darkmidnightblue);
+    letter-spacing: 0.5px;
+    animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes run-in {
+    0% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(10px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+}

@@ -13,9 +13,11 @@ public class Utils
         _currentUser = currentUser;
     }
 
-    public static string GenerateGuid() => Guid.NewGuid().ToString();
+    public string GenerateGuid() => Guid.NewGuid().ToString();
 
-    public static string FormatDate(DateTime date) => date.ToString("yyyy-MM-dd");
+    public string GenerateUniqId() => DateTime.Now.ToString("yyyyMMddhhmmssfff");
+
+    public string FormatDate(DateTime date) => date.ToString("yyyy-MM-dd");
 
     public bool IsUser() => _currentUser.Role == TokenCons.Role__User;
 

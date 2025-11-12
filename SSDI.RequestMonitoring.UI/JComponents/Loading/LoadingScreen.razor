@@ -1,0 +1,13 @@
+﻿<!-- LoadingScreen.razor -->
+<div class="loading__box @(IsVisible ? "loading__box--visible" : "loading__box--hidden")">
+    <div class="loading__box-content">
+        <img src="images/logo/sonic3right.gif" alt="Sonic Loading" class="loading__box-gif" />
+        <div class="loading__box-ring"></div>
+        <p class="loading__box-text">@Text</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string Text { get; set; } = "Loading...";
+}

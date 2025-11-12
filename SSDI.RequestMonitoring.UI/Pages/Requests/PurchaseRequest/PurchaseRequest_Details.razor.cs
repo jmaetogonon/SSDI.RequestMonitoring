@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
-using SSDI.RequestMonitoring.UI.Models.Enums;
 using SSDI.RequestMonitoring.UI.Models.Requests;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
@@ -20,6 +19,10 @@ public partial class PurchaseRequest_Details : ComponentBase
     private string EditBtnText => SetEditBtnText();
 
     private Confirmation__Modal? confirmModal;
+
+
+    private string? pdfBase64;
+    private bool isPdfModalVisible = false;
 
     private string ActiveTab = "details";
 
@@ -166,16 +169,38 @@ public partial class PurchaseRequest_Details : ComponentBase
         toastSvc.ShowSuccess("The request has been updated successfully.");
     }
 
-    private void PrintRequest()
+    private async Task ExportToPdf()
     {
-        // Implement print functionality
-        toastSvc.ShowInfo("Print functionality coming soon.");
-    }
+        try
+        {
+            if (Request == null)
+            {
+                toastSvc.ShowError("No request details to export.");
+                return;
+            }
 
-    private void ExportToPdf()
+            // Generate the PDF bytes
+            var pdfBytes = await purchaseRequestSvc.GeneratePurchaseRequestPdf(Request.Id);
+            if (pdfBytes == null || pdfBytes.Length == 0)
+            {
+                toastSvc.ShowError("Failed to generate PDF.");
+                return;
+            }
+
+            pdfBase64 = Convert.ToBase64String(pdfBytes);
+            isPdfModalVisible = true;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            toastSvc.ShowError($"Error exporting PDF: {ex.Message}");
+        }
+    }
+    private void ClosePdfModal()
     {
-        // Implement PDF export
-        toastSvc.ShowInfo("PDF export coming soon.");
+        isPdfModalVisible = false;
+        pdfBase64 = null;
     }
 
     private void NavigateBack()

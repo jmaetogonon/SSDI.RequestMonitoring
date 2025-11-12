@@ -28,10 +28,12 @@ public class BaseHttpService
             if (ex.StatusCode == 401)
             {
                 await _localStorage.RemoveItemAsync("rmtoken"); // clear invalid token
-                _navigationManager.NavigateTo("/unauthorized-api");
+                var currentUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+                var encodedReturnUrl = Uri.EscapeDataString("/" + currentUrl);
+                _navigationManager.NavigateTo($"/login?returnUrl={encodedReturnUrl}&tokenExpired=true", forceLoad: true);
+                return default!;
             }
-
-            throw;
+            return default!;
         }
     }
 

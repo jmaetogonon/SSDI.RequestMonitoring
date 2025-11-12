@@ -6,6 +6,6 @@
     {
         var currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
         var encodedReturnUrl = Uri.EscapeDataString("/" + currentUrl);
-        Navigation.NavigateTo($"/?returnUrl={encodedReturnUrl}", true);
+        Navigation.NavigateTo($"/?returnUrl={encodedReturnUrl}");
     }
 }

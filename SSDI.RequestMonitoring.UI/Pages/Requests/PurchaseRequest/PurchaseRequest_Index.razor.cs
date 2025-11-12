@@ -48,7 +48,7 @@ public partial class PurchaseRequest_Index : ComponentBase
                 var requests = await purchaseRequestSvc.GetAllPurchaseRequestsByUser(currentUser.UserId);
                 AllRequests = requests.AsQueryable();
             }
-            if (utils.IsAdmin())
+            else if (utils.IsAdmin())
             {
                 var requests = await purchaseRequestSvc.GetAllPurchaseRequestsByAdmin();
                 AllRequests = requests.AsQueryable();

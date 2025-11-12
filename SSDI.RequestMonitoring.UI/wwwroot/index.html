@@ -41,5 +41,20 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="/js/typingAnimation.js"></script>
+    <script src="/js/exportAttach.js"></script>
+    <!--<script>
+        function openBase64Pdf(base64Data) {
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            window.open(url);
+        }
+    </script>-->
+
 </body>
 </html>

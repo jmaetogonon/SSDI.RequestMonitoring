@@ -7,6 +7,7 @@
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
 @inject IPurchaseRequestSvc purchaseRequestSvc
 @inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
 
 <PageTitle>Purchase Request #@Request?.Id</PageTitle>
 
@@ -17,6 +18,11 @@
 
 <Confirmation__Modal @ref="confirmModal" />
 <EditRequest__Modal IsModalVisible="@isEditRequestModalVisible" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
+<PdfViewer__Modal IsVisible="@isPdfModalVisible"
+                  PdfBase64="@pdfBase64"
+                  FileName="@($"{Request?.Name}_PR.pdf")"
+                  OnClose="@ClosePdfModal" />
+
 
 <div class="page__container">
     <!-- Left Section - Main Content -->
@@ -63,6 +69,15 @@
                                 <span class="tabs__badge">@Request.Approvals.Count</span>
                             } *@
                         </button>
+                        <button class="tabs__button @(ActiveTab == "attachments" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("attachments"))">
+                            <i class="bi bi-paperclip"></i>
+                            Attachments
+                            @if (Request.Attachments?.Any() == true)
+                            {
+                                <span class="tabs__badge">@Request.Attachments.Count</span>
+                            }
+                        </button>
                         <button class="tabs__button @(ActiveTab == "timeline" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("timeline"))">
                             <i class="bi bi-clock-history"></i>
@@ -78,6 +93,10 @@
                         else if (ActiveTab == "approval")
                         {
                             <RequestApprovalProcess__Control Request="Request" />
+                        }
+                        else if (ActiveTab == "attachments")
+                        {
+                            <RequestAttachments__Control Request="Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
                         }
                         else if (ActiveTab == "timeline")
                         {
@@ -139,10 +158,6 @@
                     <i class="bi bi-pencil"></i> @EditBtnText
                 </button>
             }
-
-            <button class="btn btn--outline" @onclick="PrintRequest" title="Print request">
-                <i class="bi bi-printer"></i> Print
-            </button>
 
             <button class="btn btn--outline" @onclick="ExportToPdf" title="Export to PDF">
                 <i class="bi bi-file-earmark-pdf"></i> PDF

@@ -6,12 +6,27 @@ namespace SSDI.RequestMonitoring.UI.Contracts.Requests;
 public interface IPurchaseRequestSvc
 {
     Task<List<Purchase_RequestVM>> GetAllPurchaseRequests();
+
     Task<List<Purchase_RequestVM>> GetAllPurchaseRequestsByUser(int userId);
+
     Task<List<Purchase_RequestVM>> GetAllPurchaseRequestsByAdmin();
+
     Task<List<Purchase_RequestVM>> GetAllPurchaseReqBySupervisor(int supervisorId, bool includeDepartmentMembers = true, bool includeDivisionMembers = true);
+
     Task<Purchase_RequestVM> GetByIdPurchaseRequest(int id);
+
     Task<Response<Guid>> CreatePurchaseRequest(Purchase_RequestVM PurchaseRequest);
+
     Task<Response<Guid>> UpdatePurchaseRequest(int id, Purchase_RequestVM PurchaseRequest);
+
     Task<Response<Guid>> DeletePurchaseRequest(int id);
+
     Task<Response<Guid>> ApprovePurchaseRequest(ApprovePurchaseRequestCommandVM command);
+
+    Task<byte[]?> DownloadAttachmentAsync(int attachmentId);
+
+    Task<Response<Guid>> UploadAttachmentPurchaseAsync(UploadAttachmentPurchaseCommandVM command);
+
+    Task<Response<Guid>> DeleteAttachmentRequest(int id);
+    Task<byte[]> GeneratePurchaseRequestPdf(int id);
 }

@@ -15,7 +15,7 @@
 
 @code {
     [Parameter] public string Message { get; set; } = "";
-    [Parameter] public string Type { get; set; } = "info"; // success | info | warning | error
+    [Parameter] public AlertType Type { get; set; } = AlertType.info; // success | info | warning | error
     [Parameter] public bool ShowCloseButton { get; set; } = true;
     [Parameter] public int AutoCloseAfter { get; set; } = 0; // milliseconds (0 = disabled)
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
@@ -38,17 +38,17 @@
 
     private string GetAlertClass() => Type switch
     {
-        "success" => "alert-success",
-        "error" => "alert-danger",
-        "warning" => "alert-warning",
+        AlertType.success => "alert-success",
+        AlertType.error => "alert-danger",
+        AlertType.warning => "alert-warning",
         _ => "alert-info"
     };
 
     private string GetIconClass() => Type switch
     {
-        "success" => "bi bi-check-circle-fill",
-        "error" => "bi bi-x-circle-fill",
-        "warning" => "bi bi-exclamation-triangle-fill",
+        AlertType.success => "bi bi-check-circle-fill",
+        AlertType.error => "bi bi-x-circle-fill",
+        AlertType.warning => "bi bi-exclamation-triangle-fill",
         _ => "bi bi-info-circle-fill"
     };
 }

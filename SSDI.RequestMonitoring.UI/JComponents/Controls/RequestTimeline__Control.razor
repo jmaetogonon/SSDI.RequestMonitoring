@@ -3,7 +3,15 @@
 
 <!-- Timeline Tab -->
 <Details__Card>
-    <DetailsRow__Card Label="Request Timeline" FullRow="true" />
+    <!-- Timeline Header -->
+    <DetailsRow__Card FullRow="true" Label="Timeline">
+        <div class="timeline-header">
+            <div class="timeline-header__title">
+                <i class="bi bi-clock-history timeline-header__icon"></i>
+                <span>Request History</span>
+            </div>
+        </div>
+    </DetailsRow__Card>
     <DetailsRow__Card FullRow="true">
         <div class="timeline">
             <div class="timeline__item">
@@ -54,7 +62,7 @@
                                 {
                                     <text>Cancelled by @(approval.ApproverName)</text>
                                 }
-                                else 
+                                else
                                 {
                                     <text>Pending approval from @(approval.ApproverName)"</text>
                                 }
@@ -77,8 +85,8 @@
     private string GetTimelinePointClass(Purchase_Request_ApprovalVM approval)
     {
         return approval.IsApproved ? "timeline__point--success" :
-               approval.IsRejected ? "timeline__point--danger" : 
-               approval.IsCancelled ? "timeline__point--cancelled" : 
+               approval.IsRejected ? "timeline__point--danger" :
+               approval.IsCancelled ? "timeline__point--cancelled" :
                "timeline__point--warning";
     }
 }

@@ -47,9 +47,8 @@ public partial class NewRequest__Modal : ComponentBase
         var result = await confirmModal!.ShowAsync(options);
         if (result)
         {
-            await confirmModal!.SetLoadingAsync(true); 
-            
-            
+            await confirmModal!.SetLoadingAsync(true);
+
             _isDisabledBtns = true;
             IsShowAlert = false;
             RequestModel.Status = RequestStatus.Draft;
@@ -71,9 +70,6 @@ public partial class NewRequest__Modal : ComponentBase
             _isDisabledBtns = false;
             await confirmModal!.SetLoadingAsync(false);
         }
-
-
-            
     }
 
     private void ResetForm()

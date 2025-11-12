@@ -1,5 +1,4 @@
-﻿using SSDI.RequestMonitoring.UI.Models.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SSDI.RequestMonitoring.UI.Models.Requests;
 
@@ -28,6 +27,7 @@ public class Purchase_RequestVM
     public DateTime? DateModified { get; set; }
 
     public ICollection<Purchase_Request_ApprovalVM> Approvals { get; set; } = [];
+    public ICollection<Purchase_Request_AttachVM> Attachments { get; set; } = [];
 
     public bool IsDirectReport { get; set; }
     public string ReportType { get; set; } = string.Empty;
