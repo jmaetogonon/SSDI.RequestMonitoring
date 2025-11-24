@@ -1,9 +1,7 @@
 ﻿@page "/requests/purchase-requests/{paramId:int}/{reportType?}"
 @using SSDI.RequestMonitoring.UI.Contracts.Requests
-@using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
-@using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
 @inject IPurchaseRequestSvc purchaseRequestSvc
 @inject NavigationManager navigationManager
@@ -22,7 +20,6 @@
                   PdfBase64="@pdfBase64"
                   FileName="@($"{Request?.Name}_PR.pdf")"
                   OnClose="@ClosePdfModal" />
-
 
 <div class="page__container">
     <!-- Left Section - Main Content -->
@@ -60,6 +57,24 @@
                             <i class="bi bi-info-circle"></i>
                             Details
                         </button>
+                        <button class="tabs__button @(ActiveTab == "attachments" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("attachments"))">
+                            <i class="bi bi-paperclip"></i>
+                            Attachments
+                            @if (Request.Attachments?.Any() == true)
+                            {
+                                <span class="tabs__badge">@Request.Attachments.Where(e => e.AttachType == RequestAttachType.Request).Count()</span>
+                            }
+                        </button>
+                        <button class="tabs__button @(ActiveTab == "slips" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("slips"))">
+                            <i class="bi bi-file-earmark-text"></i>
+                            Requisition Slip
+                            @if (Request.RequisitionSlips?.Any() == true)
+                            {
+                                <span class="tabs__badge">@Request.RequisitionSlips.Count</span>
+                            }
+                        </button>
                         <button class="tabs__button @(ActiveTab == "approval" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("approval"))">
                             <i class="bi bi-clipboard-check"></i>
@@ -68,15 +83,6 @@
                             {
                                 <span class="tabs__badge">@Request.Approvals.Count</span>
                             } *@
-                        </button>
-                        <button class="tabs__button @(ActiveTab == "attachments" ? "tabs__button--active" : "")"
-                                @onclick="@(() => SetActiveTab("attachments"))">
-                            <i class="bi bi-paperclip"></i>
-                            Attachments
-                            @if (Request.Attachments?.Any() == true)
-                            {
-                                <span class="tabs__badge">@Request.Attachments.Count</span>
-                            }
                         </button>
                         <button class="tabs__button @(ActiveTab == "timeline" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("timeline"))">
@@ -89,6 +95,10 @@
                         @if (ActiveTab == "details")
                         {
                             <RequestDetails__Control Request="Request" />
+                        }
+                        else if (ActiveTab == "slips")
+                        {
+                            <RequestRequisitionSlips__Control Request="Request" ConfirmModal="confirmModal" />
                         }
                         else if (ActiveTab == "approval")
                         {
@@ -142,10 +152,22 @@
 
             @if (CanApproveAdmin)
             {
-                <button class="btn btn--success" @onclick="VerifyByadminRequest" title="Endorse request">
+                <button class="btn btn--success" @onclick="VerifyByAdminRequest" title="Endorse request">
                     <i class="bi bi-check-lg"></i> Verify
                 </button>
                 <button class="btn btn--danger" @onclick="RejectVerifyByAdminRequest" title="Reject request">
+                    <i class="bi bi-x-lg"></i> Reject
+                </button>
+
+                <hr class="page__hr" />
+            }
+
+            @if (utils.IsCEO() && Request?.Status == RequestStatus.ForCeoApproval)
+            {
+                <button class="btn btn--success" @onclick="ApproveByCeoRequest" title="Approve request">
+                    <i class="bi bi-check-lg"></i> Verify
+                </button>
+                <button class="btn btn--danger" @onclick="RejectByCeoRequest" title="Reject request">
                     <i class="bi bi-x-lg"></i> Reject
                 </button>
 

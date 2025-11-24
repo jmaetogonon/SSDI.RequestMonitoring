@@ -12,111 +12,108 @@
 
 <PageTitle>Purchase Requests</PageTitle>
 
-<div class="page__header">
-    <div class="page__title-section">
-        <p class="page__header-title">Purchase Requests</p>
-        <p class="page__header-subtitle">View and manage purchase requests.</p>
-    </div>
-
-    @if (isShowNewBtn)
-    {
-        <div class="page__header-cta">
-            <button class="page__primary-btn" @onclick="OnAddNewRequest">
-                <i class="bi bi-plus-lg"></i> New Request
-            </button>
+<div class="main--content">
+    <div class="page__header">
+        <div class="page__title-section">
+            <p class="page__header-title">Purchase Requests</p>
+            <p class="page__header-subtitle">View and manage purchase requests.</p>
         </div>
-    }
-</div>
 
-<Confirmation__Modal @ref="confirmModal" />
-<NewRequest__Modal IsModalVisible="@isNewRequestModalVisible" OnSave="@OnSaveNewReqModal" OnClose="OnCloseNewReqModal" />
-
-<div class="page__main__section">
-    <div class="page__cards">
-        @foreach (var summary in StatusSummaries)
+        @if (isShowNewBtn)
         {
-            <StatusWBar__Card Label="@summary.Label"
-                              Count="@summary.Count"
-                              TotalCount="@summary.TotalCount"
-                              Status="@summary.Status"
-                              Icon="@summary.Icon" />
+            <div class="page__header-cta">
+                <button class="page__primary-btn" @onclick="OnAddNewRequest">
+                    <i class="bi bi-plus-lg"></i> New Request
+                </button>
+            </div>
         }
     </div>
 
-    <div class="page__filters">
-        <FluentSearch @bind-Value="@searchValue"
-                      @bind-Value:after="HandleSearch"
-                      Immediate="true"
-                      Placeholder="Search"
-                      Class="page__filters-search" />
+    <Confirmation__Modal @ref="confirmModal" />
+    <NewRequest__Modal IsModalVisible="@isNewRequestModalVisible" OnSave="@OnSaveNewReqModal" OnClose="OnCloseNewReqModal" />
 
-        <Status__Filter @ref="statusFilter" SelectedStatusesChanged="@OnStatusFilterChanged" AnchorId="purchaseRequestStatusFilter" />
-        <Priority__Filter @ref="priorityFilter" SelectedPrioritiesChanged="@OnPriorityFilterChanged" AnchorId="purchaseRequestPriorityFilter" />
-        <Clear__Filters OnClear="@ClearAllFilters" />
-    </div>
+    <div class="page__main__section">
+        <div class="page__cards">
+            @foreach (var summary in StatusSummaries)
+            {
+                <StatusWBar__Card Label="@summary.Label"
+                                  Count="@summary.Count"
+                                  TotalCount="@summary.TotalCount"
+                                  Status="@summary.Status"
+                                  Icon="@summary.Icon" />
+            }
+        </div>
 
-    <div class="page__table-container @(uiStateSvc.IsStriped ? "striped-grid" : "")" tabindex="-1">
-        @if (Requests == null || isLoading)
-        {
-            <div class="page__table-loading">
-                <p>Loading purchase requests...</p>
-            </div>
-        }
-        else if (!Requests.Any())
-        {
-            <div class="page__table-empty">
-                <i class="bi bi-inbox"></i>
-                <p>No purchase requests found</p>
-                <p class="text-muted">Create your first request to get started</p>
-            </div>
-        }
-        else
-        {
-            <div class="page__table-wrapper">
-                <FluentDataGrid Class="page__table" 
-                                TGridItem="Purchase_RequestVM"
-                                ShowHover="true"
-                                Pagination="@pagination"
-                                OnRowClick="@OnViewDetails"
-                                GenerateHeader="GenerateHeaderOption.Sticky"
-                                RowSize="DataGridRowSize.Medium"
-                                Items="Requests">
-                    @* <TemplateColumn Title="View" Width="100px">
+        <div class="page__filters">
+            <FluentSearch @bind-Value="@searchValue"
+                          @bind-Value:after="HandleSearch"
+                          Immediate="true"
+                          Placeholder="Search"
+                          Class="page__filters-search" />
+
+            <Status__Filter @ref="statusFilter" SelectedStatusesChanged="@OnStatusFilterChanged" AnchorId="purchaseRequestStatusFilter" />
+            <Priority__Filter @ref="priorityFilter" SelectedPrioritiesChanged="@OnPriorityFilterChanged" AnchorId="purchaseRequestPriorityFilter" />
+            <Clear__Filters OnClear="@ClearAllFilters" />
+        </div>
+
+        <div class="page__table-container @(uiStateSvc.IsStriped ? "striped-grid" : "")" tabindex="-1">
+            @if (Requests == null || isLoading)
+            {
+                <div class="page__table-loading">
+                    <p>Loading purchase requests...</p>
+                </div>
+            }
+            else if (!Requests.Any())
+            {
+                <div class="page__table-empty">
+                    <i class="bi bi-inbox"></i>
+                    <p>No purchase requests found</p>
+                    <p class="text-muted">Create your first request to get started</p>
+                </div>
+            }
+            else
+            {
+                <div class="page__table-wrapper">
+                    <FluentDataGrid Class="page__table"
+                                    TGridItem="Purchase_RequestVM"
+                                    ShowHover="true"
+                                    Pagination="@pagination"
+                                    OnRowClick="@OnViewDetails"
+                                    GenerateHeader="GenerateHeaderOption.Sticky"
+                                    RowSize="DataGridRowSize.Medium"
+                                    Items="Requests">
+                        @* <TemplateColumn Title="View" Width="100px">
                         <button type="button" class="page__table-btn page__view__details__btn" title="View details">
                             <i class="bi bi-eye-fill"></i>
                         </button>
                     </TemplateColumn> *@
-                    <PropertyColumn Title="ID" Property="@(c => c.Id)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
-                    <PropertyColumn Title="Requested By" Property="@(c => c.Name)" Sortable="true" />
-                    <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
-                    <PropertyColumn Title="Justification" Property="@(c => c.Justification)" />
-                    <PropertyColumn Title="Division/Department" Property="@(c => c.Division_Department)" />
-                    <TemplateColumn Title="Requested On" Width="140px" Sortable="true">
-                        <div class="page__table-date">
-                            <span class="page__table-date-main">
-                                @context.DateRequested?.ToString("MMM dd, yyyy")
-                            </span>
-                            <span class="page__table-date-relative">
-                                @(utils.GetRelativeTime(context.DateRequested))
-                            </span>
-                        </div>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Priority" Align="Align.Center">
-                        <div class="page__table-priority">
-                            <div class="priority-dot" data-prio="@context.Priority"></div>
-                            <span>@(utils.GetPriorityDisplay(context.Priority, context.OtherPriority, true))</span>
-                        </div>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Status" Align="Align.Center" Sortable="true" SortBy="sortStatus">
-                        <div class="page__table-status" data-status="@context.Status">
-                            <i class="@utils.GetStatusIcon(context.Status)"></i>
-                            <span class="page__table-status-text">@utils.GetStatusDisplay(context.Status)</span>
-                        </div>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Type" Align="Align.Center" Sortable="true" SortBy="sortStatus">
-                        <span>@context.ReportType</span>
-                    </TemplateColumn>
-                    @* <TemplateColumn Title="Actions" Width="140px" Align="Align.Center">
+                        <PropertyColumn Title="ID" Property="@(c => c.Id)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
+                        <PropertyColumn Title="Requested By" Property="@(c => c.Name)" Sortable="true" />
+                        <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
+                        <PropertyColumn Title="Division/Department" Property="@(c => c.Division_Department)" />
+                        <TemplateColumn Title="Requested On" Width="140px" Sortable="true">
+                            <div class="page__table-date">
+                                <span class="page__table-date-main">
+                                    @context.DateRequested?.ToString("MMM dd, yyyy")
+                                </span>
+                                <span class="page__table-date-relative">
+                                    @(utils.GetRelativeTime(context.DateRequested))
+                                </span>
+                            </div>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Priority" Align="Align.Center">
+                            <div class="page__table-priority">
+                                <div class="priority-dot" data-prio="@context.Priority"></div>
+                                <span>@(utils.GetPriorityDisplay(context.Priority, context.OtherPriority, true))</span>
+                            </div>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status" Align="Align.Center" Sortable="true" SortBy="sortStatus">
+                            <div class="page__table-status" data-status="@context.Status">
+                                <i class="@utils.GetStatusIcon(context.Status)"></i>
+                                <span class="page__table-status-text">@utils.GetStatusDisplay(context.Status)</span>
+                            </div>
+                        </TemplateColumn>
+                        @* <TemplateColumn Title="Actions" Width="140px" Align="Align.Center">
                         <div class="page__table-actions">
                             <button type="button" @onclick="(() => OnEditRequest(context))"
                                     class="page__table-action-btn page__table-edit-btn"
@@ -130,10 +127,12 @@
                             </button>
                         </div>
                     </TemplateColumn> *@
-                </FluentDataGrid>
-            </div>
+                    </FluentDataGrid>
+                </div>
 
-            <Pagination__Control Pagination="@pagination" PageSizeChanged="@OnPageSizeChanged" IsStripedChanged="@(() => StateHasChanged())" />
-        }
+                <Pagination__Control Pagination="@pagination" PageSizeChanged="@OnPageSizeChanged" IsStripedChanged="@(() => StateHasChanged())" />
+            }
+        </div>
     </div>
+
 </div>

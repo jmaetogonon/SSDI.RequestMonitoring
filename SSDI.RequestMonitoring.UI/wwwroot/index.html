@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="/css/pages/pagedetails.css" />
     <link rel="stylesheet" href="/css/modal/modal.css" />
     <link rel="stylesheet" href="/css/controls/tabs.css" />
+    <link rel="stylesheet" href="/css/controls/buttons.css" />
     <link href="/lib/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="/lib/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
 </head>
@@ -42,19 +43,18 @@
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="/js/typingAnimation.js"></script>
     <script src="/js/exportAttach.js"></script>
-    <!--<script>
-        function openBase64Pdf(base64Data) {
-            const byteCharacters = atob(base64Data);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            window.open(url);
-        }
-    </script>-->
 
+    <script>
+
+
+        function addResizeListener(dotNetHelper) {
+            function updateSize() {
+                dotNetHelper.invokeMethodAsync('SetIsMobile', window.innerWidth);
+            }
+
+            window.addEventListener('resize', updateSize);
+            updateSize(); // Initial call
+        }
+    </script>
 </body>
 </html>

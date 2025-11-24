@@ -1,10 +1,9 @@
 ﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
-@using SSDI.RequestMonitoring.UI.JComponents.Alerts
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
-@using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
-@using SSDI.RequestMonitoring.UI.Models.Requests
+
 @inject IPurchaseRequestSvc purchaseRequestSvc
+@inject IPRAttachSvc attachSvc
 
 
 <Confirmation__Modal @ref="confirmModal" />
@@ -15,7 +14,7 @@
             <div class="modal__header-date">
                 <i class="bi bi-clock-history"></i>
                 <span title="@RequestModel?.DateModified?.ToString("MMMM dd, yyyy 'at' h:mm tt")">
-                    @GetLastModifiedDisplay(RequestModel?.DateModified)
+                    @utils.GetLastModifiedDisplay(RequestModel?.DateModified)
                 </span>
             </div>
         </div>
@@ -24,6 +23,6 @@
             <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
         </div>
 
-        <PurchaseReq__Form Model="RequestModel" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" IsForUpdate="true" />
+        <PurchaseReq__Form FormModel="RequestModel" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" IsForUpdate="true" />
     </div>
 </div>

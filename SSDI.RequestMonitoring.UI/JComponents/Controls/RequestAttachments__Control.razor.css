@@ -666,10 +666,6 @@
     font-weight: 500;
 }
 
-.spinning {
-    animation: spin 1s linear infinite;
-}
-
 .attachment-loading-spinner {
     width: 24px;
     height: 24px;
@@ -701,16 +697,6 @@
         box-shadow: none !important;
     }
 
-/* Enhanced loading animation */
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
 
 /* Preview loading state enhancements */
 .preview-loading {

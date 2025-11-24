@@ -4,5 +4,6 @@ public enum ApprovalAction
 {
     Approve,
     Reject,
+    Pending,
     Cancel
 }

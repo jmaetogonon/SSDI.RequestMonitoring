@@ -1,7 +1,6 @@
 ﻿@using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.Models.Requests
 
-<!-- Timeline Tab -->
 <Details__Card>
     <!-- Timeline Header -->
     <DetailsRow__Card FullRow="true" Label="Timeline">
@@ -12,68 +11,31 @@
             </div>
         </div>
     </DetailsRow__Card>
+
     <DetailsRow__Card FullRow="true">
         <div class="timeline">
-            <div class="timeline__item">
-                <div class="timeline__point timeline__point--primary"></div>
-                <div class="timeline__content">
-                    <div class="timeline__title">Request Created</div>
-                    <div class="timeline__date">@Request.DateCreated?.ToString("MMM dd, yyyy 'at' hh:mm tt")</div>
-                    <div class="timeline__description">Purchase request was drafted by @Request.RequestedByName</div>
-                </div>
-            </div>
-
-            @* @if (Request.DateModified.HasValue && Request.DateModified != Request.DateRequested)
+            @foreach (var item in Timeline)
             {
                 <div class="timeline__item">
-                    <div class="timeline__point timeline__point--info"></div>
-                    <div class="timeline__content">
-                        <div class="timeline__title">Request Updated</div>
-                        <div class="timeline__date">@Request.DateModified?.ToString("MMM dd, yyyy 'at' hh:mm tt")</div>
-                        <div class="timeline__description">Request details were modified</div>
-                    </div>
-                </div>
-            } *@
+                    <div class="timeline__point @item.CssClass"></div>
 
-            @if (Request.Approvals?.Any() == true)
-            {
-                foreach (var approval in Request.Approvals.OrderBy(a => a.ActionDate ?? a.ActionDate))
-                {
-                    <div class="timeline__item">
-                        <div class="timeline__point @GetTimelinePointClass(approval)"></div>
-                        <div class="timeline__content">
-                            <div class="timeline__title">
-                                @utils.GetApprovalStagesDisplay(approval.Stage) - @utils.GetApprovalStatusText(approval)
-                            </div>
-                            @if (approval.ActionDate.HasValue)
+                    <div class="timeline__content">
+                        <div class="timeline__title">@item.Title</div>
+
+                        <div class="timeline__date">
+                            @item.Date.ToString("MMM dd, yyyy 'at' hh:mm tt")
+                        </div>
+
+                        <div class="timeline__description">
+                            @item.Description
+
+                            @if (!string.IsNullOrWhiteSpace(item.Remarks))
                             {
-                                <div class="timeline__date">@approval.ActionDate.Value.ToString("MMM dd, yyyy 'at' hh:mm tt")</div>
+                                <div class="timeline__remarks">@item.Remarks</div>
                             }
-                            <div class="timeline__description">
-                                @if (approval.IsApproved)
-                                {
-                                    <text>@utils.GetApprovalByTimelineText(approval) @(approval.ApproverName)</text>
-                                }
-                                else if (approval.IsRejected)
-                                {
-                                    <text>Rejected by @(approval.ApproverName)</text>
-                                }
-                                else if (approval.IsCancelled)
-                                {
-                                    <text>Cancelled by @(approval.ApproverName)</text>
-                                }
-                                else
-                                {
-                                    <text>Pending approval from @(approval.ApproverName)"</text>
-                                }
-                                @if (!string.IsNullOrEmpty(approval.Remarks))
-                                {
-                                    <div class="timeline__remarks">@approval.Remarks</div>
-                                }
-                            </div>
                         </div>
                     </div>
-                }
+                </div>
             }
         </div>
     </DetailsRow__Card>
@@ -82,11 +44,110 @@
 @code {
     [Parameter] public Purchase_RequestVM Request { get; set; } = new();
 
+    private class TimelineEvent
+    {
+        public DateTime Date { get; set; }
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string CssClass { get; set; } = "timeline__point--info";
+        public string? Remarks { get; set; }
+    }
+
+    private List<TimelineEvent> Timeline => BuildTimeline();
+
+    private List<TimelineEvent> BuildTimeline()
+    {
+        var list = new List<TimelineEvent>();
+
+        // REQUEST CREATED
+        if (Request.DateCreated.HasValue)
+        {
+            list.Add(new TimelineEvent
+            {
+                Date = Request.DateCreated.Value,
+                Title = "Request Created",
+                Description = $"Purchase request was drafted by {Request.RequestedByName}",
+                CssClass = "timeline__point--primary"
+            });
+        }
+
+        // REQUEST UPDATED
+        if (Request.DateModified.HasValue && Request.DateModified?.ToString("mmddyyyy hh:mm") != Request.DateCreated?.ToString("mmddyyyy hh:mm"))
+        {
+            list.Add(new TimelineEvent
+            {
+                Date = Request.DateModified!.Value,
+                Title = "Request Updated",
+                Description = $"Request details were updated.",
+                CssClass = "timeline__point--info"
+            });
+        }
+
+        // APPROVAL EVENTS
+        if (Request.Approvals?.Any() == true)
+        {
+            foreach (var a in Request.Approvals)
+            {
+                if (!a.ActionDate.HasValue) continue;
+
+                list.Add(new TimelineEvent
+                {
+                    Date = a.ActionDate.Value,
+                    Title = $"{utils.GetApprovalStagesDisplay(a.Stage)} - {utils.GetApprovalStatusText(a)}",
+                    Description = BuildApprovalDescription(a),
+                    Remarks = a.Remarks,
+                    CssClass = GetTimelinePointClass(a)
+                });
+            }
+        }
+
+        // REQUISITION SLIP EVENTS
+        if (Request.RequisitionSlips?.Any() == true)
+        {
+            foreach (var slip in Request.RequisitionSlips)
+            {
+                list.Add(new TimelineEvent
+                {
+                    Date = slip.DateCreated,
+                    Title = "Requisition Slip Created",
+                    Description =
+                        $"Slip created by {slip.RequisitionerName} · Amount: ₱{slip.AmountRequested:N2} · Type: {GetSlipDisplayName(slip.RequisitionSlip_For)}",
+                    CssClass = "timeline__point--warning"
+                });
+            }
+        }
+
+        return list.OrderBy(e => e.Date).ToList();
+    }
+
+    private string BuildApprovalDescription(Purchase_Request_ApprovalVM a)
+    {
+        if (a.IsApproved)
+            return $"Approved by {a.ApproverName}";
+        if (a.IsRejected)
+            return $"Rejected by {a.ApproverName}";
+        if (a.IsCancelled)
+            return $"Cancelled by {a.ApproverName}";
+
+        return $"Pending approval from {a.ApproverName}";
+    }
+
     private string GetTimelinePointClass(Purchase_Request_ApprovalVM approval)
     {
-        return approval.IsApproved ? "timeline__point--success" :
-               approval.IsRejected ? "timeline__point--danger" :
-               approval.IsCancelled ? "timeline__point--cancelled" :
-               "timeline__point--warning";
+        return approval.IsApproved ? "timeline__point--success"
+             : approval.IsRejected ? "timeline__point--danger"
+             : approval.IsCancelled ? "timeline__point--cancelled"
+             : "timeline__point--warning";
+    }
+    private string GetSlipDisplayName(RequisitionSlip_For slipFor)
+    {
+        return slipFor switch
+        {
+            RequisitionSlip_For.CashPayment => "Cash Payment",
+            RequisitionSlip_For.CheckPayment => "Check Payment",
+            RequisitionSlip_For.Advances => "Cash Advances",
+            RequisitionSlip_For.Others => "Others",
+            _ => slipFor.ToString()
+        };
     }
 }

@@ -19,7 +19,7 @@
 
         <!-- Body -->
         <div class="pdf-modal__body">
-            @if (string.IsNullOrWhiteSpace(PdfBase64))
+            @if (string.IsNullOrWhiteSpace(PdfBase64) || isLoading)
             {
                 <div class="pdf-modal__loading">
                     <div class="pdf-modal__spinner"></div>
@@ -80,7 +80,7 @@
     {
         if (IsVisible && !string.IsNullOrWhiteSpace(PdfBase64))
         {
-            isLoading = true;
+            isLoading = false;
             showPdfFallback = false;
         }
     }

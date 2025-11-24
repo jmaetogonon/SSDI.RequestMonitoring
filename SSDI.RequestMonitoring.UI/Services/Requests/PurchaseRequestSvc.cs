@@ -73,6 +73,15 @@ public class PurchaseRequestSvc : BaseHttpService, IPurchaseRequestSvc
         });
     }
 
+    public async Task<List<Purchase_RequestVM>> GetAllPurchaseReqByCeo()
+    {
+        return await SafeApiCall(async () =>
+        {
+            var requests = await _client.GetAllPurchaseReqByCeoAsync();
+            return _mapper.Map<List<Purchase_RequestVM>>(requests);
+        });
+    }
+
     public async Task<List<Purchase_RequestVM>> GetAllPurchaseReqBySupervisor(int supervisorId, bool includeDepartmentMembers = true, bool includeDivisionMembers = true)
     {
         return await SafeApiCall(async () =>
@@ -126,50 +135,6 @@ public class PurchaseRequestSvc : BaseHttpService, IPurchaseRequestSvc
         }
     }
 
-    public async Task<byte[]?> DownloadAttachmentAsync(int attachmentId)
-    {
-        try
-        {
-            var fileResponse = await _client.GetAttachmentAsync(attachmentId);
-            return fileResponse;
-        }
-        catch (ApiException ex)
-        {
-            Console.WriteLine($"Download failed: {ex.Message}");
-            return null;
-        }
-    }
-
-    public async Task<Response<Guid>> UploadAttachmentPurchaseAsync(UploadAttachmentPurchaseCommandVM command)
-    {
-        try
-        {
-            var uploadAttCommand = _mapper.Map<UploadAttachmentPurchaseCommand>(command);
-            await _client.UploadAttachmentPurchaseAsync(uploadAttCommand);
-            return new Response<Guid>()
-            {
-                Success = true,
-            };
-        }
-        catch (ApiException ex)
-        {
-            return ConvertApiExceptions<Guid>(ex);
-        }
-    }
-
-    public async Task<Response<Guid>> DeleteAttachmentRequest(int id)
-    {
-        try
-        {
-            await _client.DeleteAttachmentRequestAsync(id);
-            return new Response<Guid>() { Success = true };
-        }
-        catch (ApiException ex)
-        {
-            return ConvertApiExceptions<Guid>(ex);
-        }
-    }
-
     public async Task<byte[]> GeneratePurchaseRequestPdf(int id)
     {
         try
@@ -180,8 +145,7 @@ public class PurchaseRequestSvc : BaseHttpService, IPurchaseRequestSvc
         catch (ApiException ex)
         {
             Console.WriteLine($"PDF Generation failed: {ex.Message}");
-            return null;
+            return null!;
         }
     }
-
 }

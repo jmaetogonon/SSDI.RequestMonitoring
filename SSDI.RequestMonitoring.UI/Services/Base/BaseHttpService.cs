@@ -30,7 +30,7 @@ public class BaseHttpService
                 await _localStorage.RemoveItemAsync("rmtoken"); // clear invalid token
                 var currentUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
                 var encodedReturnUrl = Uri.EscapeDataString("/" + currentUrl);
-                _navigationManager.NavigateTo($"/login?returnUrl={encodedReturnUrl}&tokenExpired=true", forceLoad: true);
+                _navigationManager.NavigateTo($"/?returnUrl={encodedReturnUrl}&tokenExpired=true", forceLoad: true);
                 return default!;
             }
             return default!;

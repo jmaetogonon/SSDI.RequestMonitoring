@@ -11,6 +11,8 @@ public interface IPurchaseRequestSvc
 
     Task<List<Purchase_RequestVM>> GetAllPurchaseRequestsByAdmin();
 
+    Task<List<Purchase_RequestVM>> GetAllPurchaseReqByCeo();
+
     Task<List<Purchase_RequestVM>> GetAllPurchaseReqBySupervisor(int supervisorId, bool includeDepartmentMembers = true, bool includeDivisionMembers = true);
 
     Task<Purchase_RequestVM> GetByIdPurchaseRequest(int id);
@@ -23,10 +25,5 @@ public interface IPurchaseRequestSvc
 
     Task<Response<Guid>> ApprovePurchaseRequest(ApprovePurchaseRequestCommandVM command);
 
-    Task<byte[]?> DownloadAttachmentAsync(int attachmentId);
-
-    Task<Response<Guid>> UploadAttachmentPurchaseAsync(UploadAttachmentPurchaseCommandVM command);
-
-    Task<Response<Guid>> DeleteAttachmentRequest(int id);
     Task<byte[]> GeneratePurchaseRequestPdf(int id);
 }

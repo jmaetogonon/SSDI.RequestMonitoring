@@ -6,6 +6,8 @@ public class Purchase_RequestVM
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public int DivisionId { get; set; }
+    public int DepartmentId { get; set; }
     public string Division_Department { get; set; } = string.Empty;
     public string Nature_Of_Request { get; set; } = string.Empty;
     public string Justification { get; set; } = string.Empty;
@@ -28,6 +30,7 @@ public class Purchase_RequestVM
 
     public ICollection<Purchase_Request_ApprovalVM> Approvals { get; set; } = [];
     public ICollection<Purchase_Request_AttachVM> Attachments { get; set; } = [];
+    public ICollection<Purchase_Request_SlipVM> RequisitionSlips { get; set; } = [];
 
     public bool IsDirectReport { get; set; }
     public string ReportType { get; set; } = string.Empty;
@@ -54,8 +57,7 @@ public class Purchase_RequestVM
                 RequestStatus.ForEndorsement => ApprovalStage.DepartmentHead,
                 RequestStatus.ForAdminVerification => ApprovalStage.DivisionHead,
                 RequestStatus.ForCeoApproval => ApprovalStage.Admin,
-                RequestStatus.ForFinanceApproval => ApprovalStage.CeoOrAvp,
-                RequestStatus.Approved => ApprovalStage.Finance,
+                RequestStatus.ForRequisition => ApprovalStage.CeoOrAvp,
                 _ => null
             };
         }

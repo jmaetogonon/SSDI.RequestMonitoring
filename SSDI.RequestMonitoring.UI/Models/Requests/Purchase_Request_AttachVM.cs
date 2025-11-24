@@ -11,4 +11,6 @@ public class Purchase_Request_AttachVM
     public string ContentType { get; set; } = string.Empty;
     public DateTime? DateCreated { get; set; }
     public byte[]? ImgData { get; set; }
+    public RequestAttachType AttachType { get; set; }
+    public int RequisitionId { get; set; }
 }

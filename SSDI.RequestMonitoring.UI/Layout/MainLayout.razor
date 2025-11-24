@@ -1,18 +1,38 @@
 ﻿@inherits LayoutComponentBase
 @inject IUIStateService UIStateService
 
-<FluentLayout>
+@* <FluentLayout>
     <Navbar />
     <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
         <Sidebar />
+        <FluentBodyContent Class="body-content">
+            <div class="content"> 
+                @Body
+             </div>
+        </FluentBodyContent>
+        <FluentToastProvider MaxToastCount="10" />
+    </FluentStack>
+</FluentLayout> *@
+
+<FluentLayout>
+    <FluentHeader Style="background-color: #094171;">
+        <Navbar />
+    </FluentHeader>
+    <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
+        <NavMenu />
         <FluentBodyContent Class="body-content">
             <div class="content">
                 @Body
             </div>
         </FluentBodyContent>
-        <FluentToastProvider MaxToastCount="10" />
     </FluentStack>
+    <FluentFooter>
+        <a href="" target="_blank">Sonic Sales & Distribution, Inc. @@2024</a>
+        <FluentSpacer />
+        <a href="http://192.168.1.19:81/" target="_blank">About Sonic</a>
+    </FluentFooter>
 </FluentLayout>
+
 
 @code {
     protected override async Task OnInitializedAsync()

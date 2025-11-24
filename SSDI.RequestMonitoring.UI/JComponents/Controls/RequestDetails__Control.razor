@@ -102,7 +102,7 @@
             @if (finalApproval != null && finalApproval.IsApproved)
             {
                 <div class="approval__info" data-status="@finalApproval.Action">
-                    <strong>@finalApproval.ApproverName</strong>
+                    <strong>Ian Co / Stephanie Co</strong>
                     <div class="approval__subtext">
                         <span>@finalApproval.ActionDate?.ToString("MMM dd, yyyy • hh:mm tt")</span>
                     </div>
@@ -116,7 +116,7 @@
 
         <DetailsRow__Card Label="Acknowledged by">
             @{
-                var finalApproval = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.Finance);
+                var finalApproval = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp);
             }
             @if (finalApproval != null && finalApproval.IsApproved)
             {

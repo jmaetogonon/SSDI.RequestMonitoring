@@ -1,4 +1,5 @@
-﻿@inject IJSRuntime JS
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 
 <div class="sidebar">
@@ -9,7 +10,7 @@
     <div class="sidebar__links @(isSidebarOpen ? "sidebar__links--open" : "sidebar__links--closed")">
         <div class="sidebar__section">
             <div class="sidebar__section-title" style="margin-top: 0.5rem !important;">General</div>
-            <a href="/dashboard" class="sidebar__link @GetNavLinkClass("/dashboard")" @onclick="ToggleSidebarIfMobile" >
+            <a href="/dashboard" class="sidebar__link @GetNavLinkClass("/dashboard")" @onclick="ToggleSidebarIfMobile">
                 <i class="bi bi-house-door-fill sidebar__icon" /> <span>Dashboard</span>
             </a>
             <a href="/requests/purchase-requests" class="sidebar__link @GetNavLinkClass("/requests/purchase-requests")" @onclick="ToggleSidebarIfMobile">
@@ -19,10 +20,23 @@
                 <i class="bi bi-wrench-adjustable sidebar__icon" /> <span>Job Orders</span>
             </a>
 
+            <AuthorizeView Roles="@TokenCons.Role__SysAdmin">
+                <Authorized>
+                    <div class="sidebar__section-title" style="margin-top: 0 !important;">Master Data</div>
+
+                    <a href="/masterdata/divisions" class="sidebar__link @GetNavLinkClass("/masterdata/divisions")" @onclick="ToggleSidebarIfMobile">
+                        <i class="bi bi-diagram-3 sidebar__icon" /> <span>Divisions</span>
+                    </a>
+                    <a href="/masterdata/departments" class="sidebar__link @GetNavLinkClass("/masterdata/departments")" @onclick="ToggleSidebarIfMobile">
+                        <i class="bi bi-diagram-2 sidebar__icon" /> <span>Departments</span>
+                    </a>
+                </Authorized>
+            </AuthorizeView>
 
             <!-- Settings Section with Submenu -->
-           @*  <div class="sidebar__section-title">Settings</div>
-            <button class="sidebar__link sidebar__link--settings" @onclick="ToggleSettingsMenu">
+
+            @* <div class="sidebar__section-title" style="margin-top: 0 !important;">Settings</div>
+            <button class="sidebar__link sidebar__link--settings" @onclick="ToggleSettingsMenu" aria-expanded="@isSettingsMenuOpen">
                 <i class="bi bi-gear-fill sidebar__icon"></i> <span>Settings</span> <i class="bi bi-chevron-right"></i>
             </button>
             <div class="sidebar__submenu @(isSettingsMenuOpen ? "sidebar__submenu--open" : "sidebar__submenu--closed")">

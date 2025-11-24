@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using SSDI.RequestMonitoring.UI.Models.Enums;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Filters;
 
@@ -17,9 +16,8 @@ public partial class Status__Filter : ComponentBase
         new StatusOption { Value = RequestStatus.ForEndorsement, DisplayName = TokenCons.Status__ForEndorsement, IsChecked = false },
         new StatusOption { Value = RequestStatus.ForAdminVerification, DisplayName = TokenCons.Status__ForAdminVerification, IsChecked = false },
         new StatusOption { Value = RequestStatus.ForCeoApproval, DisplayName = TokenCons.Status__ForCeoApproval, IsChecked = false },
-        new StatusOption { Value = RequestStatus.ForFinanceApproval, DisplayName = TokenCons.Status__ForFinanceApproval, IsChecked = false },
-        new StatusOption { Value = RequestStatus.Approved, DisplayName = TokenCons.Status__Approved, IsChecked = false },
-        new StatusOption { Value = RequestStatus.Rejected, DisplayName = TokenCons.Status__Rejected, IsChecked = false },
+        new StatusOption { Value = RequestStatus.ForRequisition, DisplayName = TokenCons.Status__ForRequisition, IsChecked = false },
+         new StatusOption { Value = RequestStatus.Rejected, DisplayName = TokenCons.Status__Rejected, IsChecked = false },
         new StatusOption { Value = RequestStatus.Cancelled, DisplayName = TokenCons.Status__Closed, IsChecked = false }
     ];
 
@@ -138,7 +136,7 @@ public partial class Status__Filter : ComponentBase
 
     private class StatusOption
     {
-        public RequestStatus Value { get; set; } 
+        public RequestStatus Value { get; set; }
         public string DisplayName { get; set; } = string.Empty;
         public bool IsChecked { get; set; }
     }

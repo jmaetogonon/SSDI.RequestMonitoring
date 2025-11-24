@@ -2,9 +2,7 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Filters;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
-using SSDI.RequestMonitoring.UI.Models.Enums;
 using SSDI.RequestMonitoring.UI.Models.Requests;
-using static SSDI.RequestMonitoring.UI.JComponents.Modals.Confirmation__Modal;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
 
@@ -59,7 +57,13 @@ public partial class PurchaseRequest_Index : ComponentBase
                 AllRequests = requests.AsQueryable();
                 if (requests.FirstOrDefault()?.ReportType == "Division")
                 {
-                    AllRequests = requests.Where(e=>e.Status == RequestStatus.ForEndorsement).AsQueryable();
+                    AllRequests = requests.Where(e => e.Status == RequestStatus.ForEndorsement).AsQueryable();
+                }
+
+                if (utils.IsCEO())
+                {
+                    var ceoRequests = await purchaseRequestSvc.GetAllPurchaseReqByCeo();
+                    AllRequests = AllRequests.Concat(ceoRequests).AsQueryable();
                 }
             }
             ApplyFilters();
@@ -191,7 +195,7 @@ public partial class PurchaseRequest_Index : ComponentBase
             new("For Endorsing", statusCounts.GetValueOrDefault(RequestStatus.ForEndorsement, 0), totalCount, "Pending", "bi bi-cart"),
             new("For Admin Verification", statusCounts.GetValueOrDefault(RequestStatus.ForAdminVerification, 0), totalCount, "Pending", "bi bi-hourglass-split"),
             new("For Ceo Approval", statusCounts.GetValueOrDefault(RequestStatus.ForCeoApproval, 0), totalCount, "Pending", "bi bi-patch-check"),
-            new("For Finance Approval", statusCounts.GetValueOrDefault(RequestStatus.ForFinanceApproval, 0), totalCount, "Completed", "bi bi-check2-circle"),
+            new("For Finance Approval", statusCounts.GetValueOrDefault(RequestStatus.ForRequisition, 0), totalCount, "Completed", "bi bi-check2-circle"),
         ];
     }
 
@@ -214,7 +218,7 @@ public partial class PurchaseRequest_Index : ComponentBase
 
     public bool CheckNewBtnPermission()
     {
-        return utils.IsUser() || AllRequests?.FirstOrDefault()?.ReportType == "Department";
+        return utils.IsUser() || AllRequests?.FirstOrDefault()?.ReportType == "Department" || (AllRequests?.FirstOrDefault() is null && utils.IsSupervisor());
     }
 
     public void Dispose()

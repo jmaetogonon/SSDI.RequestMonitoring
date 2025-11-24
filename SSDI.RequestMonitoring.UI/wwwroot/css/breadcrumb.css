@@ -1,6 +1,9 @@
 ﻿/* Breadcrumb Navigation */
 .breadcrumb-nav {
-    padding: .5rem 0;
+    padding: 0 2rem;
+    height: 45px;
+    align-items: center;
+    display: flex;
 }
 
 .breadcrumb-list {
@@ -193,7 +196,10 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .breadcrumb-nav {
-        margin-bottom: 1.5rem;
+        padding: 0 0.5rem;
+        height: 45px;
+        align-items: center;
+        display: flex;
     }
 
     .breadcrumb-list {
@@ -229,9 +235,6 @@
 }
 
 @media (max-width: 480px) {
-    .breadcrumb-nav {
-        margin-bottom: 1rem;
-    }
 
     .breadcrumb-item {
         font-size: 0.75rem;
@@ -245,8 +248,7 @@
 /* Print Styles */
 @media print {
     .breadcrumb-nav {
-        margin-bottom: 1rem;
-        padding: 0;
+         padding: 0;
     }
 
     .breadcrumb-link:hover {

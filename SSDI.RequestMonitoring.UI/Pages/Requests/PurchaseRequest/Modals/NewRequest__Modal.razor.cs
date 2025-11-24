@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
-using SSDI.RequestMonitoring.UI.Models.Enums;
 using SSDI.RequestMonitoring.UI.Models.Requests;
-using static SSDI.RequestMonitoring.UI.JComponents.Modals.Confirmation__Modal;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals;
 
@@ -35,6 +33,12 @@ public partial class NewRequest__Modal : ComponentBase
 
     private async Task HandleSave()
     {
+        if (RequestModel.DepartmentId is 0)
+        {
+            IsShowAlert = true;
+            AlertMessage = "Please select a department.";
+            return;
+        }
         var options = new ConfirmationModalOptions
         {
             Message = "Are you sure you want to save this request?",
@@ -51,9 +55,10 @@ public partial class NewRequest__Modal : ComponentBase
 
             _isDisabledBtns = true;
             IsShowAlert = false;
-            RequestModel.Status = RequestStatus.Draft;
+            RequestModel.Status = utils.IsSupervisor() ? RequestStatus.ForEndorsement : RequestStatus.Draft;
             RequestModel.DateRequested = DateTime.Now;
             RequestModel.RequestedById = currentUser.UserId;
+            RequestModel.RequestedByDeptHeadId = utils.IsSupervisor() ? currentUser.UserId : null;
 
             var response = await purchaseRequestSvc.CreatePurchaseRequest(RequestModel);
             if (response.Success)
@@ -69,6 +74,7 @@ public partial class NewRequest__Modal : ComponentBase
             AlertMessage = response.Message;
             _isDisabledBtns = false;
             await confirmModal!.SetLoadingAsync(false);
+            await confirmModal!.HideAsync();
         }
     }
 

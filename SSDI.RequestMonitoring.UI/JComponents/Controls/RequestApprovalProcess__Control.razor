@@ -11,13 +11,13 @@
             </div>
             <div class="approval-sort">
                 <label class="approval-sort__label">Sort by:</label>
-                <button class="approval-sort__button @(SortOrder == "desc" ? "approval-sort__button--active" : "")"
+                <button class="btn btn--outline btn--sm @(SortOrder == "desc" ? "approval-sort__button--active" : "")"
                         @onclick="@(() => SetSortOrder("desc"))"
                         title="Show newest first">
                     <i class="bi bi-sort-down"></i>
                     Newest First
                 </button>
-                <button class="approval-sort__button @(SortOrder == "asc" ? "approval-sort__button--active" : "")"
+                <button class="btn btn--outline btn--sm @(SortOrder == "asc" ? "approval-sort__button--active" : "")"
                         @onclick="@(() => SetSortOrder("asc"))"
                         title="Show oldest first">
                     <i class="bi bi-sort-up"></i>

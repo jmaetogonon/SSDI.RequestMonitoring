@@ -1,96 +1,127 @@
-﻿@using SSDI.RequestMonitoring.UI.JComponents.Loading
+﻿@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.Models.MasterData
 @using SSDI.RequestMonitoring.UI.Models.Requests
-<EditForm Model="Model" OnValidSubmit="OnValidSubmit">
+@inject IDivisionSvc divisionSvc
+@inject IDepartmentSvc departmentSvc
+
+<EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <div class="modal__body">
         <div class="modal__form-group position-relative">
             <!-- Name -->
-            <div class="form-group full-width">
-                <label for="name">Name</label>
-                <input id="name" @bind="Model.Name" class="form-control" style="font-weight: 500;" placeholder="Enter your full name" disabled="@(utils.IsUser())" required />
-            </div>
-
-            <!-- Division / Department -->
             <div class="form-group">
-                <label for="division">Division / Department</label>
-                <input id="division" @bind="Model.Division_Department" class="form-control" placeholder="e.g., FAD / IT Department" required />
+                <label for="name">Name</label>
+                <input id="name" @bind="FormModel.Name" class="form-control" style="font-weight: 500;" placeholder="Enter your full name" disabled="@(utils.IsUser())" required />
             </div>
 
             <!-- Nature of Request -->
             <div class="form-group">
                 <label for="nature">Nature of Request</label>
-                <input id="nature" @bind="Model.Nature_Of_Request" class="form-control" placeholder="e.g., Purchase of Equipment" required />
+                <input id="nature" @bind="FormModel.Nature_Of_Request" class="form-control" placeholder="e.g., Purchase of Equipment" required />
             </div>
+
+            <!-- Division / Department -->
+            <div class="form-group">
+                <label for="divisionId" class="labelwithicon">
+                    Division
+                    @if (FormModel.DivisionId == 0)
+                    {
+                        <i class="bi bi-arrow-clockwise" style="color: var(--color-lightGray);" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-arrow-clockwise" @onclick="@ResetSelectedDivision" style="color: var(--color-green); cursor:pointer;" />
+                    }
+                </label>
+                <InputSelect id="divisionId" class="form-select" @bind-Value="FormModel.DivisionId" disabled="@(FormModel.DepartmentId != 0)" required>
+                    <option value="0">--Select--</option>
+                    @foreach (var item in Divisions)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="form-group">
+                <label for="departmentid">Department</label>
+                <InputSelect id="departmentid" class="form-select" @bind-Value="FormModel.DepartmentId" disabled="@(FormModel.DivisionId == 0)" required>
+                    <option value="0">--Select--</option>
+                    @foreach (var item in Departments.Where(e => e.DivisionId == FormModel.DivisionId))
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
 
             <!-- Justification -->
             <div class="form-group full-width">
                 <label for="justification">Justification</label>
-                <textarea id="justification" @bind="Model.Justification" class="form-control" placeholder="Describe the reason for this request..." rows="2" required />
+                <textarea id="justification" @bind="FormModel.Justification" class="form-control" placeholder="Describe the reason for this request..." rows="2" required />
             </div>
 
             <!-- Priority -->
             <div class="form-group full-width">
                 <label>Priority</label>
-                <FluentRadioGroup Class="radio-group" Name="priority" @bind-Value="Model.Priority">
+                <FluentRadioGroup Class="radio-group" Name="priority" @bind-Value="FormModel.Priority">
                     <FluentRadio Class="radio-option" Value="RequestPriority.Hrs24">Must be done within 24 hours</FluentRadio>
                     <FluentRadio Class="radio-option" Value="RequestPriority.ThisWeek">Must be done within the week</FluentRadio>
                     <FluentRadio Class="radio-option" Value="RequestPriority.Others">Others, please specify</FluentRadio>
                 </FluentRadioGroup>
-                <ValidationMessage For="() => Model.Priority" />
+                <ValidationMessage For="() => FormModel.Priority" />
 
-                @if (Model.Priority == RequestPriority.Others)
+                @if (FormModel.Priority == RequestPriority.Others)
                 {
-                    <input @bind="Model.OtherPriority" class="form-control" placeholder="Enter specific priority" required />
+                    <input @bind="FormModel.OtherPriority" class="form-control" placeholder="Enter specific priority" required />
                 }
             </div>
 
             <!-- File Upload -->
-            @if (!IsForUpdate)
-            {
-                <div class="form-group full-width">
-                    <label for="file-upload">
-                        Supporting Documents
-                        @if (Model.Attachments.Any())
-                        {
-                            <span> (@Model.Attachments.Count())</span>
-                        }
-                    </label>
-
-                    <div class="file-upload-area"
-                         @ondragover="OnDragOver"
-                         @ondrop="OnDrop">
-                        <InputFile id="file-upload"
-                                   multiple
-                                   OnChange="OnFilesSelected"
-                                   class="file-input" />
-
-                        <div class="file-upload-placeholder">
-                            <i class="bi bi-cloud-arrow-up-fill upload-icon"></i>
-                            <p>Drag & drop files here, or <span class="browse-text">browse</span></p>
-                            <small>Supported: PDF, DOCX, JPG, PNG, XLSX (max 10MB each)</small>
-                        </div>
-                    </div>
-
-                    @if (Model.Attachments.Any())
+            <div class="form-group full-width">
+                <label for="file-upload">
+                    @(!IsForUpdate ? "Supporting Documents" : "Add More Supporting Documents")
+                    @if (FormModel.Attachments.Any())
                     {
-                        <ul class="file-list">
-                            @foreach (var file in Model.Attachments)
-                            {
-                                <li class="file-item">
-                                    <i class="bi bi-file-earmark"></i>
-                                    <span>@file.FileName</span>
-                                    <span class="file-size">
-                                        (@((file.Size / 1024.0 / 1024.0).ToString("F2")) MB)
-                                    </span>
-                                    <button type="button" class="remove-btn" @onclick="() => RemoveFile(file)">
-                                        <i class="bi bi-x-circle"></i>
-                                    </button>
-                                </li>
-                            }
-                        </ul>
+                        <span> (@FormModel.Attachments.Count())</span>
                     }
+                </label>
+
+                <div class="file-upload-area"
+                     @ondragover="OnDragOver"
+                     @ondrop="OnDrop">
+                    <InputFile id="file-upload"
+                               multiple
+                               OnChange="OnFilesSelected"
+                               class="file-input" />
+
+                    <div class="file-upload-placeholder">
+                        <i class="bi bi-cloud-arrow-up-fill upload-icon"></i>
+                        <p>Drag & drop files here, or <span class="browse-text">browse</span></p>
+                        <small>Supported: PDF, DOCX, JPG, PNG, XLSX (max 10MB each)</small>
+                    </div>
                 </div>
-            }
+
+                @if (FormModel.Attachments.Any())
+                {
+                    <ul class="file-list">
+                        @foreach (var file in FormModel.Attachments)
+                        {
+                            <li class="file-item">
+                                <i class="bi bi-file-earmark"></i>
+                                <span>@file.FileName</span>
+                                <span class="file-size">
+                                    (@((file.Size / 1024.0 / 1024.0).ToString("F2")) MB)
+                                </span>
+                                <button type="button" class="remove-btn" @onclick="() => RemoveFile(file)">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
 
             <LoadingOverlay IsVisible="@IsDisabledBtns" Message="Saving, please wait..." />
         </div>
@@ -104,13 +135,27 @@
 @code {
 
     [Parameter] public bool Disabled { get; set; } = false;
-    [Parameter] public Purchase_RequestVM Model { get; set; } = new();
+    [Parameter] public Purchase_RequestVM FormModel { get; set; } = new();
     [Parameter] public bool IsDisabledBtns { get; set; }
     [Parameter] public EventCallback OnValidSubmit { get; set; }
     [Parameter] public EventCallback OnCloseModal { get; set; }
     [Parameter] public bool IsForUpdate { get; set; }
 
-    private List<IBrowserFile> uploadedFiles = new();
+    private List<IBrowserFile> uploadedFiles = [];
+    private List<DivisionVM> Divisions = [];
+    private List<DepartmentVM> Departments = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Divisions = await divisionSvc.GetAllDivisions();
+        Departments = await departmentSvc.GetAllDepartments();
+    }
+
+    private void ResetSelectedDivision()
+    {
+        FormModel.DivisionId = 0;
+        FormModel.DepartmentId = 0;
+    }
 
     private void OnDragOver(DragEventArgs e)
     {
@@ -145,14 +190,15 @@
             var attachVM = new Purchase_Request_AttachVM
             {
                 UniqId = utils.GenerateUniqId(),
-                PurchaseRequestId = Model.Id,
+                PurchaseRequestId = FormModel.Id,
                 FileName = file.Name,
                 ContentType = file.ContentType,
                 ImgData = fileBytes,
-                Size = file.Size
+                Size = file.Size,
+                AttachType = RequestAttachType.Request
             };
 
-            Model.Attachments.Add(attachVM);
+            FormModel.Attachments.Add(attachVM);
         }
     }
 
@@ -160,8 +206,8 @@
     {
         // uploadedFiles.Remove(file);
 
-        var toRemove = Model.Attachments.FirstOrDefault(a => a.UniqId == file.UniqId);
+        var toRemove = FormModel.Attachments.FirstOrDefault(a => a.UniqId == file.UniqId);
         if (toRemove != null)
-            Model.Attachments.Remove(toRemove);
+            FormModel.Attachments.Remove(toRemove);
     }
 }

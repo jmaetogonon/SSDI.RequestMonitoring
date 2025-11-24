@@ -1,16 +1,57 @@
-﻿<div class="navmenu">
-    <input type="checkbox" title="Menu expand/collapse toggle" id="navmenu-toggle" class="navmenu-icon" />
-    <label for="navmenu-toggle" class="navmenu-icon"><FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Fill" /></label>
-    <nav class="sitenav" aria-labelledby="main-menu">
-        <FluentNavMenu Id="main-menu" Width="250" Collapsible="true" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
-             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-             <FluentNavLink Href="counter" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Counter</FluentNavLink>
-             <FluentNavLink Href="weather" Icon="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())" IconColor="Color.Accent">Weather</FluentNavLink>
-             <FluentNavLink Href="purchase-request" Icon="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())" IconColor="Color.Accent">Purchase Request</FluentNavLink>
-        </FluentNavMenu>
+﻿
+<div class="navmenu">
+    @if (isMobile)
+    {
+        <input type="checkbox" id="navmenu-toggle" class="navmenu-toggle" @bind="expanded" />
+        <label for="navmenu-toggle" class="navmenu-icon">
+            <FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Fill" />
+        </label>
+    }
+    <button id="navmenu-toggle" style="display:none"></button>
+
+
+    @if (expanded && isMobile)
+    {
+        <div class="navmenu-backdrop" @onclick="HideMenu"></div>
+    }
+
+    <nav class="sitenav slide-in-left @(expanded && isMobile ? "open" : "")" aria-labelledby="main-menu">
+        <FluentNavMenu Id="main-menu" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
+            <FluentNavMenu Id="main-menu" Width="250" Collapsible="true" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
+                <FluentNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Dashboard</FluentNavLink>
+                <FluentNavLink Href="/requests/purchase-requests" Icon="@(new Icons.Regular.Size20.ShoppingBag())" IconColor="Color.Accent">Purchase Requests</FluentNavLink>
+                <FluentNavLink Href="/requests/job-orders" Icon="@(new Icons.Regular.Size20.Wrench())" IconColor="Color.Accent">Job Orders</FluentNavLink>
+            </FluentNavMenu>
+        </FluentNavMenu> 
     </nav>
 </div>
 
+
 @code {
     private bool expanded = true;
+    private bool isMobile = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("addResizeListener", DotNetObjectReference.Create(this));
+        }
+    }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private NavigationManager navigationManager { get; set; } = default!;
+
+    [JSInvokable]
+    public void SetIsMobile(int width)
+    {
+        isMobile = width <= 600;
+        expanded = !isMobile; // expanded = true when NOT mobile
+        StateHasChanged();
+    }
+
+    private void HideMenu()
+    {
+        expanded = false;
+    }
 }

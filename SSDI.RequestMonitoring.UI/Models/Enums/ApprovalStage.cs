@@ -6,5 +6,4 @@ public enum ApprovalStage
     DivisionHead,
     Admin,
     CeoOrAvp,
-    Finance,
 }

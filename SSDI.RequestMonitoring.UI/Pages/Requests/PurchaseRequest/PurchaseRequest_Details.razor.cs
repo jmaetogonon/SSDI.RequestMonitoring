@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.Requests;
+using System.Threading.Tasks;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
 
@@ -19,7 +20,6 @@ public partial class PurchaseRequest_Details : ComponentBase
     private string EditBtnText => SetEditBtnText();
 
     private Confirmation__Modal? confirmModal;
-
 
     private string? pdfBase64;
     private bool isPdfModalVisible = false;
@@ -51,6 +51,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private void NavigateToEdit()
     {
+        Request?.Attachments.Clear();
         isEditRequestModalVisible = true;
     }
 
@@ -109,7 +110,7 @@ public partial class PurchaseRequest_Details : ComponentBase
         await OnApproveRequest(ApprovalStage.DivisionHead, ApprovalAction.Reject, "rejected");
     }
 
-    private async Task VerifyByadminRequest()
+    private async Task VerifyByAdminRequest()
     {
         var options = new ConfirmationModalOptions
         {
@@ -132,6 +133,31 @@ public partial class PurchaseRequest_Details : ComponentBase
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.Admin, ApprovalAction.Reject, "rejected");
+    }
+
+    private async Task ApproveByCeoRequest()
+    {
+        var options = new ConfirmationModalOptions
+        {
+            Message = "Are you sure you want to approve this purchase request?",
+            Title = "Approve Purchase Approve",
+            Variant = ConfirmationModalVariant.confirmation,
+            ConfirmText = "Yes, Approve",
+            CancelText = "No, Cancel",
+        };
+
+        var result = await confirmModal!.ShowAsync(options);
+        if (!result) return;
+
+        await OnApproveRequest(ApprovalStage.CeoOrAvp, ApprovalAction.Approve, "approved");
+    }
+
+    private async Task RejectByCeoRequest()
+    {
+        var result = await confirmModal!.ShowRejectAsync(Request!.Id);
+        if (!result) return;
+
+        await OnApproveRequest(ApprovalStage.CeoOrAvp, ApprovalAction.Reject, "rejected");
     }
 
     private async Task OnApproveRequest(ApprovalStage stage, ApprovalAction action, string toastText)
@@ -166,6 +192,7 @@ public partial class PurchaseRequest_Details : ComponentBase
     {
         await LoadRequestDetails();
         isEditRequestModalVisible = false;
+        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(paramId);
         toastSvc.ShowSuccess("The request has been updated successfully.");
     }
 
@@ -189,7 +216,6 @@ public partial class PurchaseRequest_Details : ComponentBase
 
             pdfBase64 = Convert.ToBase64String(pdfBytes);
             isPdfModalVisible = true;
-
         }
         catch (Exception ex)
         {
@@ -197,6 +223,7 @@ public partial class PurchaseRequest_Details : ComponentBase
             toastSvc.ShowError($"Error exporting PDF: {ex.Message}");
         }
     }
+
     private void ClosePdfModal()
     {
         isPdfModalVisible = false;
@@ -230,7 +257,7 @@ public partial class PurchaseRequest_Details : ComponentBase
     {
         if (Request == null) return false;
 
-        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && ReportType == "Department";
+        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && (ReportType == "Department" || (Request.RequestedById == currentUser.UserId && utils.IsSupervisor()));
     }
 
     private string SetEditBtnText()
@@ -240,7 +267,11 @@ public partial class PurchaseRequest_Details : ComponentBase
         return (Request.Status == RequestStatus.Rejected) ? "Edit to Resubmit" : "Edit";
     }
 
-    private void OnCloseEditReqModal() => isEditRequestModalVisible = false;
+    private async Task OnCloseEditReqModal()
+    {
+        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(paramId);
+        isEditRequestModalVisible = false;
+    }
 
     private async Task CloseModalWithLoading()
     {

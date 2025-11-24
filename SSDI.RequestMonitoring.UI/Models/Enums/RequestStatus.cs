@@ -6,7 +6,7 @@ public enum RequestStatus
     ForEndorsement,
     ForAdminVerification,
     ForCeoApproval,
-    ForFinanceApproval,
+    ForRequisition,
     Approved,
     Rejected,
     Cancelled

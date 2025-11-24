@@ -23,7 +23,26 @@ public class Utils
 
     public bool IsAdmin() => _currentUser.Role == TokenCons.Role__Admin;
 
+    public bool IsCEO() => _currentUser.Username == "b.palang";
+
     public bool IsSupervisor() => _currentUser.RoleDesc.Contains(TokenCons.Role__Supervisor, StringComparison.OrdinalIgnoreCase);
+
+    public string GetLastModifiedDisplay(DateTime? dateModified)
+    {
+        if (dateModified is null) return "Never modified";
+
+        var now = DateTime.Now;
+        var timeSpan = now - dateModified.Value;
+
+        return timeSpan.TotalDays switch
+        {
+            < 1 when timeSpan.TotalHours < 1 => $"Updated {timeSpan.Minutes}m ago",
+            < 1 => $"Updated {timeSpan.Hours}h ago",
+            < 7 => $"Updated {timeSpan.Days}d ago",
+            < 30 => $"Updated {timeSpan.Days / 7}w ago",
+            _ => $"Updated {dateModified.Value:MMM dd, yyyy}"
+        };
+    }
 
     public string GetPriorityDisplay(RequestPriority priority, string otherPriority, bool isShort = false)
     {
@@ -74,8 +93,7 @@ public class Utils
             RequestStatus.ForEndorsement => TokenCons.Status__ForEndorsement,
             RequestStatus.ForAdminVerification => TokenCons.Status__ForAdminVerification,
             RequestStatus.ForCeoApproval => TokenCons.Status__ForCeoApproval,
-            RequestStatus.ForFinanceApproval => TokenCons.Status__ForFinanceApproval,
-            RequestStatus.Approved => TokenCons.Status__Approved,
+            RequestStatus.ForRequisition => TokenCons.Status__ForRequisition,
             RequestStatus.Rejected => TokenCons.Status__Rejected,
             RequestStatus.Cancelled => TokenCons.Status__Cancelled,
             _ => "ambot"
@@ -87,10 +105,10 @@ public class Utils
         return status switch
         {
             RequestStatus.Draft => "bi bi-file-earmark-plus",
-            RequestStatus.ForEndorsement => "bi bi-cart",
+            RequestStatus.ForEndorsement => "bi bi-person-check",
             RequestStatus.ForAdminVerification => "bi bi-send",
             RequestStatus.ForCeoApproval => "bi bi-patch-check",
-            RequestStatus.ForFinanceApproval => "bi bi-check-circle",
+            RequestStatus.ForRequisition => "bi bi-cart",
             RequestStatus.Approved => "bi bi-archive",
             RequestStatus.Rejected => "bi bi-x-circle",
             RequestStatus.Cancelled => "bi bi-x-octagon",
@@ -114,7 +132,6 @@ public class Utils
             ApprovalStage.DivisionHead => "Endorser",
             ApprovalStage.Admin => "Verifier",
             ApprovalStage.CeoOrAvp => "Approver",
-            ApprovalStage.Finance => "Finance",
             _ => "ambot"
         };
     }
@@ -127,7 +144,6 @@ public class Utils
             ApprovalStage.DivisionHead => "Endorsed by",
             ApprovalStage.Admin => "Verified by",
             ApprovalStage.CeoOrAvp => "Approved by",
-            ApprovalStage.Finance => "Verified by",
             _ => "ambot"
         };
     }
@@ -140,7 +156,6 @@ public class Utils
             ApprovalStage.DivisionHead => "Division Head",
             ApprovalStage.Admin => "Admin",
             ApprovalStage.CeoOrAvp => "CEO / AVP",
-            ApprovalStage.Finance => "Finance",
             _ => "ambot"
         };
     }
