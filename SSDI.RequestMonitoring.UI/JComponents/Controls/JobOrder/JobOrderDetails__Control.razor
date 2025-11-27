@@ -1,0 +1,155 @@
+﻿@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
+
+<!-- Basic Request Information -->
+<Details__Card>
+    <DetailsRow__Card Label="Name" Value="@Request.Name" FullRow="true" />
+    <DetailsRow__Card Label="Division / Department" Value="@Request.Division_Department" />
+    <DetailsRow__Card Label="Nature of Request" Value="@Request.Nature_Of_Request" />
+    <DetailsRow__Card Label="Justification" Value="@Request.Justification" FullRow="true" />
+</Details__Card>
+
+<!-- Status & Priority -->
+<Details__Card>
+    <DetailsRow__Card Label="Priority Level">
+        <div class="page__table-priority" style="justify-content:start;">
+            <div class="priority-dot" data-prio="@Request.Priority"></div>
+            <span>@(utils.GetPriorityDisplay(Request.Priority, Request.OtherPriority))</span>
+        </div>
+    </DetailsRow__Card>
+    <DetailsRow__Card Label="Current Status">
+        <div class="status-container">
+            <div class="page__table-status" data-status="@Request.Status">
+                <i class="@utils.GetStatusIcon(Request.Status)"></i>
+                <span class="page__table-status-text">@utils.GetStatusDisplay(Request.Status)</span>
+            </div>
+            @if (Request.Status == RequestStatus.Rejected)
+            {
+                <div class="status-help-message status-help-message--rejected">
+                    <i class="bi bi-info-circle"></i>
+                    <span>Check <b>approval process tab</b> for rejection details</span>
+                </div>
+            }
+        </div>
+    </DetailsRow__Card>
+</Details__Card>
+
+<!--  Approval Summary -->
+@if (!string.IsNullOrEmpty(Request.RequestedByDeptHeadName))
+{
+    <Details__Card>
+        <div class="details__triple-row">
+            <DetailsRow__Card Label="Request Submitted By">
+                <div class="approval__info">
+                    <strong>@Request.RequestedByDeptHeadName</strong>
+                    <div class="approval__subtext">
+                        @Request.DateRequested?.ToString("MMM dd, yyyy • hh:mm tt")
+                    </div>
+                </div>
+            </DetailsRow__Card>
+
+            <DetailsRow__Card Label="Reviewed & Endorsed By">
+                @{
+                    var divHeadApproval = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead);
+                }
+                @if (divHeadApproval != null && divHeadApproval.IsApproved)
+                {
+                    <div class="approval__info" data-status="@divHeadApproval.Action">
+                        <strong>@divHeadApproval.ApproverName</strong>
+                        <div class="approval__subtext">
+                            <span>@divHeadApproval.ActionDate?.ToString("MMM dd, yyyy • hh:mm tt")</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="approval__pending">Awaiting Endorsement</div>
+                }
+            </DetailsRow__Card>
+            <DetailsRow__Card Label="Notification Received by <b>Admin</b> ">
+                @{
+                    var adminVerification = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.Admin);
+                }
+                @if (adminVerification != null && adminVerification.IsApproved)
+                {
+                    <div class="approval__info" data-status="@adminVerification.Action">
+                        <strong>@adminVerification.ApproverName</strong>
+                        <div class="approval__subtext">
+                            @if (adminVerification.Action != null)
+                            {
+                                @*                                 <span>@adminVerification.Action.ToString()</span>
+                                <span> • @adminVerification.ActionDate?.ToString("MMM dd, yyyy")</span> *@
+                                <span>@adminVerification.ActionDate?.ToString("MMM dd, yyyy • hh:mm tt")</span>
+                            }
+                            else
+                            {
+                                <span class="approval__pending">Pending</span>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="approval__pending">Awaiting Admin Verification</div>
+                }
+            </DetailsRow__Card>
+        </div>
+
+        <DetailsRow__Card Label="Approved By">
+            @{
+                var finalApproval = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp);
+            }
+            @if (finalApproval != null && finalApproval.IsApproved)
+            {
+                <div class="approval__info" data-status="@finalApproval.Action">
+                    <strong>Ian Co / Stephanie Co</strong>
+                    <div class="approval__subtext">
+                        <span>@finalApproval.ActionDate?.ToString("MMM dd, yyyy • hh:mm tt")</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="approval__pending">Awaiting Approval</div>
+            }
+        </DetailsRow__Card>
+
+        <DetailsRow__Card Label="Acknowledged by">
+            @{
+                var finalApproval = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp);
+            }
+            @if (finalApproval != null && finalApproval.IsApproved)
+            {
+                <div class="approval__info" data-status="@finalApproval.Action">
+                    <strong>@finalApproval.ApproverName</strong>
+                    <div class="approval__subtext">
+                        <span>@finalApproval.ActionDate?.ToString("MMM dd, yyyy • hh:mm tt")</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="approval__pending">Awaiting Acknowledgment</div>
+            }
+        </DetailsRow__Card>
+    </Details__Card>
+}
+else
+{
+    <Details__Card>
+        <DetailsRow__Card Label="Date Drafted" FullRow="true">
+            <div class="details__table-date">
+                <span class="page__table-date-main">
+                    @Request.DateCreated?.ToString("MMM dd, yyyy")
+                </span>
+                <span class="page__table-date-relative">
+                    (@(utils.GetRelativeTime(Request.DateCreated)))
+                </span>
+            </div>
+        </DetailsRow__Card>
+    </Details__Card>
+}
+
+@code {
+    [Parameter] public Job_OrderVM Request { get; set; } = new();
+}

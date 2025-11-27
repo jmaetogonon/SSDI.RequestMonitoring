@@ -2,7 +2,7 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Filters;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
-using SSDI.RequestMonitoring.UI.Models.Requests;
+using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
 
@@ -18,6 +18,7 @@ public partial class PurchaseRequest_Index : ComponentBase
     private Priority__Filter? priorityFilter;
     private HashSet<RequestStatus> selectedStatuses = [];
     private HashSet<RequestPriority> selectedPriorities = [];
+    private RequestStatus? lastClickedStatus = null;
 
     private PaginationState pagination = new() { ItemsPerPage = 10 };
     private GridSort<Purchase_RequestVM> sortStatus = GridSort<Purchase_RequestVM>.ByAscending(x => x.Status).ThenAscending(x => x.Status);
@@ -178,6 +179,25 @@ public partial class PurchaseRequest_Index : ComponentBase
         ApplyFilters();
     }
 
+    private void OnStatusCardClick(RequestStatus status)
+    {
+        if (lastClickedStatus == status && selectedStatuses.Count == 1 && selectedStatuses.Contains(status))
+        {
+            ClearAllFilters();
+            lastClickedStatus = null;
+        }
+        else
+        {
+            ClearAllFilters();
+            selectedStatuses = new HashSet<RequestStatus> { status };
+            statusFilter?.SetSelectedStatus(selectedStatuses);
+            ApplyFilters();
+            lastClickedStatus = status;
+        }
+
+        StateHasChanged();
+    }
+
     private void BuildStatusSummaries()
     {
         if (AllRequests == null) return;
@@ -189,14 +209,47 @@ public partial class PurchaseRequest_Index : ComponentBase
             .GroupBy(r => r.Status)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        StatusSummaries =
-        [
-            new("Draft", statusCounts.GetValueOrDefault(RequestStatus.Draft, 0), totalCount, "Pending", "bi bi-file-earmark-plus"),
-            new("For Endorsing", statusCounts.GetValueOrDefault(RequestStatus.ForEndorsement, 0), totalCount, "Pending", "bi bi-cart"),
-            new("For Admin Verification", statusCounts.GetValueOrDefault(RequestStatus.ForAdminVerification, 0), totalCount, "Pending", "bi bi-hourglass-split"),
-            new("For Ceo Approval", statusCounts.GetValueOrDefault(RequestStatus.ForCeoApproval, 0), totalCount, "Pending", "bi bi-patch-check"),
-            new("For Finance Approval", statusCounts.GetValueOrDefault(RequestStatus.ForRequisition, 0), totalCount, "Completed", "bi bi-check2-circle"),
-        ];
+        if (utils.IsAdmin())
+        {
+            StatusSummaries =
+            [
+                new(RequestStatus.ForAdminVerification,TokenCons.Status__ForAdminVerification, statusCounts.GetValueOrDefault(RequestStatus.ForAdminVerification, 0), totalCount , utils.GetStatusIcon(RequestStatus.ForAdminVerification)),
+                new(RequestStatus.ForRequisition,TokenCons.Status__ForRequisition, statusCounts.GetValueOrDefault(RequestStatus.ForRequisition, 0), totalCount, utils.GetStatusIcon(RequestStatus.ForRequisition)),
+                new(RequestStatus.PendingRequesterClosure,TokenCons.Status__PendingClose, statusCounts.GetValueOrDefault(RequestStatus.PendingRequesterClosure, 0), totalCount, utils.GetStatusIcon(RequestStatus.PendingRequesterClosure)),
+                new(RequestStatus.Closed,TokenCons.Status__Closed, statusCounts.GetValueOrDefault(RequestStatus.Closed, 0), totalCount, utils.GetStatusIcon(RequestStatus.Closed)),
+            ];
+        }
+        else if (utils.IsCEO())
+        {
+            StatusSummaries =
+            [
+                new(RequestStatus.ForEndorsement, TokenCons.Status__ForEndorsement, statusCounts.GetValueOrDefault(RequestStatus.ForEndorsement, 0), totalCount , utils.GetStatusIcon(RequestStatus.ForEndorsement)),
+                new(RequestStatus.ForCeoApproval, TokenCons.Status__ForCeoApproval, statusCounts.GetValueOrDefault(RequestStatus.ForCeoApproval, 0), totalCount , utils.GetStatusIcon(RequestStatus.ForCeoApproval)),
+                new(RequestStatus.ForRequisition, TokenCons.Status__ForRequisition, statusCounts.GetValueOrDefault(RequestStatus.ForRequisition, 0), totalCount, utils.GetStatusIcon(RequestStatus.ForRequisition)),
+                new(RequestStatus.Closed, TokenCons.Status__Closed, statusCounts.GetValueOrDefault(RequestStatus.Closed, 0), totalCount, utils.GetStatusIcon(RequestStatus.Closed)),
+            ];
+        }
+        else if (utils.IsSupervisor() && !utils.IsCEO())
+        {
+            StatusSummaries =
+            [
+                new(RequestStatus.Draft, TokenCons.Status__Draft, statusCounts.GetValueOrDefault(RequestStatus.Draft, 0), totalCount , utils.GetStatusIcon(RequestStatus.Draft)),
+                new(RequestStatus.Rejected, TokenCons.Status__Rejected, statusCounts.GetValueOrDefault(RequestStatus.Rejected, 0), totalCount , utils.GetStatusIcon(RequestStatus.Rejected)),
+                new(RequestStatus.ForRequisition, TokenCons.Status__ForRequisition, statusCounts.GetValueOrDefault(RequestStatus.ForRequisition, 0), totalCount, utils.GetStatusIcon(RequestStatus.ForRequisition)),
+                new(RequestStatus.PendingRequesterClosure, TokenCons.Status__PendingClose, statusCounts.GetValueOrDefault(RequestStatus.PendingRequesterClosure, 0), totalCount, utils.GetStatusIcon(RequestStatus.PendingRequesterClosure)),
+                new(RequestStatus.Closed, TokenCons.Status__Closed, statusCounts.GetValueOrDefault(RequestStatus.Closed, 0), totalCount, utils.GetStatusIcon(RequestStatus.Closed)),
+            ];
+        }
+        else
+        {
+            StatusSummaries =
+            [
+                new(RequestStatus.Draft, TokenCons.Status__Draft, statusCounts.GetValueOrDefault(RequestStatus.Draft, 0), totalCount , utils.GetStatusIcon(RequestStatus.Draft)),
+                new(RequestStatus.Rejected, TokenCons.Status__Rejected, statusCounts.GetValueOrDefault(RequestStatus.Rejected, 0), totalCount , utils.GetStatusIcon(RequestStatus.Rejected)),
+                new(RequestStatus.ForRequisition, TokenCons.Status__ForRequisition, statusCounts.GetValueOrDefault(RequestStatus.ForRequisition, 0), totalCount, utils.GetStatusIcon(RequestStatus.ForRequisition)),
+                new(RequestStatus.Closed, TokenCons.Status__Closed, statusCounts.GetValueOrDefault(RequestStatus.Closed, 0), totalCount, utils.GetStatusIcon(RequestStatus.Closed)),
+            ];
+        }
     }
 
     private async Task OnPageSizeChanged()
@@ -218,7 +271,7 @@ public partial class PurchaseRequest_Index : ComponentBase
 
     public bool CheckNewBtnPermission()
     {
-        return utils.IsUser() || AllRequests?.FirstOrDefault()?.ReportType == "Department" || (AllRequests?.FirstOrDefault() is null && utils.IsSupervisor());
+        return utils.IsUser() || AllRequests?.FirstOrDefault()?.ReportType == "Department" || (AllRequests?.FirstOrDefault() is null && utils.IsSupervisor() && !utils.IsAdmin());
     }
 
     public void Dispose()
@@ -229,5 +282,5 @@ public partial class PurchaseRequest_Index : ComponentBase
         currentUser.OnUserChanged -= Refresh;
     }
 
-    private record StatusSummary(string Label, int Count, int TotalCount, string Status, string Icon);
+    private record StatusSummary(RequestStatus Status, string Label, int Count, int TotalCount, string Icon);
 }

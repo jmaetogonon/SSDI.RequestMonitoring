@@ -1,0 +1,119 @@
+﻿@page "/requests/job-orders/"
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
+@using SSDI.RequestMonitoring.UI.JComponents.Filters
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals
+@inject IJobOrderSvc jobOrderSvc
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+
+<PageTitle>Job Orders</PageTitle>
+
+<div class="main--content">
+    <div class="page__header">
+        <div class="page__title-section">
+            <p class="page__header-title">Job Orders</p>
+            <p class="page__header-subtitle">View and manage job orders.</p>
+        </div>
+
+        @if (isShowNewBtn)
+        {
+            <div class="page__header-cta">
+                <button class="page__primary-btn" @onclick="OnAddNewRequest">
+                    <i class="bi bi-plus-lg"></i> New Request
+                </button>
+            </div>
+        }
+    </div>
+
+    <Confirmation__Modal @ref="confirmModal" />
+    <NewJORequest__Modal IsModalVisible="@isNewRequestModalVisible" OnSave="@OnSaveNewReqModal" OnClose="OnCloseNewReqModal" />
+
+    <div class="page__main__section">
+        <div class="page__cards">
+            @foreach (var summary in StatusSummaries)
+            {
+                <StatusWBar__Card Label="@summary.Label"
+                                  Count="@summary.Count"
+                                  TotalCount="@summary.TotalCount"
+                                  Icon="@summary.Icon"
+                                  OnClick="@(() => OnStatusCardClick(summary.Status))" />
+            }
+        </div>
+
+        <div class="page__filters">
+            <FluentSearch @bind-Value="@searchValue"
+                          @bind-Value:after="HandleSearch"
+                          Immediate="true"
+                          Placeholder="Search"
+                          Class="page__filters-search" />
+
+            <Status__Filter @ref="statusFilter" SelectedStatusesChanged="@OnStatusFilterChanged" AnchorId="purchaseRequestStatusFilter" />
+            <Priority__Filter @ref="priorityFilter" SelectedPrioritiesChanged="@OnPriorityFilterChanged" AnchorId="purchaseRequestPriorityFilter" />
+            <Clear__Filters OnClear="@ClearAllFilters" />
+        </div>
+
+        <div class="page__table-container @(uiStateSvc.IsStriped ? "striped-grid" : "")" tabindex="-1">
+            @if (Requests == null || isLoading)
+            {
+                <div class="page__table-loading">
+                    <p>Loading purchase requests...</p>
+                </div>
+            }
+            else if (!Requests.Any())
+            {
+                <div class="page__table-empty">
+                    <i class="bi bi-inbox"></i>
+                    <p>No job orders found</p>
+                    <p class="text-muted">Create your first request to get started</p>
+                </div>
+            }
+            else
+            {
+                <div class="page__table-wrapper">
+                    <FluentDataGrid Class="page__table"
+                                    TGridItem="Job_OrderVM"
+                                    ShowHover="true"
+                                    Pagination="@pagination"
+                                    OnRowClick="@OnViewDetails"
+                                    GenerateHeader="GenerateHeaderOption.Sticky"
+                                    RowSize="DataGridRowSize.Medium"
+                                    Items="Requests">
+                        <PropertyColumn Title="ID" Property="@(c => c.Id)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
+                        <PropertyColumn Title="Requested By" Property="@(c => c.Name)" Sortable="true" />
+                        <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
+                        <PropertyColumn Title="Division/Department" Property="@(c => c.Division_Department)" />
+                        <TemplateColumn Title="Requested On" Width="140px" Sortable="true">
+                            <div class="page__table-date">
+                                <span class="page__table-date-main">
+                                    @context.DateRequested?.ToString("MMM dd, yyyy")
+                                </span>
+                                <span class="page__table-date-relative">
+                                    @(utils.GetRelativeTime(context.DateRequested))
+                                </span>
+                            </div>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Priority" Align="Align.Center">
+                            <div class="page__table-priority">
+                                <div class="priority-dot" data-prio="@context.Priority"></div>
+                                <span>@(utils.GetPriorityDisplay(context.Priority, context.OtherPriority, true))</span>
+                            </div>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status" Align="Align.Center" Sortable="true" SortBy="sortStatus">
+                            <div class="page__table-status" data-status="@context.Status">
+                                <i class="@utils.GetStatusIcon(context.Status)"></i>
+                                <span class="page__table-status-text">@utils.GetStatusDisplay(context.Status)</span>
+                            </div>
+                        </TemplateColumn>
+                    </FluentDataGrid>
+                </div>
+
+                <Pagination__Control Pagination="@pagination" PageSizeChanged="@OnPageSizeChanged" IsStripedChanged="@(() => StateHasChanged())" />
+            }
+        </div>
+    </div>
+
+</div>

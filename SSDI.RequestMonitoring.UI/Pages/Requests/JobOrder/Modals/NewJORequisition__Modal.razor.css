@@ -1,0 +1,8 @@
+﻿
+#show__new__purchase-requisition-modal {
+    display: block;
+}
+
+#hide__new__purchase-requisition-modal {
+    display: none;
+}

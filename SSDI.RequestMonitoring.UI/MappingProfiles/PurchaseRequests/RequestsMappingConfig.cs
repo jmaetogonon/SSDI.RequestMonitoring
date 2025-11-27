@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using SSDI.RequestMonitoring.UI.Models.Requests;
+using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 using SSDI.RequestMonitoring.UI.Services.Base;
 
 namespace SSDI.RequestMonitoring.UI.MappingProfiles.PurchaseRequests;
@@ -24,6 +24,8 @@ public class RequestsMappingConfig : Profile
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.PendingClosureDate, opt => opt.MapFrom(x => x.PendingClosureDate!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<PurchaseReqBySupervisorDto, Purchase_RequestVM>()

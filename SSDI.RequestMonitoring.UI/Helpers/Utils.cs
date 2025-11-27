@@ -1,6 +1,6 @@
 ﻿using SSDI.RequestMonitoring.UI.Helpers.States;
-using SSDI.RequestMonitoring.UI.Models.Enums;
-using SSDI.RequestMonitoring.UI.Models.Requests;
+using SSDI.RequestMonitoring.UI.Models.Common;
+using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Helpers;
 
@@ -96,6 +96,8 @@ public class Utils
             RequestStatus.ForRequisition => TokenCons.Status__ForRequisition,
             RequestStatus.Rejected => TokenCons.Status__Rejected,
             RequestStatus.Cancelled => TokenCons.Status__Cancelled,
+            RequestStatus.PendingRequesterClosure => TokenCons.Status__PendingClose,
+            RequestStatus.Closed => TokenCons.Status__Closed,
             _ => "ambot"
         };
     }
@@ -104,19 +106,21 @@ public class Utils
     {
         return status switch
         {
-            RequestStatus.Draft => "bi bi-file-earmark-plus",
-            RequestStatus.ForEndorsement => "bi bi-person-check",
-            RequestStatus.ForAdminVerification => "bi bi-send",
-            RequestStatus.ForCeoApproval => "bi bi-patch-check",
-            RequestStatus.ForRequisition => "bi bi-cart",
-            RequestStatus.Approved => "bi bi-archive",
-            RequestStatus.Rejected => "bi bi-x-circle",
-            RequestStatus.Cancelled => "bi bi-x-octagon",
-            _ => "bi bi-circle" // Default icon
+            RequestStatus.Draft => "bi bi-file-earmark-text",           // Document being written
+            RequestStatus.ForEndorsement => "bi bi-send-check",         // Sent for check/approval
+            RequestStatus.ForAdminVerification => "bi bi-clipboard-check", // Checklist verification
+            RequestStatus.ForCeoApproval => "bi bi-award",              // High-level approval
+            RequestStatus.ForRequisition => "bi bi-cart-check",         // Shopping cart approved
+            RequestStatus.Approved => "bi bi-check-circle-fill",        // Solid approval
+            RequestStatus.Rejected => "bi bi-x-circle-fill",            // Solid rejection
+            RequestStatus.Cancelled => "bi bi-slash-circle",            // Clearly cancelled
+            RequestStatus.PendingRequesterClosure => "bi bi-clock",     // Time/awaiting action
+            RequestStatus.Closed => "bi bi-archive-fill",               // Solid archived
+            _ => "bi bi-question-circle"                                // Unknown state
         };
     }
 
-    public string GetApprovalStatusText(Purchase_Request_ApprovalVM approval)
+    public string GetApprovalStatusText(IApprovalEntity approval)
     {
         return approval.IsApproved ? (approval.Stage is ApprovalStage.DepartmentHead ? "Submitted" : "Approved") :
                approval.IsRejected ? "Rejected" :
@@ -124,7 +128,7 @@ public class Utils
                "Pending";
     }
 
-    public string GetApprovalByText(Purchase_Request_ApprovalVM approval)
+    public string GetApprovalByText(IApprovalEntity approval)
     {
         return approval.Stage switch
         {

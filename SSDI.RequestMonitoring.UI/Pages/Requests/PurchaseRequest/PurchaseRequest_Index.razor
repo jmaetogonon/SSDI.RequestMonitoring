@@ -1,11 +1,12 @@
 ﻿@page "/requests/purchase-requests/"
 @using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
 @using SSDI.RequestMonitoring.UI.JComponents.Filters
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
-@using SSDI.RequestMonitoring.UI.Models.Requests
 @inject IPurchaseRequestSvc purchaseRequestSvc
 @inject NavigationManager navigationManager
 @attribute [Authorize]
@@ -39,8 +40,8 @@
                 <StatusWBar__Card Label="@summary.Label"
                                   Count="@summary.Count"
                                   TotalCount="@summary.TotalCount"
-                                  Status="@summary.Status"
-                                  Icon="@summary.Icon" />
+                                  Icon="@summary.Icon"
+                                  OnClick="@(() => OnStatusCardClick(summary.Status))" />
             }
         </div>
 

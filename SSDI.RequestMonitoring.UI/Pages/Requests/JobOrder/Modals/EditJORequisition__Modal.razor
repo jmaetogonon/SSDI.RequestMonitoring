@@ -1,0 +1,27 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.JComponents.Forms
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+
+
+@inject IJORequisitionSvc slipSvc
+
+<Confirmation__Modal @ref="confirmModal" />
+<div class="modal__overlay" id="@(IsModalVisible ? "show__edit__purchase-requisition-modal" : "hide__edit__purchase-requisition-modal")">
+    <div class="modal">
+        <div class="modal__header">
+            <h5 class="modal__header-title">UPDATE REQUISITION SLIP / ADVANCES SUBJECT TO LIQUIDATION</h5>
+            <div class="modal__header-date">
+                <i class="bi bi-clock-history"></i>
+                <span title="@Model?.DateModified?.ToString("MMMM dd, yyyy 'at' h:mm tt")">
+                    @utils.GetLastModifiedDisplay(Model?.DateModified)
+                </span>
+            </div>
+        </div>
+
+        <div class="modal__alert">
+            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+        </div>
+
+        <JobOrderRequisition__Form FormModel="Model" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />
+    </div>
+</div>

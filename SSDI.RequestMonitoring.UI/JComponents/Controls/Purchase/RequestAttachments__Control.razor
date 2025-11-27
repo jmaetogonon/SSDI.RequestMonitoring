@@ -1,0 +1,125 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests
+@inject IPurchaseRequestSvc purchaseRequestSvc
+@inject IPRAttachSvc attachSvc
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<Details__Card>
+    <DetailsRow__Card Label="Supporting Documents" FullRow="true">
+        <div class="attachments-header">
+            <div class="attachments-stats">
+                <i class="bi bi-paperclip"></i>
+                <span>@Request.Attachments.Where(x=>x.AttachType == RequestAttachType.Request).Count() files attached</span>
+                @if (isDownloadingAll)
+                {
+                    <span class="download-progress">(@currentDownloadIndex/@Request.Attachments.Where(x => x.AttachType == RequestAttachType.Request).Count())</span>
+                }
+            </div>
+
+            <div class="attachment-header-actions">
+                @if ((Request?.Status == RequestStatus.Draft || Request?.Status == RequestStatus.Rejected) && ReportType == "Department")
+                {
+                    <div class="attachment-add">
+                        <label for="file-upload-add" class="btn btn--primary btn--sm" title="Add attachment">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Upload</span>
+                        </label>
+
+                        <InputFile id="file-upload-add"
+                                   multiple
+                                   OnChange="OnFilesSelected" style="display: none;" />
+                    </div>
+                }
+
+                <button class="btn btn--outline btn--sm"
+                        @onclick="DownloadAll"
+                        title="Download all files"
+                        disabled="@isDownloadingAll">
+                    @if (isDownloadingAll)
+                    {
+                        <i class="bi bi-arrow-repeat spinning"></i>
+                        <span>Downloading...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-download"></i>
+                        <span>Download All</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </DetailsRow__Card>
+
+    @if (Request.Attachments.Where(x => x.AttachType == RequestAttachType.Request)?.Any() == true)
+    {
+        <div class="attachments-grid">
+            @foreach (var attachment in Request.Attachments.Where(x => x.AttachType == RequestAttachType.Request))
+            {
+                var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
+                var isLoadingPreview = (loadingPreviewId == attachment.Id.ToString());
+
+                <div class="attachment-card" @onclick="() => ViewAttachment(attachment)" title="Click to view">
+                    <div class="attachment-card__icon">
+                        @if (isLoadingPreview)
+                        {
+                            <div class="attachment-loading-spinner"></div>
+                        }
+                        else
+                        {
+                            <i class="@GetFileIcon(attachment.FileName)"></i>
+                        }
+                    </div>
+                    <div class="attachment-card__content">
+                        <div class="attachment-card__name">@attachment.FileName</div>
+                        <div class="attachment-card__meta">
+                            <span class="attachment-card__size">@FormatFileSize(attachment.Size)</span>
+                            <span class="attachment-card__date">@attachment.DateCreated?.ToString("MMM dd, yyyy")</span>
+                        </div>
+                    </div>
+                    <div class="attachment-card__actions">
+                        <button class="attachment-card__btn"
+                                @onclick="(e) => DownloadAttachment(attachment, e)"
+                                @onclick:stopPropagation="true"
+                                title="Download"
+                                disabled="@isDownloadingThis">
+                            @if (isDownloadingThis)
+                            {
+                                <i class="bi bi-arrow-repeat spinning"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-download"></i>
+                            }
+                        </button>
+                        @if ((Request?.Status == RequestStatus.Draft || Request?.Status == RequestStatus.Rejected) && ReportType == "Department")
+                        {
+                            <button class="attachment-card__btn"
+                                    @onclick="(e) => DeleteAttachment(attachment, e)"
+                                    @onclick:stopPropagation="true"
+                                    title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <DetailsRow__Card FullRow="true">
+            <div class="attachments-empty">
+                <i class="bi bi-folder-x"></i>
+                <h3>No Attachments</h3>
+                <p>No supporting documents have been uploaded for this request.</p>
+            </div>
+        </DetailsRow__Card>
+    }
+</Details__Card>
+
+<AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment ?? new())" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />

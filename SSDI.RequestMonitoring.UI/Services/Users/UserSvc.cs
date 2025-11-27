@@ -2,6 +2,7 @@
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.Contracts.Users;
+using SSDI.RequestMonitoring.UI.Models.Users;
 using SSDI.RequestMonitoring.UI.Services.Base;
 
 namespace SSDI.RequestMonitoring.UI.Services.Users;
@@ -13,5 +14,14 @@ public class UserSvc : BaseHttpService, IUserSvc
     public UserSvc(IClient client, ILocalStorageService localStorage, NavigationManager navigationManager, IMapper mapper) : base(client, localStorage, navigationManager)
     {
         _mapper = mapper;
+    }
+
+    public async Task<List<SupervisorVM>> GetSupervisors()
+    {
+        return await SafeApiCall(async () =>
+        {
+            var requests = await _client.GetAllSupervisorsAsync();
+            return _mapper.Map<List<SupervisorVM>>(requests);
+        });
     }
 }

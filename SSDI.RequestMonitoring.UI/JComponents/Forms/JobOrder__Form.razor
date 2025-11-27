@@ -1,0 +1,251 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.Contracts.Users
+@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.Models.MasterData
+@using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.Models.Users
+@inject IDivisionSvc divisionSvc
+@inject IDepartmentSvc departmentSvc
+@inject IUserSvc userSvc
+
+<EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="modal__body">
+        <div class="modal__form-group position-relative">
+            <!-- Name -->
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input id="name" @bind="FormModel.Name" class="form-control" style="font-weight: 500;" placeholder="Enter your full name" disabled="@(utils.IsUser())" required />
+            </div>
+
+            <!-- Nature of Request -->
+            <div class="form-group">
+                <label for="nature">Nature of Request</label>
+                <input id="nature" @bind="FormModel.Nature_Of_Request" class="form-control" placeholder="e.g., Purchase of Equipment" required />
+            </div>
+
+            <!-- Division / Department -->
+            <div class="form-group">
+                <label for="divisionId" class="labelwithicon">
+                    Division
+                    @if (FormModel.DivisionId == 0)
+                    {
+                        <i class="bi bi-arrow-clockwise" style="color: var(--color-lightGray);" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-arrow-clockwise" @onclick="@ResetSelectedDivision" style="color: var(--color-green); cursor:pointer;" />
+                    }
+                </label>
+                <InputSelect id="divisionId" class="form-select" @bind-Value="FormModel.DivisionId" disabled="@(FormModel.DepartmentId != 0)" required>
+                    <option value="0">--Select--</option>
+                    @foreach (var item in Divisions)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="form-group">
+                <label for="departmentid">Department</label>
+                <InputSelect id="departmentid" class="form-select" @bind-Value="FormModel.DepartmentId" disabled="@(FormModel.DivisionId == 0)" required>
+                    <option value="0">--Select--</option>
+                    @foreach (var item in Departments.Where(e => e.DivisionId == FormModel.DivisionId))
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+
+            <!-- Justification -->
+            <div class="form-group full-width">
+                <label for="justification">Justification</label>
+                <textarea id="justification" @bind="FormModel.Justification" class="form-control" placeholder="Describe the reason for this request..." rows="2" required />
+            </div>
+
+
+            @if (!currentUser.IsAuthenticated)
+            {
+                <!-- Supervisors -->
+                <div class="form-group">
+                    <label for="deptSupp">Department Supervisor</label>
+                    <InputSelect id="deptSupp" class="form-select" @bind-Value="FormModel.ReportToDeptSupId" required>
+                        <option value="0">--Select--</option>
+                        @foreach (var item in Supervisors)
+                        {
+                            <option value="@item.Id">@item.FullName</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="form-group">
+                    <label for="divSupp">Division Supervisor</label>
+                    <InputSelect id="divSupp" class="form-select" @bind-Value="FormModel.ReportToDivSupId" required>
+                        <option value="0">--Select--</option>
+                        @foreach (var item in Supervisors)
+                        {
+                            <option value="@item.Id">@item.FullName</option>
+                        }
+                    </InputSelect>
+                </div>
+
+            }
+
+
+            <!-- Priority -->
+            <div class="form-group full-width">
+                <label>Priority</label>
+                <FluentRadioGroup Class="radio-group" Name="priority" @bind-Value="FormModel.Priority">
+                    <FluentRadio Class="radio-option" Value="RequestPriority.Hrs24">Must be done within 24 hours</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="RequestPriority.ThisWeek">Must be done within the week</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="RequestPriority.Others">Others, please specify</FluentRadio>
+                </FluentRadioGroup>
+                <ValidationMessage For="() => FormModel.Priority" />
+
+                @if (FormModel.Priority == RequestPriority.Others)
+                {
+                    <input @bind="FormModel.OtherPriority" class="form-control" placeholder="Enter specific priority" required />
+                }
+            </div>
+
+            <!-- File Upload -->
+            <div class="form-group full-width">
+                <label for="file-upload">
+                    @(!IsForUpdate ? "Supporting Documents" : "Add More Supporting Documents")
+                    @if (FormModel.Attachments.Any())
+                    {
+                        <span> (@FormModel.Attachments.Count())</span>
+                    }
+                </label>
+
+                <div class="file-upload-area"
+                     @ondragover="OnDragOver"
+                     @ondrop="OnDrop">
+                    <InputFile id="file-upload"
+                               multiple
+                               OnChange="OnFilesSelected"
+                               class="file-input" />
+
+                    <div class="file-upload-placeholder">
+                        <i class="bi bi-cloud-arrow-up-fill upload-icon"></i>
+                        <p>Drag & drop files here, or <span class="browse-text">browse</span></p>
+                        <small>Supported: PDF, DOCX, JPG, PNG, XLSX (max 10MB each)</small>
+                    </div>
+                </div>
+
+                @if (FormModel.Attachments.Any())
+                {
+                    <ul class="file-list">
+                        @foreach (var file in FormModel.Attachments)
+                        {
+                            <li class="file-item">
+                                <i class="bi bi-file-earmark"></i>
+                                <span>@file.FileName</span>
+                                <span class="file-size">
+                                    (@((file.Size / 1024.0 / 1024.0).ToString("F2")) MB)
+                                </span>
+                                <button type="button" class="remove-btn" @onclick="() => RemoveFile(file)">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+
+            <LoadingOverlay IsVisible="@IsDisabledBtns" Message="Saving, please wait..." />
+        </div>
+    </div>
+    <div class="modal__footer">
+        <button type="button" class="modal__footer-btn modal__footer-btn-cancel" disabled="@IsDisabledBtns" @onclick="OnCloseModal">Cancel</button>
+        <button type="submit" class="modal__footer-btn modal__footer-btn-save" disabled="@IsDisabledBtns"> @(IsDisabledBtns ? "Saving..." : "Save") </button>
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public Job_OrderVM FormModel { get; set; } = new();
+    [Parameter] public bool IsDisabledBtns { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCloseModal { get; set; }
+    [Parameter] public bool IsForUpdate { get; set; }
+
+    private List<IBrowserFile> uploadedFiles = [];
+    private List<DivisionVM> Divisions = [];
+    private List<DepartmentVM> Departments = [];
+    private List<SupervisorVM> Supervisors = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Divisions = await divisionSvc.GetAllDivisions();
+        Departments = await departmentSvc.GetAllDepartments();
+
+        if (!currentUser.IsAuthenticated)
+        {
+            Supervisors = await userSvc.GetSupervisors();
+        }
+    }
+
+    private void ResetSelectedDivision()
+    {
+        FormModel.DivisionId = 0;
+        FormModel.DepartmentId = 0;
+    }
+
+    private void OnDragOver(DragEventArgs e)
+    {
+        // Prevent default only for visual effect (won’t handle files here)
+        e.DataTransfer.DropEffect = "copy";
+    }
+
+    private void OnDrop(DragEventArgs e)
+    {
+        // Just stop the browser from navigating away
+        // You cannot get IBrowserFile here.
+        // Use InputFile’s OnChange to actually capture files.
+    }
+
+    private async Task OnFilesSelected(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            if (file.Size > 10 * 1024 * 1024)
+                continue; // skip >10MB
+
+            uploadedFiles.Add(file);
+
+            byte[] fileBytes;
+            using (var stream = file.OpenReadStream(10 * 1024 * 1024)) // 10MB limit
+            using (var ms = new MemoryStream())
+            {
+                await stream.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
+
+            var attachVM = new Job_Order_AttachVM
+            {
+                UniqId = utils.GenerateUniqId(),
+                PurchaseRequestId = FormModel.Id,
+                FileName = file.Name,
+                ContentType = file.ContentType,
+                ImgData = fileBytes,
+                Size = file.Size,
+                AttachType = RequestAttachType.Request
+            };
+
+            FormModel.Attachments.Add(attachVM);
+        }
+    }
+
+    private void RemoveFile(Job_Order_AttachVM file)
+    {
+        // uploadedFiles.Remove(file);
+
+        var toRemove = FormModel.Attachments.FirstOrDefault(a => a.UniqId == file.UniqId);
+        if (toRemove != null)
+            FormModel.Attachments.Remove(toRemove);
+    }
+}

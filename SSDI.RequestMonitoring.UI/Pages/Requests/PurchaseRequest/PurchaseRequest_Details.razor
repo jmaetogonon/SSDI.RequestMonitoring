@@ -1,6 +1,7 @@
 ﻿@page "/requests/purchase-requests/{paramId:int}/{reportType?}"
-@using SSDI.RequestMonitoring.UI.Contracts.Requests
+ @using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
+@using SSDI.RequestMonitoring.UI.JComponents.Controls.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
 @inject IPurchaseRequestSvc purchaseRequestSvc
@@ -61,7 +62,7 @@
                                 @onclick="@(() => SetActiveTab("attachments"))">
                             <i class="bi bi-paperclip"></i>
                             Attachments
-                            @if (Request.Attachments?.Any() == true)
+                            @if (Request.Attachments.Where(e => e.AttachType == RequestAttachType.Request)?.Any() == true)
                             {
                                 <span class="tabs__badge">@Request.Attachments.Where(e => e.AttachType == RequestAttachType.Request).Count()</span>
                             }
@@ -171,6 +172,40 @@
                     <i class="bi bi-x-lg"></i> Reject
                 </button>
 
+                <hr class="page__hr" />
+            }
+
+            @if (utils.IsAdmin() && Request?.Status == RequestStatus.ForRequisition)
+            {
+                <button class="btn btn--final" @onclick="RequestClose" title="Close request">
+                    <i class="bi bi-lock-fill"></i> Request Closure
+                </button>
+                <hr class="page__hr" />
+            }
+
+            @if (Request?.RequestedByDeptHeadId == currentUser.UserId && Request?.Status == RequestStatus.ForRequisition)
+            {
+                <button class="btn btn--final" @onclick="ConfirmClose" title="Close request">
+                    <i class="bi bi-lock-fill"></i> Close Request
+                </button>
+                <hr class="page__hr" />
+            }
+
+            @if (Request?.RequestedByDeptHeadId == currentUser.UserId && Request?.Status == RequestStatus.PendingRequesterClosure)
+            {
+                <div class="pending-close-banner">
+                    <div class="pending-close-banner__info">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <div>
+                            <strong>Admin has requested to close this request.</strong>
+                            <div class="muted">You have until @((Request?.PendingClosureDate?.AddDays(3))?.ToString("MMM dd, yyyy")) to respond.</div>
+                        </div>
+                    </div>
+                    <div class="pending-close-banner__actions">
+                        <button class="btn btn--success" @onclick="ConfirmClose">Confirm Close</button>
+                        <button class="btn btn--outline" @onclick="KeepOpen">Keep Open</button>
+                    </div>
+                </div>
                 <hr class="page__hr" />
             }
 

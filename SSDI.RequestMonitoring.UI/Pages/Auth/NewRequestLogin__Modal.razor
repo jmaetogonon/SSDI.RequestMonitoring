@@ -1,27 +1,23 @@
 ﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Alerts
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Models.Requests
 @inject IPurchaseRequestSvc purchaseRequestSvc
 
-<div class="modal__overlay" id="@(IsNewRequestModalFormVisible ? "show__new__incident-modal" : "hide__new__incident-modal")">
+<Confirmation__Modal @ref="confirmModal" />
+<div class="modal__overlay" id="@(IsModalVisible ? "show__new__purchase-request-modal" : "hide__new__purchase-request-modal")">
     <div class="modal">
         <div class="modal__header">
-            <div class="modal__header-content">
-                <h5 class="modal__header-title">UPDATE REQUEST</h5>
-                <div class="modal__header-subtitle">
-                    <i class="bi bi-clock-history"></i>
-                    <span>Last modified: @RequestModel?.DateModified</span>
-                </div>
-            </div>
+            <h5 class="modal__header-title">NEW PURCHASE REQUEST </h5>
         </div>
 
         <div class="modal__alert">
-            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="@IsShowAlert" />
         </div>
 
-        <New_Purchase__Form Model="RequestModel" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />
-
+        <PurchaseReq__Form FormModel="@RequestModel" OnValidSubmit="@HandleSave" OnCloseModal="@CloseModal" IsDisabledBtns="@_isDisabledBtns" />
     </div>
 </div>

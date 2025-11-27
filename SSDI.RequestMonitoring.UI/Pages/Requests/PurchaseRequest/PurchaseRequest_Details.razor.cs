@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
-using SSDI.RequestMonitoring.UI.Models.Requests;
-using System.Threading.Tasks;
+using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
 
@@ -140,7 +139,7 @@ public partial class PurchaseRequest_Details : ComponentBase
         var options = new ConfirmationModalOptions
         {
             Message = "Are you sure you want to approve this purchase request?",
-            Title = "Approve Purchase Approve",
+            Title = "Approve Purchase Request",
             Variant = ConfirmationModalVariant.confirmation,
             ConfirmText = "Yes, Approve",
             CancelText = "No, Cancel",
@@ -186,6 +185,75 @@ public partial class PurchaseRequest_Details : ComponentBase
         {
             toastSvc.ShowError("Error: " + apiResult.Message);
         }
+    }
+
+    private async Task RequestClose()
+    {
+        var options = new ConfirmationModalOptions
+        {
+            Message = "Are you sure you want to request closure of this purchase request? This will ask the requester to confirm within 3 days.",
+            Title = "Request Close",
+            Variant = ConfirmationModalVariant.confirmation,
+            ConfirmText = "Yes, Request Close",
+            CancelText = "No, Cancel",
+        };
+
+        var result = await confirmModal!.ShowAsync(options);
+        if (!result) return;
+
+        var apiResult = await purchaseRequestSvc.InitiateClosePurchaseRequest(Request!.Id, currentUser.UserId);
+        if (apiResult.Success)
+        {
+            toastSvc.ShowSuccess("Close request sent to requester. It will auto-close in 3 days if no response.");
+            await LoadRequestDetails();
+        }
+        else
+            toastSvc.ShowError("Error: " + apiResult.Message);
+    }
+
+    private async Task ConfirmClose()
+    {
+        var options = new ConfirmationModalOptions
+        {
+            Message = "Confirm closing this request? This action is final.",
+            Title = "Confirm Close",
+            Variant = ConfirmationModalVariant.confirmation,
+            ConfirmText = "Yes, Close",
+            CancelText = "No, Cancel",
+        };
+
+        var result = await confirmModal!.ShowAsync(options);
+        if (!result) return;
+
+        var apiResult = await purchaseRequestSvc.ConfirmClosePurchaseRequest(Request!.Id, currentUser.UserId);
+        if (apiResult.Success)
+        {
+            toastSvc.ShowSuccess("Request closed.");
+            await LoadRequestDetails();
+        }
+        else toastSvc.ShowError(apiResult.Message);
+    }
+
+    private async Task KeepOpen()
+    {
+        var result = await confirmModal!.ShowAsync(new ConfirmationModalOptions
+        {
+            Title = "Keep Open",
+            Message = "Do you want to keep this request open?",
+            ConfirmText = "Yes, Keep Open",
+            CancelText = "Cancel",
+            Variant = ConfirmationModalVariant.confirmation
+        });
+
+        if (!result) return;
+
+        var apiResult = await purchaseRequestSvc.CancelPendingClosePurchaseRequest(Request!.Id, currentUser.UserId);
+        if (apiResult.Success)
+        {
+            toastSvc.ShowSuccess("Request kept open.");
+            await LoadRequestDetails();
+        }
+        else toastSvc.ShowError(apiResult.Message);
     }
 
     private async Task OnSaveEditReqModal()

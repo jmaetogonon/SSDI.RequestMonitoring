@@ -1,0 +1,228 @@
+﻿@page "/requests/job-orders/{paramId:int}/{reportType?}"
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
+@using SSDI.RequestMonitoring.UI.JComponents.Controls.JobOrder
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals
+@inject IJobOrderSvc jobOrderSvc
+@inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
+
+<PageTitle>Job Order #@Request?.Id</PageTitle>
+
+<BreadcrumbNav>
+    <BreadcrumbItem Label="Job Orders" Href="/requests/job-orders" />
+    <BreadcrumbItem Label="Details" IsCurrent="true" />
+</BreadcrumbNav>
+
+<Confirmation__Modal @ref="confirmModal" />
+<EditJORequest__Modal IsModalVisible="@isEditRequestModalVisible" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
+<PdfViewer__Modal IsVisible="@isPdfModalVisible"
+                  PdfBase64="@pdfBase64"
+                  FileName="@($"{Request?.Name}_PR.pdf")"
+                  OnClose="@ClosePdfModal" />
+
+<div class="page__container">
+    <!-- Left Section - Main Content -->
+    <div class="page__left-section">
+        <div class="page__left-section-content">
+
+            <!-- Header Section -->
+            <div class="details-page__header">
+                <div class="details-page__title-section">
+                    <h1 class="details-page__title">Job Order #@Request?.Id</h1>
+                </div>
+            </div>
+
+            @if (IsLoading)
+            {
+                <div class="page__table-loading">
+                    <p>Loading request details...</p>
+                </div>
+            }
+            else if (Request == null)
+            {
+                <div class="error__container">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <h3>Request Not Found</h3>
+                    <p>The requested job order could not be found.</p>
+                    <button class="btn btn--primary" @onclick="NavigateBack">Back to Requests</button>
+                </div>
+            }
+            else
+            {
+                <div class="tabs">
+                    <div class="tabs__header">
+                        <button class="tabs__button @(ActiveTab == "details" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("details"))">
+                            <i class="bi bi-info-circle"></i>
+                            Details
+                        </button>
+                        <button class="tabs__button @(ActiveTab == "attachments" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("attachments"))">
+                            <i class="bi bi-paperclip"></i>
+                            Attachments
+                            @if (Request.Attachments.Where(e => e.AttachType == RequestAttachType.Request)?.Any() == true)
+                            {
+                                <span class="tabs__badge">@Request.Attachments.Where(e => e.AttachType == RequestAttachType.Request).Count()</span>
+                            }
+                        </button>
+                        <button class="tabs__button @(ActiveTab == "slips" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("slips"))">
+                            <i class="bi bi-file-earmark-text"></i>
+                            Requisition Slip
+                            @if (Request.RequisitionSlips?.Any() == true)
+                            {
+                                <span class="tabs__badge">@Request.RequisitionSlips.Count</span>
+                            }
+                        </button>
+                        <button class="tabs__button @(ActiveTab == "approval" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("approval"))">
+                            <i class="bi bi-clipboard-check"></i>
+                            Approval Process
+                            @* @if (Request.Approvals?.Any() == true)
+                            {
+                                <span class="tabs__badge">@Request.Approvals.Count</span>
+                            } *@
+                        </button>
+                        <button class="tabs__button @(ActiveTab == "timeline" ? "tabs__button--active" : "")"
+                                @onclick="@(() => SetActiveTab("timeline"))">
+                            <i class="bi bi-clock-history"></i>
+                            Timeline
+                        </button>
+                    </div>
+
+                    <div class="tabs__content">
+                        @if (ActiveTab == "details")
+                        {
+                            <JobOrderDetails__Control Request="Request" />
+                        }
+                        else if (ActiveTab == "slips")
+                        {
+                            <JobOrderRequisitionSlips__Control Request="Request" ConfirmModal="confirmModal" />
+                        }
+                        else if (ActiveTab == "approval")
+                        {
+                            <JobOrderApprovalProcess__Control Request="Request" />
+                        }
+                        else if (ActiveTab == "attachments")
+                        {
+                            <JobOrderAttachments__Control Request="Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
+                        }
+                        else if (ActiveTab == "timeline")
+                        {
+                            <JobOrderTimeline__Control Request="Request" />
+                        }
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!-- Right Section - Actions Sidebar -->
+    <div class="page__right-section">
+        <div class="details-page__actions">
+
+            @if (CanApproveDeptHead)
+            {
+                if (!(Request?.Status == RequestStatus.Rejected))
+                {
+                    <button class="btn btn--success" @onclick="SubmitRequestByDept" title="Submit request">
+                        <i class="bi bi-check-lg"></i> Submit
+                    </button>
+                }
+                <button class="btn btn--danger" @onclick="CancelRequestByDept" title="Cancel request">
+                    <i class="bi bi-x-lg"></i> Cancel
+                </button>
+
+                <hr class="page__hr" />
+            }
+
+            @if (CanApproveDivtHead)
+            {
+                <button class="btn btn--success" @onclick="EndorseRequest" title="Endorse request">
+                    <i class="bi bi-check-lg"></i> Endorse
+                </button>
+                <button class="btn btn--danger" @onclick="RejectEndorseRequest" title="Reject request">
+                    <i class="bi bi-x-lg"></i> Reject
+                </button>
+
+                <hr class="page__hr" />
+            }
+
+            @if (CanApproveAdmin)
+            {
+                <button class="btn btn--success" @onclick="VerifyByAdminRequest" title="Endorse request">
+                    <i class="bi bi-check-lg"></i> Verify
+                </button>
+                <button class="btn btn--danger" @onclick="RejectVerifyByAdminRequest" title="Reject request">
+                    <i class="bi bi-x-lg"></i> Reject
+                </button>
+
+                <hr class="page__hr" />
+            }
+
+            @if (utils.IsCEO() && Request?.Status == RequestStatus.ForCeoApproval)
+            {
+                <button class="btn btn--success" @onclick="ApproveByCeoRequest" title="Approve request">
+                    <i class="bi bi-check-lg"></i> Verify
+                </button>
+                <button class="btn btn--danger" @onclick="RejectByCeoRequest" title="Reject request">
+                    <i class="bi bi-x-lg"></i> Reject
+                </button>
+
+                <hr class="page__hr" />
+            }
+
+            @if (utils.IsAdmin() && Request?.Status == RequestStatus.ForRequisition)
+            {
+                <button class="btn btn--final" @onclick="RequestClose" title="Close request">
+                    <i class="bi bi-lock-fill"></i> Request Closure
+                </button>
+                <hr class="page__hr" />
+            }
+
+            @if (Request?.RequestedByDeptHeadId == currentUser.UserId && Request?.Status == RequestStatus.ForRequisition)
+            {
+                <button class="btn btn--final" @onclick="ConfirmClose" title="Close request">
+                    <i class="bi bi-lock-fill"></i> Close Request
+                </button>
+                <hr class="page__hr" />
+            }
+
+            @if (Request?.RequestedByDeptHeadId == currentUser.UserId && Request?.Status == RequestStatus.PendingRequesterClosure)
+            {
+                <div class="pending-close-banner">
+                    <div class="pending-close-banner__info">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <div>
+                            <strong>Admin has requested to close this request.</strong>
+                            <div class="muted">You have until @((Request?.PendingClosureDate?.AddDays(3))?.ToString("MMM dd, yyyy")) to respond.</div>
+                        </div>
+                    </div>
+                    <div class="pending-close-banner__actions">
+                        <button class="btn btn--success" @onclick="ConfirmClose">Confirm Close</button>
+                        <button class="btn btn--outline" @onclick="KeepOpen">Keep Open</button>
+                    </div>
+                </div>
+                <hr class="page__hr" />
+            }
+
+            @if (CanEdit)
+            {
+                <button class="btn btn--secondary" @onclick="NavigateToEdit" title="Edit request">
+                    <i class="bi bi-pencil"></i> @EditBtnText
+                </button>
+            }
+
+            <button class="btn btn--outline" @onclick="ExportToPdf" title="Export to PDF">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+
+            <button class="btn btn--ghost" @onclick="NavigateBack" title="Back to main page">
+                <i class="bi bi-chevron-left"></i> Back
+            </button>
+        </div>
+    </div>
+</div>

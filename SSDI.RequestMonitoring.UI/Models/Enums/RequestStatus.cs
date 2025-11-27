@@ -9,5 +9,7 @@ public enum RequestStatus
     ForRequisition,
     Approved,
     Rejected,
-    Cancelled
+    Cancelled,
+    PendingRequesterClosure,
+    Closed
 }

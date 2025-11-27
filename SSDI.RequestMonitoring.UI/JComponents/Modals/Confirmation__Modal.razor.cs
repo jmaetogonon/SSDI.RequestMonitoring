@@ -51,9 +51,19 @@ public partial class Confirmation__Modal : ComponentBase
 
     [Parameter] public bool RemarksRequired { get; set; }
     [Parameter] public string Remarks { get; set; } = string.Empty;
-    [Parameter] public EventCallback<string> RemarksChanged { get; set; }
+    //[Parameter] public EventCallback<string> RemarksChanged { get; set; }
     [Parameter] public string RemarksPlaceholder { get; set; } = "Enter your remarks here...";
     [Parameter] public string RemarksLabel { get; set; } = "Remarks";
+    
+
+    // Number Field
+    [Parameter] public bool ShowNumberField { get; set; }
+
+    [Parameter] public bool NumberRequired { get; set; }
+    [Parameter] public decimal Number { get; set; } = 0;
+    //[Parameter] public EventCallback<string> NumberChanged { get; set; }
+    [Parameter] public string NumberPlaceholder { get; set; } = "Enter amount here...";
+    [Parameter] public string NumberLabel { get; set; } = "Amount";
 
     // Events
     [Parameter] public EventCallback OnConfirm { get; set; }
@@ -127,6 +137,10 @@ public partial class Confirmation__Modal : ComponentBase
         {
             return;
         }
+        if (ShowNumberField && NumberRequired && Number == 0)
+        {
+            return;
+        }
 
         if (_tcs != null)
         {
@@ -163,6 +177,7 @@ public partial class Confirmation__Modal : ComponentBase
     public async Task<bool> ShowAsync(ConfirmationModalOptions options)
     {
         Remarks = string.Empty;
+        Number = 0;
         Message = options.Message;
         Title = options.Title ?? "Confirm Action";
         Variant = options.Variant ?? ConfirmationModalVariant.confirmation;
@@ -177,6 +192,10 @@ public partial class Confirmation__Modal : ComponentBase
         RemarksRequired = options.RemarksRequired ?? false;
         RemarksPlaceholder = options.RemarksPlaceholder ?? "Enter your remarks here...";
         RemarksLabel = options.RemarksLabel ?? "Remarks";
+        ShowNumberField = options.ShowNumberField ?? false;
+        NumberRequired = options.NumberRequired ?? false;
+        NumberPlaceholder = options.NumberPlaceholder ?? "Enter amount here...";
+        NumberLabel = options.NumberLabel ?? "Amount";
 
         SetDefaultIcons();
 
@@ -274,6 +293,10 @@ public class ConfirmationModalOptions
     public bool? RemarksRequired { get; set; }
     public string? RemarksPlaceholder { get; set; }
     public string? RemarksLabel { get; set; }
+    public bool? ShowNumberField { get; set; }
+    public bool? NumberRequired { get; set; }
+    public string? NumberPlaceholder { get; set; }
+    public string? NumberLabel { get; set; }
 }
 
 public enum ConfirmationModalVariant

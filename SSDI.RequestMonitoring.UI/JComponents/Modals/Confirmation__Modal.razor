@@ -61,6 +61,32 @@
                     </div>
                 }
 
+                @if (ShowNumberField)
+                {
+                    <div class="confirmation-modal__number">
+                        <label for="number-input" class="confirmation-modal__number-label">
+                            @NumberLabel @(NumberRequired ? "*" : "")
+                        </label>
+
+                        <input @bind="Number"
+                               id="number-input"
+                               type="number"
+                               class="confirmation-modal__number-input"
+                               placeholder="@NumberPlaceholder"
+                               disabled="@IsLoading"
+                               min="0"
+                               required="@NumberRequired" />
+
+                        @if (NumberRequired && Number is 0)
+                        {
+                            <div class="confirmation-modal__number-error">
+                                @NumberLabel is required.
+                            </div>
+                        }
+                    </div>
+                }
+
+
                 @if (IsLoading)
                 {
                     <div class="confirmation-modal__loading">

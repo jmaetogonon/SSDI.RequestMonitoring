@@ -1,0 +1,29 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.JComponents.Forms
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+
+@inject IJobOrderSvc jobOrderSvc
+@inject IJOAttachSvc attachSvc
+
+
+<Confirmation__Modal @ref="confirmModal" />
+<div class="modal__overlay" id="@(IsModalVisible ? "show__new__edit-purchase-request-modal" : "hide__new__edit-purchase-request-modal")">
+    <div class="modal">
+        <div class="modal__header">
+            <h5 class="modal__header-title">UPDATE REQUEST</h5>
+            <div class="modal__header-date">
+                <i class="bi bi-clock-history"></i>
+                <span title="@RequestModel?.DateModified?.ToString("MMMM dd, yyyy 'at' h:mm tt")">
+                    @utils.GetLastModifiedDisplay(RequestModel?.DateModified)
+                </span>
+            </div>
+        </div>
+
+        <div class="modal__alert">
+            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+        </div>
+
+        <JobOrder__Form FormModel="RequestModel" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" IsForUpdate="true" />
+    </div>
+</div>

@@ -1,0 +1,323 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.Models.Common
+@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@inject IPRAttachSvc attachSvc
+@inject IJSRuntime JS
+
+<div class="attachment-preview-modal @(ShowPreview ? "attachment-preview-modal--visible" : "")"
+     @onkeydown="HandleKeyDown"
+     tabindex="0"
+     @ref="modalElement">
+
+    <div class="attachment-preview-modal__overlay" @onclick="ClosePreview"></div>
+
+    <div class="attachment-preview-modal__content">
+        <div class="attachment-preview-modal__header">
+            <h3 class="attachment-preview-modal__title">@SelectedAttachment?.FileName</h3>
+            <button class="attachment-preview-modal__close" @onclick="ClosePreview">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="attachment-preview-modal__body">
+            @if (IsLoadingPreview)
+            {
+                <div class="preview-loading">
+                    <div class="preview-loading__spinner"></div>
+                    <p>Loading preview...</p>
+                </div>
+            }
+            else if (IsImage(SelectedAttachment!.FileName))
+            {
+                <div class="image-preview-container">
+                    <div class="image-viewport">
+                        <img src="@PreviewUrl"
+                             alt="@SelectedAttachment.FileName"
+                             class="preview-image"
+                             style="transform: scale(@imageScale)"
+                             @onload="OnImageLoad"
+                             @onerror="OnImageError" />
+
+                        @if (!isImageLoaded && !isImageError)
+                        {
+                            <div class="image-loading">
+                                <div class="image-loading__spinner"></div>
+                                <p>Loading image...</p>
+                            </div>
+                        }
+
+                        @if (isImageError)
+                        {
+                            <div class="image-error">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <p>Failed to load image</p>
+                            </div>
+                        }
+                    </div>
+
+                    @if (isImageLoaded)
+                    {
+                        <div class="image-controls">
+                            <button class="control-btn" @onclick="ZoomOut" title="Zoom Out">
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
+                            <span class="zoom-level">@((imageScale * 100).ToString("0"))%</span>
+                            <button class="control-btn" @onclick="ZoomIn" title="Zoom In">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                            <button class="control-btn" @onclick="ResetZoom" title="Reset Zoom">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+            else if (IsPdf(SelectedAttachment.FileName))
+            {
+                <div class="pdf-preview-container">
+                    <object data="@PreviewUrl"
+                            type="application/pdf"
+                            class="pdf-object"
+                            @onload="OnPdfLoad"
+                            @onerror="OnPdfError">
+                        <div class="pdf-fallback">
+                            <i class="bi bi-file-pdf"></i>
+                            <h4>PDF Preview Not Available</h4>
+                            <p>Your browser doesn't support embedded PDF preview.</p>
+                        </div>
+                    </object>
+
+                    @if (!isPdfLoaded && !isPdfError)
+                    {
+                        <div class="pdf-loading">
+                            <div class="pdf-loading__spinner"></div>
+                            <p>Loading PDF...</p>
+                        </div>
+                    }
+
+                    @if (isPdfError)
+                    {
+                        <div class="pdf-error">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <p>Failed to load PDF</p>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="generic-preview">
+                    <div class="generic-icon">
+                        <i class="@GetFileIcon(SelectedAttachment.FileName)"></i>
+                    </div>
+                    <div class="generic-content">
+                        <h4>@SelectedAttachment.FileName</h4>
+                        <p>Preview not available for this file type</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Global Action Buttons -->
+        <div class="preview-actions">
+            <button class="btn btn--primary" @onclick="() => DownloadAttachment(SelectedAttachment)">
+                <i class="bi bi-download"></i>
+                Download
+            </button>
+            <button class="btn btn--outline" @onclick="ClosePreview">
+                <i class="bi bi-x"></i>
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool ShowPreview { get; set; }
+    [Parameter] public bool IsLoadingPreview { get; set; }
+    [Parameter] public IAttachmentEntity? SelectedAttachment { get; set; } 
+    [Parameter] public string? PreviewUrl { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private ElementReference modalElement;
+    private bool isImageLoaded = false;
+    private bool isImageError = false;
+    private bool isPdfLoaded = false;
+    private bool isPdfError = false;
+    private double imageScale = 1.0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (ShowPreview)
+        {
+            await modalElement.FocusAsync();
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ShowPreview)
+        {
+            // Reset states when preview opens
+            if (IsImage(SelectedAttachment.FileName))
+            {
+                isImageLoaded = false;
+                isImageError = false;
+                imageScale = 1.0;
+            }
+            else if (IsPdf(SelectedAttachment.FileName))
+            {
+                isPdfLoaded = false;
+                isPdfError = false;
+            }
+        }
+    }
+
+    private void OnImageLoad()
+    {
+        isImageLoaded = true;
+        isImageError = false;
+        StateHasChanged();
+    }
+
+    private void OnImageError()
+    {
+        isImageLoaded = false;
+        isImageError = true;
+        StateHasChanged();
+    }
+
+    private void OnPdfLoad()
+    {
+        isPdfLoaded = true;
+        isPdfError = false;
+        StateHasChanged();
+    }
+
+    private void OnPdfError()
+    {
+        isPdfLoaded = false;
+        isPdfError = true;
+        StateHasChanged();
+    }
+
+    private void ZoomIn()
+    {
+        imageScale = Math.Min(imageScale + 0.25, 3.0);
+        StateHasChanged();
+    }
+
+    private void ZoomOut()
+    {
+        imageScale = Math.Max(imageScale - 0.25, 0.5);
+        StateHasChanged();
+    }
+
+    private void ResetZoom()
+    {
+        imageScale = 1.0;
+        StateHasChanged();
+    }
+
+    private async void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && ShowPreview)
+        {
+            await ClosePreview();
+        }
+        else if (ShowPreview && IsImage(SelectedAttachment.FileName))
+        {
+            if (e.Key == "+" || e.Key == "=")
+            {
+                ZoomIn();
+            }
+            else if (e.Key == "-")
+            {
+                ZoomOut();
+            }
+            else if (e.Key == "0")
+            {
+                ResetZoom();
+            }
+        }
+    }
+
+    private async Task ClosePreview()
+    {
+        ShowPreview = false;
+        // SelectedAttachment = new();
+        PreviewUrl = null;
+        IsLoadingPreview = false;
+        isImageLoaded = false;
+        isImageError = false;
+        isPdfLoaded = false;
+        isPdfError = false;
+        imageScale = 1.0;
+
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task DownloadAttachment( IAttachmentEntity attachment, MouseEventArgs? e = null)
+    {
+        try
+        {
+            var fileBytes = await attachSvc.GetAttachByte(attachment.Id);
+            var fileName = attachment.FileName;
+
+            if (fileBytes != null && fileBytes.Length > 0)
+            {
+                await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error downloading attachment: {ex.Message}");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private bool IsImage(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName)) return false;
+        var extension = Path.GetExtension(fileName).ToLower();
+        return extension is ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp";
+    }
+
+    private bool IsPdf(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName)) return false;
+        return Path.GetExtension(fileName).ToLower() == ".pdf";
+    }
+
+    private string GetFileIcon(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName)) return "bi bi-file-earmark";
+
+        var extension = Path.GetExtension(fileName).ToLower();
+        return extension switch
+        {
+            ".pdf" => "bi bi-file-pdf",
+            ".doc" or ".docx" => "bi bi-file-word",
+            ".xls" or ".xlsx" => "bi bi-file-excel",
+            ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" => "bi bi-file-image",
+            ".zip" or ".rar" or ".7z" => "bi bi-file-zip",
+            ".txt" => "bi bi-file-text",
+            _ => "bi bi-file-earmark"
+        };
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
+}

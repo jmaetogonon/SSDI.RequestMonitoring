@@ -1,9 +1,12 @@
 ﻿@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.Contracts.Users
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.Models.MasterData
-@using SSDI.RequestMonitoring.UI.Models.Requests
+ @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Models.Users
 @inject IDivisionSvc divisionSvc
 @inject IDepartmentSvc departmentSvc
+@inject IUserSvc userSvc
 
 <EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
@@ -60,6 +63,35 @@
                 <label for="justification">Justification</label>
                 <textarea id="justification" @bind="FormModel.Justification" class="form-control" placeholder="Describe the reason for this request..." rows="2" required />
             </div>
+
+
+            @if (!currentUser.IsAuthenticated)
+            {
+                <!-- Supervisors -->
+                <div class="form-group">
+                    <label for="deptSupp">Department Supervisor</label>
+                    <InputSelect id="deptSupp" class="form-select" @bind-Value="FormModel.ReportToDeptSupId" required>
+                        <option value="0">--Select--</option>
+                        @foreach (var item in Supervisors)
+                        {
+                            <option value="@item.Id">@item.FullName</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="form-group">
+                    <label for="divSupp">Division Supervisor</label>
+                    <InputSelect id="divSupp" class="form-select" @bind-Value="FormModel.ReportToDivSupId" required>
+                        <option value="0">--Select--</option>
+                        @foreach (var item in Supervisors)
+                        {
+                            <option value="@item.Id">@item.FullName</option>
+                        }
+                    </InputSelect>
+                </div>
+
+            }
+
 
             <!-- Priority -->
             <div class="form-group full-width">
@@ -144,11 +176,17 @@
     private List<IBrowserFile> uploadedFiles = [];
     private List<DivisionVM> Divisions = [];
     private List<DepartmentVM> Departments = [];
+    private List<SupervisorVM> Supervisors = [];
 
     protected override async Task OnParametersSetAsync()
     {
         Divisions = await divisionSvc.GetAllDivisions();
         Departments = await departmentSvc.GetAllDepartments();
+
+        if (!currentUser.IsAuthenticated)
+        {
+            Supervisors = await userSvc.GetSupervisors();
+        }
     }
 
     private void ResetSelectedDivision()

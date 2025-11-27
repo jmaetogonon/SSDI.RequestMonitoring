@@ -18,7 +18,9 @@ public partial class Status__Filter : ComponentBase
         new StatusOption { Value = RequestStatus.ForCeoApproval, DisplayName = TokenCons.Status__ForCeoApproval, IsChecked = false },
         new StatusOption { Value = RequestStatus.ForRequisition, DisplayName = TokenCons.Status__ForRequisition, IsChecked = false },
          new StatusOption { Value = RequestStatus.Rejected, DisplayName = TokenCons.Status__Rejected, IsChecked = false },
-        new StatusOption { Value = RequestStatus.Cancelled, DisplayName = TokenCons.Status__Closed, IsChecked = false }
+        new StatusOption { Value = RequestStatus.Cancelled, DisplayName = TokenCons.Status__Cancelled, IsChecked = false },
+        new StatusOption { Value = RequestStatus.PendingRequesterClosure, DisplayName = TokenCons.Status__PendingClose, IsChecked = false },
+        new StatusOption { Value = RequestStatus.Closed, DisplayName = TokenCons.Status__Closed, IsChecked = false },
     ];
 
     private string DisplayedStatuses => IsAllSelected ? "All" :

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using SSDI.RequestMonitoring.UI.Models.Requests;
+using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 using SSDI.RequestMonitoring.UI.Services.Base;
 
 namespace SSDI.RequestMonitoring.UI.MappingProfiles.PurchaseRequests;

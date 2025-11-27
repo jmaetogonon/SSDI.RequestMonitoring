@@ -10,8 +10,9 @@
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     overflow: hidden;
-    will-change: transform; /* Performance hint */
-    backface-visibility: hidden; /* Prevent flickering */
+    will-change: transform;  
+    cursor: pointer;
+    backface-visibility: hidden; 
 }
 
 /* Hover animations - only on non-touch devices */
@@ -79,6 +80,7 @@
         font-weight: 600;
         color: var(--color-gray-700, #5a5a5a);
         display: block;
+        cursor: pointer;
     }
 
 /* Progress bar container */
@@ -98,6 +100,7 @@
     position: relative;
     overflow: hidden;
     animation: progressGrow__statusCard 1.2s cubic-bezier(0.65, 0, 0.35, 1) 0.5s both;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa) !important;
 }
 
     .page__card-progress-bar::before {
@@ -111,7 +114,7 @@
         animation: shimmer 2s ease-in-out infinite;
     }
 
-.page__card-progress-bar--pending {
+/*.page__card-progress-bar--pending {
     background: linear-gradient(90deg, #f59e0b, #fbbf24);
 }
 
@@ -121,7 +124,7 @@
 
 .page__card-progress-bar--ongoing {
     background: linear-gradient(90deg, #3b82f6, #60a5fa);
-}
+}*/
 
 /* Shine effect on hover */
 .page__card-shine {

@@ -10,6 +10,7 @@ public static class TokenCons
     public const string Status__Rejected = "Rejected";
     public const string Status__Closed = "Closed";
     public const string Status__Cancelled = "Cancelled";
+    public const string Status__PendingClose = "Pending Close";
 
     public const string Role__SysAdmin = "SysAdmin";
     public const string Role__User = "User";
