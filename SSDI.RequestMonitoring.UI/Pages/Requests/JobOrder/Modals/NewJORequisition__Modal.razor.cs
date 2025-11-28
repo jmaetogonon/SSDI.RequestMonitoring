@@ -58,7 +58,7 @@ public partial class NewJORequisition__Modal : ComponentBase
 
                 var command = new UploadAttachmentJobOrderCommandVM
                 {
-                    PurchaseRequestId = PurchaseRequestHeader!.Id,
+                    JobOrderId = PurchaseRequestHeader!.Id,
                     Files = Attachments,
                     Type = RequestAttachType.Requisition,
                     RequisitionId = response.Data

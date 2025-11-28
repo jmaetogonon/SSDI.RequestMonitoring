@@ -1,4 +1,5 @@
 ﻿@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.Models.Common
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 
 <!-- Approval Process Tab -->
@@ -27,7 +28,7 @@
         </div>
     </DetailsRow__Card>
 
-    @if (Request.Approvals?.Any() == true)
+    @if (Request.ApprovalsBase?.Any() == true)
     {
         var sortedApprovals = GetSortedApprovals();
 
@@ -107,16 +108,16 @@
 </Details__Card>
 
 @code {
-    [Parameter] public Purchase_RequestVM Request { get; set; } = new();
+    [Parameter] public IRequestDetailVM Request { get; set; } = default!;
 
     private string SortOrder { get; set; } = "desc"; // "asc" or "desc"
 
-    private List<Purchase_Request_ApprovalVM> GetSortedApprovals()
+    private List<IApprovalVM> GetSortedApprovals()
     {
-        if (Request.Approvals == null || !Request.Approvals.Any())
-            return new List<Purchase_Request_ApprovalVM>();
+        if (Request.ApprovalsBase == null || !Request.ApprovalsBase.Any())
+            return new List<IApprovalVM>();
 
-        var approvals = Request.Approvals.ToList();
+        var approvals = Request.ApprovalsBase.ToList();
 
         return SortOrder == "desc"
             ? approvals.OrderByDescending(a => a.ActionDate).ToList()
@@ -131,12 +132,12 @@
 
     private bool HasMultipleActionsAtStage(ApprovalStage stage)
     {
-        return Request.Approvals?.Count(a => a.Stage == stage) > 1;
+        return Request.ApprovalsBase?.Count(a => a.Stage == stage) > 1;
     }
 
-    private int GetActionIteration(Purchase_Request_ApprovalVM approval)
+    private int GetActionIteration(IApprovalVM approval)
     {
-        var stageApprovals = Request.Approvals?
+        var stageApprovals = Request.ApprovalsBase?
             .Where(a => a.Stage == approval.Stage)
             .OrderBy(a => a.ActionDate)
             .ToList();
@@ -147,7 +148,7 @@
         return index + 1; // Convert from 0-based to 1-based
     }
 
-    private string GetApprovalStepClass(Purchase_Request_ApprovalVM approval)
+    private string GetApprovalStepClass(IApprovalVM approval)
     {
         return approval.IsApproved ? "approval-step--approved" :
                approval.IsRejected ? "approval-step--rejected" :
@@ -155,7 +156,7 @@
                "approval-step--pending";
     }
 
-    private string GetApprovalStatusClass(Purchase_Request_ApprovalVM approval)
+    private string GetApprovalStatusClass(IApprovalVM approval)
     {
         return approval.IsApproved ? "status-approved" :
                approval.IsRejected ? "status-rejected" :

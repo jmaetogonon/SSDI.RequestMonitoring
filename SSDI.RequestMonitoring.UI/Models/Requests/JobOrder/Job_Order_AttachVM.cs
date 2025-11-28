@@ -2,7 +2,7 @@
 
 namespace SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 
-public class Job_Order_AttachVM : IAttachmentEntity
+public class Job_Order_AttachVM : IAttachmentVM
 {
     public int Id { get; set; }
     public string UniqId { get; set; } = string.Empty;

@@ -1,12 +1,14 @@
 ﻿@page "/requests/purchase-requests/{paramId:int}/{reportType?}"
- @using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
-@using SSDI.RequestMonitoring.UI.JComponents.Controls.Purchase
+@using SSDI.RequestMonitoring.UI.JComponents.Controls.Requests
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
+@using SSDI.RequestMonitoring.UI.Services.Adapters.Requests
 @inject IPurchaseRequestSvc purchaseRequestSvc
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntime
+@inject PRAttachSvcAdapter prAttachAdapter
 
 <PageTitle>Purchase Request #@Request?.Id</PageTitle>
 
@@ -107,7 +109,7 @@
                         }
                         else if (ActiveTab == "attachments")
                         {
-                            <RequestAttachments__Control Request="Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
+                            <RequestAttachments__Control Request="Request" AttachSvc="prAttachAdapter" OnRequestChanged="Reload" AttachType="RequestAttachType.Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
                         }
                         else if (ActiveTab == "timeline")
                         {

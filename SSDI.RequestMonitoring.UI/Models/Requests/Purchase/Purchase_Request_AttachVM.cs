@@ -2,7 +2,7 @@
 
 namespace SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
-public class Purchase_Request_AttachVM : IAttachmentEntity
+public class Purchase_Request_AttachVM : IAttachmentVM
 {
     public int Id { get; set; }
     public string UniqId { get; set; } = string.Empty;

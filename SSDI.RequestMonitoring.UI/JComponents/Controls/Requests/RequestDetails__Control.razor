@@ -1,5 +1,7 @@
 ﻿@using SSDI.RequestMonitoring.UI.JComponents.Cards
- @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Models.Common
+@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@typeparam TRequest where TRequest : IRequestDetailVM
 
 <!-- Basic Request Information -->
 <Details__Card>
@@ -50,7 +52,7 @@
 
             <DetailsRow__Card Label="Reviewed & Endorsed By">
                 @{
-                    var divHeadApproval = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead);
+                    var divHeadApproval = Request.ApprovalsBase.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead);
                 }
                 @if (divHeadApproval != null && divHeadApproval.IsApproved)
                 {
@@ -68,7 +70,7 @@
             </DetailsRow__Card>
             <DetailsRow__Card Label="Notification Received by <b>Admin</b> ">
                 @{
-                    var adminVerification = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.Admin);
+                    var adminVerification = Request.ApprovalsBase.LastOrDefault(a => a.Stage == ApprovalStage.Admin);
                 }
                 @if (adminVerification != null && adminVerification.IsApproved)
                 {
@@ -77,7 +79,7 @@
                         <div class="approval__subtext">
                             @if (adminVerification.Action != null)
                             {
-@*                                 <span>@adminVerification.Action.ToString()</span>
+                                @*                                 <span>@adminVerification.Action.ToString()</span>
                                 <span> • @adminVerification.ActionDate?.ToString("MMM dd, yyyy")</span> *@
                                 <span>@adminVerification.ActionDate?.ToString("MMM dd, yyyy • hh:mm tt")</span>
                             }
@@ -97,7 +99,7 @@
 
         <DetailsRow__Card Label="Approved By">
             @{
-                var finalApproval = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp);
+                var finalApproval = Request.ApprovalsBase.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp);
             }
             @if (finalApproval != null && finalApproval.IsApproved)
             {
@@ -116,7 +118,7 @@
 
         <DetailsRow__Card Label="Acknowledged by">
             @{
-                var finalApproval = Request.Approvals.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp);
+                var finalApproval = Request.ApprovalsBase.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp);
             }
             @if (finalApproval != null && finalApproval.IsApproved)
             {
@@ -151,5 +153,5 @@ else
 }
 
 @code {
-    [Parameter] public Purchase_RequestVM Request { get; set; } = new();
+    [Parameter] public TRequest Request { get; set; } = default!;
 }

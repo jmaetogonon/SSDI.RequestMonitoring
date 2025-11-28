@@ -48,6 +48,11 @@ public partial class JobOrder_Details : ComponentBase
         }
     }
 
+    private async Task Reload()
+    {
+        Request = await jobOrderSvc.GetByIdJobOrder(paramId);
+    }
+
     private void NavigateToEdit()
     {
         Request?.Attachments.Clear();

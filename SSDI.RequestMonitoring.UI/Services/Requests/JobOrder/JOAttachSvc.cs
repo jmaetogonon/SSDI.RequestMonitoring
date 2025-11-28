@@ -2,7 +2,6 @@
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder;
-using SSDI.RequestMonitoring.UI.Models.Requests;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Services.Base;
 
@@ -21,7 +20,7 @@ public class JOAttachSvc : BaseHttpService, IJOAttachSvc
     {
         try
         {
-            var fileResponse = await _client.GetAttachmentAsync(attachmentId);
+            var fileResponse = await _client.GetAttachmentJobOrderAsync(attachmentId);
             return fileResponse;
         }
         catch (ApiException ex)

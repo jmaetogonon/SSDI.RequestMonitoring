@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using SSDI.RequestMonitoring.UI.Models.Common;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
-public class Purchase_Request_SlipVM
+public class Purchase_Request_SlipVM : ISlipVM
 {
     public int Id { get; set; }
-    public Purchase_RequestVM? PurchaseRequest { get; set; }
     public int PurchaseRequestId { get; set; }
 
     public RequisitionSlip_For RequisitionSlip_For { get; set; } = RequisitionSlip_For.CashPayment;

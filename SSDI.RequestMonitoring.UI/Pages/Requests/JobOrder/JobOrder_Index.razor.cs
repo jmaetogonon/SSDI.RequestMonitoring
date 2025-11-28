@@ -237,7 +237,7 @@ public partial class JobOrder_Index : ComponentBase
 
     public bool CheckNewBtnPermission()
     {
-        return utils.IsUser() || /*AllRequests?.FirstOrDefault()?.ReportType == "Department" || */(AllRequests?.FirstOrDefault() is null && utils.IsSupervisor() && !utils.IsAdmin()) ;
+        return utils.IsUser() || AllRequests?.FirstOrDefault()?.ReportType == "Department" || (AllRequests?.FirstOrDefault() is null && utils.IsSupervisor() && !utils.IsAdmin());
     }
 
     public void Dispose()

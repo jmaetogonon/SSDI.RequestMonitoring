@@ -1,5 +1,6 @@
 ﻿@using SSDI.RequestMonitoring.UI.JComponents.Cards
- @using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.Models.Common
+ @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 
 <Details__Card>
     <!-- Timeline Header -->
@@ -42,7 +43,7 @@
 </Details__Card>
 
 @code {
-    [Parameter] public Job_OrderVM Request { get; set; } = new();
+    [Parameter] public IRequestDetailVM Request { get; set; } = default!;
 
     private class TimelineEvent
     {
@@ -84,9 +85,9 @@
         }
 
         // APPROVAL EVENTS
-        if (Request.Approvals?.Any() == true)
+        if (Request.ApprovalsBase?.Any() == true)
         {
-            foreach (var a in Request.Approvals)
+            foreach (var a in Request.ApprovalsBase)
             {
                 if (!a.ActionDate.HasValue) continue;
 
@@ -102,9 +103,9 @@
         }
 
         // REQUISITION SLIP EVENTS
-        if (Request.RequisitionSlips?.Any() == true)
+        if (Request.SlipsBase?.Any() == true)
         {
-            foreach (var slip in Request.RequisitionSlips)
+            foreach (var slip in Request.SlipsBase)
             {
                 list.Add(new TimelineEvent
                 {
@@ -116,7 +117,7 @@
                 });
             }
 
-            foreach (var slip in Request.RequisitionSlips)
+            foreach (var slip in Request.SlipsBase)
             {
                 if (slip.SlipApprovalDate == null)
                     continue;
@@ -180,7 +181,7 @@
         return sortedList;
     }
 
-    private string BuildApprovalDescription(Job_Order_ApprovalVM a)
+    private string BuildApprovalDescription(IApprovalVM a)
     {
         if (a.IsApproved)
             return $"Approved by {a.ApproverName}";
@@ -192,7 +193,7 @@
         return $"Pending approval from {a.ApproverName}";
     }
 
-    private string GetTimelinePointClass(Job_Order_ApprovalVM approval)
+    private string GetTimelinePointClass(IApprovalVM approval)
     {
         return approval.IsApproved ? "timeline__point--success"
              : approval.IsRejected ? "timeline__point--danger"

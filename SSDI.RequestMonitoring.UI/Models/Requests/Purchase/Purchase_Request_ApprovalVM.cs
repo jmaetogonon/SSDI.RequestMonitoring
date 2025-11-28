@@ -3,7 +3,7 @@ using SSDI.RequestMonitoring.UI.Models.Enums;
 
 namespace SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
-public class Purchase_Request_ApprovalVM : IApprovalEntity
+public class Purchase_Request_ApprovalVM : IApprovalVM
 {
     public int Id { get; set; }
     public int PurchaseRequestId { get; set; }

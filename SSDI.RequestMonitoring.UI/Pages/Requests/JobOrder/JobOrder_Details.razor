@@ -1,12 +1,14 @@
 ﻿@page "/requests/job-orders/{paramId:int}/{reportType?}"
 @using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
-@using SSDI.RequestMonitoring.UI.JComponents.Controls.JobOrder
+@using SSDI.RequestMonitoring.UI.JComponents.Controls.Requests
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals
+@using SSDI.RequestMonitoring.UI.Services.Adapters.Requests
 @inject IJobOrderSvc jobOrderSvc
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntime
+@inject JOAttachSvcAdapter joAttachAdapter
 
 <PageTitle>Job Order #@Request?.Id</PageTitle>
 
@@ -80,10 +82,6 @@
                                 @onclick="@(() => SetActiveTab("approval"))">
                             <i class="bi bi-clipboard-check"></i>
                             Approval Process
-                            @* @if (Request.Approvals?.Any() == true)
-                            {
-                                <span class="tabs__badge">@Request.Approvals.Count</span>
-                            } *@
                         </button>
                         <button class="tabs__button @(ActiveTab == "timeline" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("timeline"))">
@@ -95,7 +93,7 @@
                     <div class="tabs__content">
                         @if (ActiveTab == "details")
                         {
-                            <JobOrderDetails__Control Request="Request" />
+                            <RequestDetails__Control Request="Request" />
                         }
                         else if (ActiveTab == "slips")
                         {
@@ -103,15 +101,15 @@
                         }
                         else if (ActiveTab == "approval")
                         {
-                            <JobOrderApprovalProcess__Control Request="Request" />
+                            <RequestApprovalProcess__Control Request="Request" />
                         }
                         else if (ActiveTab == "attachments")
                         {
-                            <JobOrderAttachments__Control Request="Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
+                            <RequestAttachments__Control Request="Request" AttachSvc="joAttachAdapter" OnRequestChanged="Reload" AttachType="RequestAttachType.Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
                         }
                         else if (ActiveTab == "timeline")
                         {
-                            <JobOrderTimeline__Control Request="Request" />
+                            <RequestTimeline__Control Request="Request" />
                         }
                     </div>
                 </div>

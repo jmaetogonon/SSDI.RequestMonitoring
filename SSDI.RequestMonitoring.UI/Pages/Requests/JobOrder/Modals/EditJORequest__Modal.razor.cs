@@ -42,7 +42,7 @@ public partial class EditJORequest__Modal : ComponentBase
             {
                 var command = new UploadAttachmentJobOrderCommandVM
                 {
-                    PurchaseRequestId = RequestModel.Id,
+                    JobOrderId = RequestModel.Id,
                     Files = RequestModel.Attachments
                 };
 
@@ -83,7 +83,7 @@ public partial class EditJORequest__Modal : ComponentBase
             {
                 var attachCommand = new UploadAttachmentJobOrderCommandVM
                 {
-                    PurchaseRequestId = RequestModel.Id,
+                    JobOrderId = RequestModel.Id,
                     Files = RequestModel.Attachments
                 };
 

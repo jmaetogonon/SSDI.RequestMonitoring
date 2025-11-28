@@ -48,6 +48,11 @@ public partial class PurchaseRequest_Details : ComponentBase
         }
     }
 
+    private async Task Reload()
+    {
+        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(paramId);
+    }
+
     private void NavigateToEdit()
     {
         Request?.Attachments.Clear();

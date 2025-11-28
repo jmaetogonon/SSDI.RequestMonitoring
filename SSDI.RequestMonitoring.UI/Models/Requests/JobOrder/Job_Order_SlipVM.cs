@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using SSDI.RequestMonitoring.UI.Models.Common;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 
-public class Job_Order_SlipVM
+public class Job_Order_SlipVM : ISlipVM
 {
     public int Id { get; set; }
-    public Job_OrderVM? JobOrder { get; set; }
     public int JobOrderId { get; set; }
 
     public RequisitionSlip_For RequisitionSlip_For { get; set; } = RequisitionSlip_For.CashPayment;

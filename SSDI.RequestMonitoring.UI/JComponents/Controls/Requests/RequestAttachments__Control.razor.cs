@@ -2,18 +2,24 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
-using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
+using SSDI.RequestMonitoring.UI.Models.Common;
+using SSDI.RequestMonitoring.UI.Services.Adapters.Requests;
 
-namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Purchase;
+namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Requests;
 
 public partial class RequestAttachments__Control : ComponentBase
 {
-    [Parameter] public Purchase_RequestVM Request { get; set; } = new();
+    [Parameter] public IRequestDetailVM Request { get; set; } = default!;
+    [Parameter] public IAttachmentSvc AttachSvc { get; set; } = default!;
+    [Parameter] public EventCallback OnRequestChanged { get; set; }
+
     [Parameter] public Confirmation__Modal ConfirmModal { get; set; } = new();
     [Parameter] public string ReportType { get; set; } = string.Empty;
+    [Parameter] public RequestAttachType AttachType { get; set; }
 
-    private Purchase_Request_AttachVM? selectedAttachment;
+    private IAttachmentVM? selectedAttachment;
     private bool showPreview = false;
     private string? previewUrl;
     private List<string> blobUrls = [];
@@ -28,6 +34,7 @@ public partial class RequestAttachments__Control : ComponentBase
 
     private async Task OnFilesSelected(InputFileChangeEventArgs e)
     {
+        List<TempAttachmentForUpload> temps = [];
         var options = new ConfirmationModalOptions
         {
             Message = "Are you sure you want to upload the selected files/?",
@@ -53,38 +60,29 @@ public partial class RequestAttachments__Control : ComponentBase
                 fileBytes = ms.ToArray();
             }
 
-            var attachVM = new Purchase_Request_AttachVM
+            var attachVM = new TempAttachmentForUpload
             {
-                UniqId = utils.GenerateUniqId(),
-                PurchaseRequestId = Request.Id,
                 FileName = file.Name,
                 ContentType = file.ContentType,
                 ImgData = fileBytes,
                 Size = file.Size,
-                AttachType = RequestAttachType.Request
+                UniqId = utils.GenerateUniqId(),
+                AttachType = AttachType
             };
 
-            Request.Attachments.Add(attachVM);
+            temps.Add(attachVM);
         }
 
-        var command = new UploadAttachmentPurchaseCommandVM
-        {
-            PurchaseRequestId = Request.Id,
-            Files = Request.Attachments,
-            Type = RequestAttachType.Request
-        };
-
-        var res = await attachSvc.UploadAttachPurchase(command);
+        var res = await AttachSvc.UploadAsync(Request, temps, AttachType);
         if (!res.Success)
         {
             toastSvc.ShowError("Error uploading attachments. Please try again.");
         }
 
-        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(Request.Id);
-        StateHasChanged();
+        if (OnRequestChanged.HasDelegate) await OnRequestChanged.InvokeAsync();
     }
 
-    private async Task ViewAttachment(Purchase_Request_AttachVM attachment)
+    private async Task ViewAttachment(IAttachmentVM attachment)
     {
         selectedAttachment = attachment;
         loadingPreviewId = attachment.Id.ToString();
@@ -120,11 +118,11 @@ public partial class RequestAttachments__Control : ComponentBase
         }
     }
 
-    private async Task<string> GetPdfBlobUrl(Purchase_Request_AttachVM attachment)
+    private async Task<string> GetPdfBlobUrl(IAttachmentVM attachment)
     {
         try
         {
-            var bytes = await attachSvc.GetAttachByte(attachment.Id);
+            var bytes = await AttachSvc.GetBytesAsync(attachment.Id);
             if (bytes == null || bytes.Length == 0)
                 return string.Empty;
 
@@ -145,11 +143,11 @@ public partial class RequestAttachments__Control : ComponentBase
         }
     }
 
-    private async Task<string> GetImageDataUrl(Purchase_Request_AttachVM attachment)
+    private async Task<string> GetImageDataUrl(IAttachmentVM attachment)
     {
         try
         {
-            var bytes = await attachSvc.GetAttachByte(attachment.Id);
+            var bytes = await AttachSvc.GetBytesAsync(attachment.Id);
             if (bytes == null || bytes.Length == 0)
                 return string.Empty;
 
@@ -176,7 +174,7 @@ public partial class RequestAttachments__Control : ComponentBase
     private async Task CloseAttachmentPreview()
     {
         showPreview = false;
-        selectedAttachment = new();
+        //selectedAttachment = new();
         previewUrl = null;
         isLoadingPreview = false;
 
@@ -201,7 +199,7 @@ public partial class RequestAttachments__Control : ComponentBase
         await Task.Delay(100); // Small delay to ensure clean state
     }
 
-    private async Task DownloadAttachment(Purchase_Request_AttachVM attachment, MouseEventArgs? e = null)
+    private async Task DownloadAttachment(IAttachmentVM attachment, MouseEventArgs? e = null)
     {
         if (downloadingAttachments.Contains(attachment.Id.ToString()))
             return;
@@ -211,7 +209,7 @@ public partial class RequestAttachments__Control : ComponentBase
 
         try
         {
-            var fileBytes = await attachSvc.GetAttachByte(attachment.Id);
+            var fileBytes = await AttachSvc.GetBytesAsync(attachment.Id);
             var fileName = attachment.FileName;
 
             if (fileBytes != null && fileBytes.Length > 0)
@@ -230,7 +228,7 @@ public partial class RequestAttachments__Control : ComponentBase
         }
     }
 
-    private async Task DeleteAttachment(Purchase_Request_AttachVM attachment, MouseEventArgs e)
+    private async Task DeleteAttachment(IAttachmentVM attachment, MouseEventArgs e)
     {
         var options = new ConfirmationModalOptions
         {
@@ -244,14 +242,14 @@ public partial class RequestAttachments__Control : ComponentBase
         var result = await ConfirmModal!.ShowAsync(options);
         if (!result) return;
 
-        await attachSvc.DeleteAttachRequest(attachment.Id);
-        Request.Attachments.Remove(attachment);
+        await AttachSvc.DeleteAsync(attachment.Id);
         toastSvc.ShowSuccess("Attachment deleted successfully.");
+        if (OnRequestChanged.HasDelegate) await OnRequestChanged.InvokeAsync();
     }
 
     private async Task DownloadAll()
     {
-        if (isDownloadingAll || Request.Attachments == null)
+        if (isDownloadingAll || Request.AttachmentsBase == null)
             return;
 
         isDownloadingAll = true;
@@ -260,21 +258,13 @@ public partial class RequestAttachments__Control : ComponentBase
 
         try
         {
-            var fileBytes = await attachSvc.DownloadAllAttachZip(Request.Id);
-            var fileName = $"PR#{Request.Id}_{Request.Name}_Attachments.zip";
+            var fileBytes = await AttachSvc.DownloadAllZipAsync(Request.Id, AttachType);
+            var fileName = $"{(AttachSvc is JOAttachSvcAdapter ? "JO" : "PR")}#{Request.Id}_{Request.Name}_Attachments.zip";
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
                 await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
-            //foreach (var attachment in Request.Attachments)
-            //{
-            //    currentDownloadIndex++;
-            //    StateHasChanged();
-
-            //    await DownloadAttachment(attachment);
-            //    await Task.Delay(200); // Small delay between downloads
-            //}
         }
         catch (Exception ex)
         {
@@ -344,5 +334,18 @@ public partial class RequestAttachments__Control : ComponentBase
             }
         }
         blobUrls.Clear();
+    }
+
+    private class TempAttachmentForUpload : IAttachmentVM
+    {
+        public int Id { get; set; }
+        public string UniqId { get; set; } = Guid.NewGuid().ToString();
+        public string FileName { get; set; } = string.Empty;
+        public string URL { get; set; } = string.Empty;
+        public long Size { get; set; }
+        public string ContentType { get; set; } = string.Empty;
+        public DateTime? DateCreated { get; set; } = DateTime.Now;
+        public byte[]? ImgData { get; set; }
+        public RequestAttachType AttachType { get; set; }
     }
 }

@@ -59,7 +59,7 @@ public partial class NewRequisition__Modal : ComponentBase
                 var command = new UploadAttachmentPurchaseCommandVM
                 {
                     PurchaseRequestId = PurchaseRequestHeader!.Id,
-                    Files = Attachments,
+                    //Files = Attachments,
                     Type = RequestAttachType.Requisition,
                     RequisitionId = response.Data
                 };

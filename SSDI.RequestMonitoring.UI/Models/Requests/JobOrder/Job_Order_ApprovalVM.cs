@@ -2,7 +2,7 @@
 
 namespace SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 
-public class Job_Order_ApprovalVM : IApprovalEntity
+public class Job_Order_ApprovalVM : IApprovalVM
 {
     public int Id { get; set; }
     public int JobOrderId { get; set; }

@@ -120,7 +120,7 @@ public class Utils
         };
     }
 
-    public string GetApprovalStatusText(IApprovalEntity approval)
+    public string GetApprovalStatusText(IApprovalVM approval)
     {
         return approval.IsApproved ? (approval.Stage is ApprovalStage.DepartmentHead ? "Submitted" : "Approved") :
                approval.IsRejected ? "Rejected" :
@@ -128,7 +128,7 @@ public class Utils
                "Pending";
     }
 
-    public string GetApprovalByText(IApprovalEntity approval)
+    public string GetApprovalByText(IApprovalVM approval)
     {
         return approval.Stage switch
         {

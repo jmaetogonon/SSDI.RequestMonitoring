@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 
-namespace SSDI.RequestMonitoring.UI.JComponents.Controls.JobOrder;
+namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Requests;
 
 public partial class JobOrderRequisitionSlips__Control : ComponentBase
 {
@@ -344,7 +344,7 @@ public partial class JobOrderRequisitionSlips__Control : ComponentBase
 
         var command = new UploadAttachmentJobOrderCommandVM
         {
-            PurchaseRequestId = Request!.Id,
+            JobOrderId = Request!.Id,
             Files = dummies,
             Type = RequestAttachType.Requisition,
             RequisitionId = slip.Id
@@ -411,7 +411,7 @@ public partial class JobOrderRequisitionSlips__Control : ComponentBase
 
         var command = new UploadAttachmentJobOrderCommandVM
         {
-            PurchaseRequestId = Request.Id,
+            JobOrderId = Request.Id,
             Files = new List<Job_Order_AttachVM> { attach },
             Type = RequestAttachType.Receipt,
             RequisitionId = slip.Id,

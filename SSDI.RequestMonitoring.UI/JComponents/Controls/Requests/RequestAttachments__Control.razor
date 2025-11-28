@@ -1,10 +1,9 @@
-﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
-@using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
-@inject IJobOrderSvc jobOrderSvc
-@inject IJOAttachSvc attachSvc
+@using SSDI.RequestMonitoring.UI.Models.Requests
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
@@ -13,10 +12,10 @@
         <div class="attachments-header">
             <div class="attachments-stats">
                 <i class="bi bi-paperclip"></i>
-                <span>@Request.Attachments.Where(x => x.AttachType == RequestAttachType.Request).Count() files attached</span>
+                <span>@Request.AttachmentsBase.Where(x => x.AttachType == AttachType).Count() files attached</span>
                 @if (isDownloadingAll)
                 {
-                    <span class="download-progress">(@currentDownloadIndex/@Request.Attachments.Where(x => x.AttachType == RequestAttachType.Request).Count())</span>
+                    <span class="download-progress">(@currentDownloadIndex/@Request.AttachmentsBase.Where(x => x.AttachType == AttachType).Count())</span>
                 }
             </div>
 
@@ -54,10 +53,10 @@
         </div>
     </DetailsRow__Card>
 
-    @if (Request.Attachments.Where(x => x.AttachType == RequestAttachType.Request)?.Any() == true)
+    @if (Request.AttachmentsBase.Where(x => x.AttachType == AttachType)?.Any() == true)
     {
         <div class="attachments-grid">
-            @foreach (var attachment in Request.Attachments.Where(x => x.AttachType == RequestAttachType.Request))
+            @foreach (var attachment in Request.AttachmentsBase.Where(x => x.AttachType == AttachType))
             {
                 var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
                 var isLoadingPreview = (loadingPreviewId == attachment.Id.ToString());
@@ -121,4 +120,4 @@
     }
 </Details__Card>
 
-<AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment ?? new())" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />
+<AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment)" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />

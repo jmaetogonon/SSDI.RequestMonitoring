@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
-namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Purchase;
+namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Requests;
 
 public partial class RequestRequisitionSlips__Control : ComponentBase
 {
@@ -345,7 +345,7 @@ public partial class RequestRequisitionSlips__Control : ComponentBase
         var command = new UploadAttachmentPurchaseCommandVM
         {
             PurchaseRequestId = Request!.Id,
-            Files = dummies,
+            //Files = dummies,
             Type = RequestAttachType.Requisition,
             RequisitionId = slip.Id
         };
@@ -412,7 +412,7 @@ public partial class RequestRequisitionSlips__Control : ComponentBase
         var command = new UploadAttachmentPurchaseCommandVM
         {
             PurchaseRequestId = Request.Id,
-            Files = new List<Purchase_Request_AttachVM> { attach },
+            //Files = new List<Purchase_Request_AttachVM> { attach },
             Type = RequestAttachType.Receipt,
             RequisitionId = slip.Id,
             ReceiptAmount = ConfirmModal.Number
