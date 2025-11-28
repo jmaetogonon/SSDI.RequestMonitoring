@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
-using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals;
 
@@ -22,7 +21,7 @@ public partial class NewJORequisition__Modal : ComponentBase
 
     protected override void OnParametersSet()
     {
-        Model.PurchaseRequestId = PurchaseRequestHeader!.Id;
+        Model.JobOrderId = PurchaseRequestHeader!.Id;
         Model.RequisitionerId = currentUser.UserId;
         Model.RequisitionerName = currentUser.FullName;
         Model.DateOfRequest = DateTime.Now;

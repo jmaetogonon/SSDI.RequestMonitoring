@@ -5,8 +5,7 @@ namespace SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 public class Job_Order_ApprovalVM : IApprovalEntity
 {
     public int Id { get; set; }
-    public int PurchaseRequestId { get; set; }
-
+    public int JobOrderId { get; set; }
     public ApprovalStage Stage { get; set; } // Department, Division, Admin, Finance, CEO
     public ApprovalAction? Action { get; set; } // Approve, Reject, or null if pending
     public int ApproverId { get; set; }

@@ -146,7 +146,7 @@ public partial class JobOrderRequisitionSlips__Control : ComponentBase
     {
         slipForm = new Job_Order_SlipVM
         {
-            PurchaseRequestId = Request.Id,
+            JobOrderId = Request.Id,
             DateOfRequest = DateTime.Today
         };
         showNewSlipModal = true;
@@ -331,7 +331,7 @@ public partial class JobOrderRequisitionSlips__Control : ComponentBase
             var attachVM = new Job_Order_AttachVM
             {
                 UniqId = utils.GenerateUniqId(),
-                PurchaseRequestId = Request.Id,
+                JobOrderId = Request.Id,
                 FileName = file.Name,
                 ContentType = file.ContentType,
                 ImgData = fileBytes,
@@ -400,7 +400,7 @@ public partial class JobOrderRequisitionSlips__Control : ComponentBase
         var attach = new Job_Order_AttachVM
         {
             UniqId = utils.GenerateUniqId(),
-            PurchaseRequestId = Request.Id,
+            JobOrderId = Request.Id,
             FileName = file.Name,
             ContentType = file.ContentType,
             ImgData = fileBytes,

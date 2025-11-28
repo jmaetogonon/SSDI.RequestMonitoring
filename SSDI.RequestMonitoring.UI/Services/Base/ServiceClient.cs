@@ -7254,12 +7254,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
         public System.DateTimeOffset? DateModified { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("jobOrder")]
-        public Job_Order JobOrder { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("jobOrderId")]
-        public int JobOrderId { get; set; }
-
         [System.Text.Json.Serialization.JsonPropertyName("stage")]
         public ApprovalStage Stage { get; set; }
 
@@ -7278,6 +7272,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("actionDate")]
         public System.DateTimeOffset? ActionDate { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("jobOrder")]
+        public Job_Order JobOrder { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("jobOrderId")]
+        public int JobOrderId { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -7295,12 +7295,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("uniqId")]
         public string UniqId { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("jobOrder")]
-        public Job_Order JobOrder { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("jobOrderId")]
-        public int JobOrderId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("fileName")]
         public string FileName { get; set; }
@@ -7326,6 +7320,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("receiptAmount")]
         public double ReceiptAmount { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("jobOrder")]
+        public Job_Order JobOrder { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("jobOrderId")]
+        public int JobOrderId { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -7340,12 +7340,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
         public System.DateTimeOffset? DateModified { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("jobOrder")]
-        public Job_Order JobOrder { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("jobOrderId")]
-        public int JobOrderId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("requisitionSlip_For")]
         public RequisitionSlip_For RequisitionSlip_For { get; set; }
@@ -7421,6 +7415,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("slipApprovalDate")]
         public System.DateTimeOffset? SlipApprovalDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("jobOrder")]
+        public Job_Order JobOrder { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("jobOrderId")]
+        public int JobOrderId { get; set; }
 
     }
 
@@ -8145,12 +8145,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
         public System.DateTimeOffset? DateModified { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequest")]
-        public Purchase_Request PurchaseRequest { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequestId")]
-        public int PurchaseRequestId { get; set; }
-
         [System.Text.Json.Serialization.JsonPropertyName("stage")]
         public ApprovalStage Stage { get; set; }
 
@@ -8169,6 +8163,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("actionDate")]
         public System.DateTimeOffset? ActionDate { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequest")]
+        public Purchase_Request PurchaseRequest { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequestId")]
+        public int PurchaseRequestId { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8186,12 +8186,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("uniqId")]
         public string UniqId { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequest")]
-        public Purchase_Request PurchaseRequest { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequestId")]
-        public int PurchaseRequestId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("fileName")]
         public string FileName { get; set; }
@@ -8217,6 +8211,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("receiptAmount")]
         public double ReceiptAmount { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequest")]
+        public Purchase_Request PurchaseRequest { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequestId")]
+        public int PurchaseRequestId { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8231,12 +8231,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
         public System.DateTimeOffset? DateModified { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequest")]
-        public Purchase_Request PurchaseRequest { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequestId")]
-        public int PurchaseRequestId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("requisitionSlip_For")]
         public RequisitionSlip_For RequisitionSlip_For { get; set; }
@@ -8312,6 +8306,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("slipApprovalDate")]
         public System.DateTimeOffset? SlipApprovalDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequest")]
+        public Purchase_Request PurchaseRequest { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("purchaseRequestId")]
+        public int PurchaseRequestId { get; set; }
 
     }
 

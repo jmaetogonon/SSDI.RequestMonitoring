@@ -6,7 +6,7 @@ public class Job_Order_AttachVM : IAttachmentEntity
 {
     public int Id { get; set; }
     public string UniqId { get; set; } = string.Empty;
-    public int PurchaseRequestId { get; set; }
+    public int JobOrderId { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string URL { get; set; } = string.Empty;
     public long Size { get; set; }

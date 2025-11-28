@@ -20,7 +20,7 @@ public partial class EditJORequisition__Modal : ComponentBase
 
     protected override void OnParametersSet()
     {
-        Model.PurchaseRequestId = PurchaseRequestHeader!.Id;
+        Model.JobOrderId = PurchaseRequestHeader!.Id;
         Model.RequisitionerId = currentUser.UserId;
         Model.RequisitionerName = currentUser.FullName;
     }

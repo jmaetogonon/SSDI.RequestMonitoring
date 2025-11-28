@@ -56,7 +56,7 @@ public partial class JobOrderAttachments__Control : ComponentBase
             var attachVM = new Job_Order_AttachVM
             {
                 UniqId = utils.GenerateUniqId(),
-                PurchaseRequestId = Request.Id,
+                JobOrderId = Request.Id,
                 FileName = file.Name,
                 ContentType = file.ContentType,
                 ImgData = fileBytes,
