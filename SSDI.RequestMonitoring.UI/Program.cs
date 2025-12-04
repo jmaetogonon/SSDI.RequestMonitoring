@@ -18,6 +18,7 @@ using SSDI.RequestMonitoring.UI.Helpers.States;
 using SSDI.RequestMonitoring.UI.Providers;
 using SSDI.RequestMonitoring.UI.Services;
 using SSDI.RequestMonitoring.UI.Services.Adapters.Requests;
+using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip;
 using SSDI.RequestMonitoring.UI.Services.Base;
 using SSDI.RequestMonitoring.UI.Services.MasterData;
 using SSDI.RequestMonitoring.UI.Services.Requests.JobOrder;
@@ -52,11 +53,13 @@ builder.Services.AddScoped<IPurchaseRequestSvc, PurchaseRequestSvc>();
 builder.Services.AddScoped<IPRAttachSvc, PRAttachSvc>();
 builder.Services.AddScoped<IPRRequisitionSvc, PRRequisitionSvc>();
 builder.Services.AddScoped<PRAttachSvcAdapter>();
+builder.Services.AddScoped<PRRequisitionSvcAdapter>();
 
 builder.Services.AddScoped<IJobOrderSvc, JobOrderSvc>();
 builder.Services.AddScoped<IJOAttachSvc, JOAttachSvc>();
 builder.Services.AddScoped<IJORequisitionSvc, JORequisitionSvc>();
 builder.Services.AddScoped<JOAttachSvcAdapter>();
+builder.Services.AddScoped<JORequisitionSvcAdapter>();
 
 
 builder.Services.AddScoped<IDivisionSvc, DivisionSvc>();

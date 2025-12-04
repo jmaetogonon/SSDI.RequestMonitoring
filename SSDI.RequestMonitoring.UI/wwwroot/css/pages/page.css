@@ -1,6 +1,6 @@
 ﻿.main--content {
     position: relative;
-    padding: 1rem 2rem;
+    padding: 1rem 3rem;
     max-height: calc(100dvh - 50px);
     overflow-y: auto;
 }

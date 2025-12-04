@@ -1,0 +1,115 @@
+﻿@using SSDI.RequestMonitoring.UI.Models.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Pages.Dashboard.Dto
+@inject NavigationManager Nav
+
+<div class="dashboard__card">
+    <div class="dashboard__card-header">
+        <h3>Recent Activity</h3>
+
+        <div class="activity-filters">
+            <button class="filter-btn @(activityFilter == "all" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ChangeFilter("all"))">
+                All
+            </button>
+
+            <button class="filter-btn @(activityFilter == "purchase" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ChangeFilter("purchase"))"> 
+                <i class="bi bi-cart"></i> Purchases
+            </button>
+
+            <button class="filter-btn @(activityFilter == "joborder" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ChangeFilter("joborder"))">
+                <i class="bi bi-tools"></i> Jobs
+            </button>
+        </div>
+    </div>
+
+    <div class="recent-activity">
+        @if (FilteredActivity?.Any() == true)
+        {
+            @foreach (var activity in FilteredActivity)
+            {
+                <div class="activity-item" @onclick="() => ViewRequestDetails(activity.RequestType, activity.Id)">
+
+                    <div class="activity-item__icon">
+                        <i class="bi @(activity.RequestType == "purchase" ? "bi-cart" : "bi-tools")"></i>
+                    </div>
+
+                    <div class="activity-item__content">
+                        <div class="activity-item__header">
+                            <span class="activity-item__title">@activity.Title</span>
+                            <span class="activity-item__type @(activity.RequestType == "purchase" ? "type-purchase" : "type-joborder")">
+                                @(activity.RequestType == "purchase" ? "Purchase" : "Job Order")
+                            </span>
+                        </div>
+
+                        <div class="activity-item__meta">
+                            <span class="dashboard-status-badge" data-status="@activity.Status">
+                                @utils.GetStatusDisplay(activity.Status)
+                            </span>
+
+                            <span class="activity-item__date">
+                                @utils.GetRelativeTime(activity.Date)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-activity"></i>
+                <p>No recent activity</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<ActivityItem> Items { get; set; } = new();
+    [Parameter] public RequestType RequestType { get; set; } = RequestType.All;
+
+    private string activityFilter = "all";
+    private List<ActivityItem> FilteredActivity = [];
+
+    protected override void OnParametersSet()
+    {
+        // Sync the activity filter from the RequestType parameter
+        activityFilter = RequestType switch
+        {
+            RequestType.Purchase => "purchase",
+            RequestType.JobOrder => "joborder",
+            _ => "all"
+        };
+
+        // Apply the filter to Items
+        FilteredActivity = activityFilter switch
+        {
+            "purchase" => Items.Where(a => a.RequestType == "purchase").ToList(),
+            "joborder" => Items.Where(a => a.RequestType == "joborder").ToList(),
+            _ => Items
+        };
+    }
+
+    private async Task ChangeFilter(string filter)
+    {
+        await Task.Delay(1);
+        activityFilter = filter;
+        FilteredActivity = filter switch
+           {
+            "purchase" => Items.Where(a => a.RequestType == "purchase").ToList(),
+            "joborder" => Items.Where(a => a.RequestType == "joborder").ToList(),
+            _ => Items
+           };
+    }
+
+    private void ViewRequestDetails(string requestType, int id)
+    {
+        var route = requestType == "purchase"
+            ? $"/requests/purchase-requests/{id}"
+            : $"/requests/job-orders/{id}";
+        Nav.NavigateTo(route);
+    }
+}

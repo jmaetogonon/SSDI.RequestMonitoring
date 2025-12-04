@@ -1,6 +1,406 @@
-﻿@page "/dashboard/"
-<PageTitle>Dashboard</PageTitle>
+﻿@page "/dashboard"
+@attribute [Authorize]
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Contracts.Users
+@using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests
+@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.Pages.Dashboard.Cards
+@using SSDI.RequestMonitoring.UI.Pages.Dashboard.Charts
+@inject IPurchaseRequestSvc purchaseRequestSvc
+@inject IJobOrderSvc jobOrderSvc
+@inject IUserSvc userSvc
+@inject NavigationManager navigationManager
 
-@code {
+<div class="dashboard">
+    <!-- Header -->
+    <!-- Header -->
+    <div class="dashboard__header">
+        <div class="dashboard__welcome">
+            <h1>Good @(GetTimeOfDayGreeting()), @(currentUser.FullName?.Split(' ').FirstOrDefault() ?? "User")!</h1>
+            <p class="dashboard__subtitle">Here's your request overview</p>
+        </div>
 
+        <div class="dashboard__header-actions">
+            <!-- Quick Stats -->
+            <div class="header-stats">
+                @* <div class="header-stat">
+                    <i class="bi bi-inbox"></i>
+                    <div class="header-stat__content">
+                        <span class="header-stat__value">@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)</span>
+                        <span class="header-stat__label">Total Requests</span>
+                    </div>
+                </div>
+
+                <div class="header-stat">
+                    <i class="bi bi-clock-history"></i>
+                    <div class="header-stat__content">
+                        <span class="header-stat__value">
+                            @(purchaseRequestMetrics.PendingApprovalCount + jobOrderMetrics.PendingApprovalCount)
+                        </span>
+                        <span class="header-stat__label">Pending</span>
+                    </div>
+                </div> *@
+
+                <div class="header-stat">
+                    <i class="bi bi-calendar-check"></i>
+                    <div class="header-stat__content">
+                        <span class="header-stat__value">@DateTime.Now.ToString("MMM dd")</span>
+                        <span class="header-stat__label">Today</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="header-quick-actions">
+                <button class="header-action-btn" @onclick="SyncUsers" title="Sync Users from Active Directory">
+                    <i class="bi bi-people"></i>
+                    <span>Sync Users</span>
+                </button>
+
+                <button class="header-action-btn" @onclick="RefreshDashboard" title="Refresh dashboard data">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    <span>Refresh</span>
+                </button>
+
+               @*  <button class="header-action-btn" @onclick="ExportReports" title="Export reports">
+                    <i class="bi bi-download"></i>
+                    <span>Export</span>
+                </button>
+
+                @if (utils.IsAdmin() || utils.IsSupervisor())
+                {
+                    <button class="header-action-btn" @onclick="ViewReports" title="View detailed reports">
+                        <i class="bi bi-bar-chart"></i>
+                        <span>Reports</span>
+                    </button>
+                } *@
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Type Tabs -->
+    <div class="dashboard__tabs">
+        <button class="dashboard__tab @(activeTab == "all" ? "dashboard__tab--active" : "")"
+                @onclick="@(() => SwitchTab("all"))">
+            <i class="bi bi-grid"></i>
+            All Requests
+        </button>
+        <button class="dashboard__tab @(activeTab == "purchase" ? "dashboard__tab--active" : "")"
+                @onclick="@(() => SwitchTab("purchase"))">
+            <i class="bi bi-cart"></i>
+            Purchase Requests
+            <span class="tab-badge">@purchaseRequestMetrics.TotalCount</span>
+        </button>
+        <button class="dashboard__tab @(activeTab == "joborder" ? "dashboard__tab--active" : "")"
+                @onclick="@(() => SwitchTab("joborder"))">
+            <i class="bi bi-tools"></i>
+            Job Orders
+            <span class="tab-badge">@jobOrderMetrics.TotalCount</span>
+        </button>
+    </div>
+
+    <div class="dashboard__tabs-items">
+        <!-- Combined Metrics for All Tab -->
+        @if (activeTab == "all")
+        {
+            <div class="dashboard__metrics">
+                <StatusWBar__Card Label="Total Requests"
+                                  Count="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                  TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                  Icon="bi bi-inbox"
+                                  OnClick="@(() => ViewAllRequests())" />
+
+                @if (utils.IsUser())
+                {
+                    <StatusWBar__Card Label="My Drafts"
+                                      Count="@(purchaseRequestMetrics.DraftCount + jobOrderMetrics.DraftCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-file-earmark-text"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
+
+                    <StatusWBar__Card Label="Pending For Close"
+                                      Count="@(purchaseRequestMetrics.PendingClosureCount + jobOrderMetrics.PendingClosureCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
+
+                }
+
+                @if (purchaseRequests.Any(e => e.ReportType == "Department"))
+                {
+                    <StatusWBar__Card Label="For Submission"
+                                      Count="@(purchaseRequestMetrics.PendingSubmissionCount + jobOrderMetrics.PendingSubmissionCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
+
+
+                    <StatusWBar__Card Label="Rejected • Action Needed"
+                                      Count="@(purchaseRequestMetrics.RejectedCount + jobOrderMetrics.RejectedCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-x-circle"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
+                }
+
+                @if (purchaseRequests.Any(e => e.ReportType == "Division"))
+                {
+                    <StatusWBar__Card Label="For Endorsement"
+                                      Count="@(purchaseRequestMetrics.PendingEndorsementCount + jobOrderMetrics.PendingEndorsementCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
+                }
+
+
+                @if (utils.IsAdmin())
+                {
+                    <StatusWBar__Card Label="For Approval"
+                                      Count="@(purchaseRequestMetrics.PendingAdminApprovalCount + jobOrderMetrics.PendingAdminApprovalCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
+
+
+                    <StatusWBar__Card Label="For Requisition"
+                                      Count="@(purchaseRequestMetrics.PendingAdminRequisitionCount + jobOrderMetrics.PendingAdminRequisitionCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-cart-check"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
+                }
+
+
+                @if (utils.IsCEO())
+                {
+                    <StatusWBar__Card Label="For Approval"
+                                      Count="@(purchaseRequestMetrics.PendingCEOApprovalCount + jobOrderMetrics.PendingCEOApprovalCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
+                }
+
+
+                <StatusWBar__Card Label="Completed"
+                                  Count="@(purchaseRequestMetrics.CompletedCount + jobOrderMetrics.CompletedCount)"
+                                  TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                  Icon="bi bi-check-circle"
+                                  OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
+            </div>
+        }
+
+
+        <!-- Purchase Request Specific Metrics -->
+        @if (activeTab == "purchase")
+        {
+            <div class="dashboard__metrics">
+                <StatusWBar__Card Label="Total Purchase Requests"
+                                  Count="@purchaseRequestMetrics.TotalCount"
+                                  TotalCount="@purchaseRequestMetrics.TotalCount"
+                                  Icon="bi bi-cart"
+                                  OnClick="@(() => ViewAllRequests())" />
+
+                @if (utils.IsUser())
+                {
+                    <StatusWBar__Card Label="My Drafts"
+                                      Count="@(purchaseRequestMetrics.DraftCount)"
+                                      TotalCount="@( purchaseRequestMetrics.TotalCount)"
+                                      Icon="bi bi-file-earmark-text"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
+
+                    <StatusWBar__Card Label="Pending For Close"
+                                      Count="@(purchaseRequestMetrics.PendingClosureCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
+
+                }
+
+                @if (purchaseRequests.Any(e => e.ReportType == "Department"))
+                {
+                    <StatusWBar__Card Label="For Submission"
+                                      Count="@(purchaseRequestMetrics.PendingSubmissionCount )"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount )"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
+
+
+                    <StatusWBar__Card Label="Rejected • Action Needed"
+                                      Count="@(purchaseRequestMetrics.RejectedCount )"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount  )"
+                                      Icon="bi bi-x-circle"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
+                }
+
+                @if (purchaseRequests.Any(e => e.ReportType == "Division"))
+                {
+                    <StatusWBar__Card Label="For Endorsement"
+                                      Count="@(purchaseRequestMetrics.PendingEndorsementCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
+                }
+
+                @if (utils.IsAdmin())
+                {
+                    <StatusWBar__Card Label="For Approval"
+                                      Count="@( purchaseRequestMetrics.PendingAdminApprovalCount)"
+                                      TotalCount="@( purchaseRequestMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
+
+
+                    <StatusWBar__Card Label="For Requisition"
+                                      Count="@(purchaseRequestMetrics.PendingAdminRequisitionCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                                      Icon="bi bi-cart-check"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
+                }
+
+                @if (utils.IsCEO())
+                {
+                    <StatusWBar__Card Label="For Approval"
+                                      Count="@( purchaseRequestMetrics.PendingCEOApprovalCount)"
+                                      TotalCount="@( purchaseRequestMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
+                }
+
+                <StatusWBar__Card Label="Closed"
+                                  Count="@purchaseRequestMetrics.CompletedCount"
+                                  TotalCount="@purchaseRequestMetrics.TotalCount"
+                                  Icon="bi bi-check-circle"
+                                  OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
+            </div>
+        }
+
+
+        <!-- Job Order Specific Metrics -->
+        @if (activeTab == "joborder")
+        {
+            <div class="dashboard__metrics">
+                <StatusWBar__Card Label="Total Job Orders"
+                                  Count="@jobOrderMetrics.TotalCount"
+                                  TotalCount="@jobOrderMetrics.TotalCount"
+                                  Icon="bi bi-tools"
+                                  OnClick="@(() => ViewAllRequests())" />
+
+                @if (utils.IsUser())
+                {
+                    <StatusWBar__Card Label="My Drafts"
+                                      Count="@(jobOrderMetrics.DraftCount)"
+                                      TotalCount="@( jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-file-earmark-text"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
+
+                    <StatusWBar__Card Label="Pending For Close"
+                                      Count="@(jobOrderMetrics.PendingClosureCount)"
+                                      TotalCount="@(jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
+
+                }
+
+                @if (purchaseRequests.Any(e => e.ReportType == "Department"))
+                {
+                    <StatusWBar__Card Label="For Submission"
+                                      Count="@(jobOrderMetrics.PendingSubmissionCount)"
+                                      TotalCount="@( jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
+
+
+                    <StatusWBar__Card Label="Rejected • Action Needed"
+                                      Count="@(jobOrderMetrics.RejectedCount)"
+                                      TotalCount="@( jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-x-circle"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
+                }
+
+                @if (purchaseRequests.Any(e => e.ReportType == "Division"))
+                {
+                    <StatusWBar__Card Label="For Endorsement"
+                                      Count="@(jobOrderMetrics.PendingEndorsementCount)"
+                                      TotalCount="@(jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
+                }
+
+                @if (utils.IsAdmin())
+                {
+                    <StatusWBar__Card Label="For Approval"
+                                      Count="@( jobOrderMetrics.PendingAdminApprovalCount)"
+                                      TotalCount="@( jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
+
+
+                    <StatusWBar__Card Label="For Requisition"
+                                      Count="@(jobOrderMetrics.PendingAdminRequisitionCount)"
+                                      TotalCount="@( jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-cart-check"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
+                }
+
+                @if (utils.IsCEO())
+                {
+                    <StatusWBar__Card Label="For Approval"
+                                      Count="@(jobOrderMetrics.PendingCEOApprovalCount)"
+                                      TotalCount="@(jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
+                }
+
+
+                <StatusWBar__Card Label="Closed"
+                                  Count="@jobOrderMetrics.CompletedCount"
+                                  TotalCount="@jobOrderMetrics.TotalCount"
+                                  Icon="bi bi-check-circle"
+                                  OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
+            </div>
+        }
+
+
+        <!-- Main Content Grid -->
+        <div class="dashboard__grid">
+            <!-- Left Column: Recent Activity & Quick Actions -->
+            <div class="dashboard__column">
+                <!-- Supervisor Specific: Team Requests -->
+                @if (utils.IsSupervisor())
+                {
+                    <TeamRequest__Card Items="teamRequestsNeedingAttention" RequestType="requestType" />
+                }
+
+                <!-- User Recent Activity -->
+                @if (utils.IsUser() || !utils.IsSupervisor())
+                {
+                    <RecentActivity__Card Items="recentActivity" RequestType="requestType" />
+                }
+
+
+                <!-- Performance Stats -->
+                <PerformanceOverview__Card JobOrderMetrics="jobOrderMetrics" PurchaseRequestMetrics="purchaseRequestMetrics" Purchase_Requests="purchaseRequests" Job_Orders="jobOrders" RequestType="requestType" />
+
+            </div>
+
+            <!-- Right Column: Charts -->
+            <div class="dashboard__column">
+                <!-- Volume Comparison Chart -->
+                <VolumeComparison__Bar PurchaseRequests="purchaseRequests" JobOrders="jobOrders" RequestType="requestType" />
+
+                <!-- Status Overview -->
+                <StatusDistribution__Bar PurchaseRequests="purchaseRequests" JobOrders="jobOrders" RequestType="requestType" />
+            </div>
+        </div>
+    </div>
+</div>
+<Confirmation__Modal @ref="confirmModal" />
+
+@if (isLoading)
+{
+    <div class="dashboard-loading">
+        <div class="loading-spinner"></div>
+    </div>
 }

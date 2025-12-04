@@ -24,4 +24,21 @@ public class UserSvc : BaseHttpService, IUserSvc
             return _mapper.Map<List<SupervisorVM>>(requests);
         });
     }
+
+    public async Task<bool> SyncUsers()
+    {
+        try
+        {
+            await _client.SyncSystemRoleAsync();
+            await _client.SyncApplicationAsync();
+            await _client.SyncRoleGrpHeaderAsync();
+            await _client.SyncRoleGrpDetailAsync();
+            await _client.SyncUserAsync();
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+        return true;
+    }
 }

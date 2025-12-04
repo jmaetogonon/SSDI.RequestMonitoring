@@ -11,4 +11,6 @@ public interface IAttachmentVM
     DateTime? DateCreated { get; }
     byte[]? ImgData { get; set; }
     RequestAttachType AttachType { get; }
+    int RequisitionId { get; }
+    decimal ReceiptAmount { get; }
 }

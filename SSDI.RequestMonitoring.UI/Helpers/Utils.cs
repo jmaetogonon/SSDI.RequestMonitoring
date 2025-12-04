@@ -85,6 +85,17 @@ public class Utils
         //};
     }
 
+    public string GetRequestTypeName(RequestType type) =>
+    type switch
+    {
+        RequestType.Purchase => "Purchase",
+        RequestType.JobOrder => "Job Orders",
+        _ => "All"
+    };
+
+    public string FirstCharToUpper(string input) =>
+        string.IsNullOrEmpty(input) ? input : char.ToUpper(input[0]) + input.Substring(1);
+
     public string GetStatusDisplay(RequestStatus item)
     {
         return item switch
@@ -119,6 +130,21 @@ public class Utils
             _ => "bi bi-question-circle"                                // Unknown state
         };
     }
+
+    public string GetStatusColor(RequestStatus status) =>
+        status switch
+        {
+            RequestStatus.Draft => "#9ca3af",
+            RequestStatus.ForEndorsement => "#60a5fa",
+            RequestStatus.ForAdminVerification => "#818cf8",
+            RequestStatus.ForCeoApproval => "#a78bfa",
+            RequestStatus.ForRequisition => "#34d399",
+            RequestStatus.Rejected => "#f87171",
+            RequestStatus.PendingRequesterClosure => "#fbbf24",
+            RequestStatus.Closed => "#6b7280",
+            RequestStatus.Cancelled => "#94a3b8",
+            _ => "#d1d5db" // default gray
+        };
 
     public string GetApprovalStatusText(IApprovalVM approval)
     {

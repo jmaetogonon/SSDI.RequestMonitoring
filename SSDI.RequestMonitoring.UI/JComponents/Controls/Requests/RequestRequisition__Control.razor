@@ -1,19 +1,23 @@
 ﻿@using System.Globalization
-@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
-@using SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals
+@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
+@using SSDI.RequestMonitoring.UI.Services.Adapters.Requests
+@using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip
 @inject IJSRuntime JS
-@inject IJobOrderSvc purchaseRequestSvc
-@inject IJORequisitionSvc slipSvc
-@inject IJOAttachSvc attachSvc
 @implements IAsyncDisposable
 
 
-<NewJORequisition__Modal PurchaseRequestHeader="@Request" IsModalVisible="@showNewSlipModal" OnSave="@SaveNewSlip" OnClose="CloseSlipModal" />
-<EditJORequisition__Modal PurchaseRequestHeader="@Request" Model="@EditModel" IsModalVisible="@showEditSlipModal" OnSave="@SaveEditSlip" OnClose="CloseSlipModal" />
+
+<NewRequisition__Modal RequestHeader="@Request" RequestType="@(SlipSvc is JORequisitionSvcAdapter ? RequestType.JobOrder : RequestType.Purchase)" AttachSvc="AttachSvc" SlipSvc="SlipSvc" IsModalVisible="@showNewSlipModal" OnSave="@SaveNewSlip" OnClose="CloseSlipModal" />
+
+<EditRequisition__Modal RequestHeader="@Request" RequestType="@(SlipSvc is JORequisitionSvcAdapter ? RequestType.JobOrder : RequestType.Purchase)" AttachSvc="AttachSvc" SlipSvc="SlipSvc" Model="@(EditModel is null ? (SlipSvc is JORequisitionSvcAdapter ? new Job_Order_SlipVM() : new Purchase_Request_SlipVM()) : EditModel)" IsModalVisible="@showEditSlipModal" OnSave="@SaveEditSlip" OnClose="CloseSlipModal" />
 
 <!-- PDF Viewer Modal -->
 <PdfViewer__Modal IsVisible="@showPdfModal"
@@ -26,10 +30,10 @@
         <div class="slips-header">
             <div class="slips-stats">
                 <i class="bi bi-file-earmark-text"></i>
-                <span>@Request.RequisitionSlips.Count forms attached</span>
+                <span>@Request.SlipsBase.Count forms attached</span>
                 @if (isDownloadingAll)
                 {
-                    <span class="download-progress">(@currentDownloadIndex/@Request.RequisitionSlips.Count)</span>
+                    <span class="download-progress">(@currentDownloadIndex/@Request.SlipsBase.Count)</span>
                 }
             </div>
             <div class="slips-actions">
@@ -41,7 +45,7 @@
                     </button>
                 }
 
-                <button class="btn btn--outline btn--sm" @onclick="DownloadAllAsPdf" title="Download all as PDF" disabled="@(isDownloadingAll || !Request.RequisitionSlips.Any())">
+                <button class="btn btn--outline btn--sm" @onclick="DownloadAllAsPdf" title="Download all as PDF" disabled="@(isDownloadingAll || !Request.SlipsBase.Any())">
                     @if (isDownloadingAll)
                     {
                         <i class="bi bi-arrow-repeat spinning"></i>
@@ -57,10 +61,10 @@
         </div>
     </DetailsRow__Card>
 
-    @if (Request.RequisitionSlips?.Any() == true)
+    @if (Request.SlipsBase?.Any() == true)
     {
         <div class="slips-list">
-            @foreach (var slip in Request.RequisitionSlips.OrderByDescending(s => s.DateOfRequest))
+            @foreach (var slip in Request.SlipsBase.OrderByDescending(s => s.DateOfRequest))
             {
                 var isExpanded = expandedSlips.Contains(slip.Id);
 
@@ -254,7 +258,7 @@
                                 <div class="slip-card__attachments-count">
                                     <span class="attachments-badge">
                                         <i class="bi bi-paperclip"></i>
-                                        @((Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Count() ?? 0) + (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Count() ?? 0))
+                                        @((Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Count() ?? 0) + (Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Count() ?? 0))
                                     </span>
                                 </div>
                             </div>
@@ -355,13 +359,13 @@
                                             @onclick="@(() => SwitchAttachmentTab("requisition"))">
                                         <i class="bi bi-file-earmark"></i>
                                         Requisition Attachments
-                                        <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
+                                        <span class="tab-badge">@(Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
                                     </button>
                                     <button class="attachments-tab @(activeAttachmentTab == "receipts" ? "attachments-tab--active" : "")"
                                             @onclick="@(() => SwitchAttachmentTab("receipts"))">
                                         <i class="bi bi-receipt"></i>
                                         Receipts
-                                        <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
+                                        <span class="tab-badge">@(Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
                                     </button>
 
 
@@ -395,9 +399,9 @@
                                     @if (activeAttachmentTab == "requisition")
                                     {
                                         <div class="attachments-list">
-                                            @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Any() == true)
+                                            @if (Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Any() == true)
                                             {
-                                                @foreach (var attachment in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id))
+                                                @foreach (var attachment in Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id))
                                                 {
                                                     var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
 
@@ -443,9 +447,9 @@
                                     else
                                     {
                                         <div class="attachments-list">
-                                            @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Any() == true)
+                                            @if (Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Any() == true)
                                             {
-                                                @foreach (var receipt in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id))
+                                                @foreach (var receipt in Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id))
                                                 {
                                                     var isDownloadingThis = (downloadingAttachments.Contains(receipt.Id.ToString()));
                                                     <div class="attachment-item">
@@ -516,4 +520,4 @@
     }
 </Details__Card>
 
-<AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment ?? new())" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />
+<AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment)" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />

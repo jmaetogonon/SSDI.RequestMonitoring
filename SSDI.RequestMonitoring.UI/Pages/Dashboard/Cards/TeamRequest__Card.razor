@@ -1,0 +1,143 @@
+﻿@using SSDI.RequestMonitoring.UI.Models.Enums
+@using SSDI.RequestMonitoring.UI.Pages.Dashboard.Dto
+@inject NavigationManager nav
+
+<div class="dashboard__card">
+    <div class="dashboard__card-header">
+        <div class="card-header__title">
+            <h3>Requests Requiring Your Action</h3>
+            @if (Items.Any())
+            {
+                <span class="card-count">@FilteredTeamRequests.Count</span>
+            }
+        </div>
+        <div class="team-request-filter">
+            <button class="filter-btn @(teamRequestFilter == "all" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ApplyTeamRequestFilter("all"))"
+                    title="All requests">
+                All
+            </button>
+            <button class="filter-btn @(teamRequestFilter == "purchase" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ApplyTeamRequestFilter("purchase"))"
+                    title="Purchase requests">
+                <i class="bi bi-cart"></i> Purchases
+            </button>
+            <button class="filter-btn @(teamRequestFilter == "joborder" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ApplyTeamRequestFilter("joborder"))"
+                    title="Job orders">
+                <i class="bi bi-tools"></i> Jobs
+            </button>
+        </div>
+    </div>
+
+    <div class="team-requests">
+        @if (FilteredTeamRequests.Any())
+        {
+            <div class="team-requests__list">
+                @foreach (var request in FilteredTeamRequests)
+                {
+                    <div class="team-request-item" @onclick="@(() => ViewRequestDetails(request))">
+                        <div class="team-request__icon">
+                            <i class="bi @(request.RequestType == "purchase" ? "bi-cart" : "bi-tools")"></i>
+                        </div>
+
+                        <div class="team-request__content">
+                            <div class="team-request__header">
+                                <div class="team-request__title">@request.Title</div>
+                                <span class="dashboard-status-badge" data-status="@request.Status">
+                                    @utils.GetStatusDisplay(request.Status)
+                                </span>
+                            </div>
+
+                            <div class="team-request__meta">
+                                <span class="team-request__user">
+                                    <i class="bi bi-person"></i>
+                                    @request.RequestedBy
+                                </span>
+                                <span class="team-request__date">• @utils.GetRelativeTime(request.Date)</span>
+                                <span class="team-request__priority @(request.Priority.ToString().ToLower())">
+                                    <i class="bi bi-clock-fill"></i>
+                                    @GetPriorityDisplay(request.Priority)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-check-circle"></i>
+                <p>All caught up! No pending team requests.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<TeamRequestItem> Items { get; set; } = new();
+    [Parameter] public RequestType RequestType { get; set; } = RequestType.All;
+
+    private string teamRequestFilter = "all";
+    private List<TeamRequestItem> FilteredTeamRequests = [];
+
+    protected override void OnParametersSet()
+    {
+        teamRequestFilter = RequestType switch
+        {
+            RequestType.Purchase => "purchase",
+            RequestType.JobOrder => "joborder",
+            _ => "all"
+        };
+
+        ApplyFilter(teamRequestFilter);
+    }
+
+    private async Task ApplyTeamRequestFilter(string filter)
+    {
+        await Task.Delay(1);
+        teamRequestFilter = filter;
+        ApplyFilter(filter);
+    }
+
+    private void ApplyFilter(string filter)
+    {
+        FilteredTeamRequests = filter switch
+        {
+            "purchase" => Items.Where(a => a.RequestType == "purchase").ToList(),
+            "joborder" => Items.Where(a => a.RequestType == "joborder").ToList(),
+            _ => Items
+        };
+    }
+
+    private void ViewRequestDetails(TeamRequestItem request)
+    {
+        var url = request.RequestType == "purchase"
+            ? $"/requests/purchase-requests/{request.Id}"
+            : $"/requests/job-orders/{request.Id}";
+        nav.NavigateTo(url);
+    }
+
+    private string GetPriorityIcon(RequestPriority priority)
+    {
+        return priority switch
+        {
+            RequestPriority.Hrs24 => "bi-clock-fill",
+            RequestPriority.ThisWeek => "bi-calendar-week",
+            RequestPriority.Others => "bi-calendar",
+            _ => "bi-circle"
+        };
+    }
+
+    private string GetPriorityDisplay(RequestPriority priority)
+    {
+        return priority switch
+        {
+            RequestPriority.Hrs24 => "24H",
+            RequestPriority.ThisWeek => "This Week",
+            RequestPriority.Others => "Others",
+            _ => priority.ToString()
+        };
+    }
+}

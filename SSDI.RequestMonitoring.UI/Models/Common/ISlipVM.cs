@@ -1,4 +1,5 @@
 ﻿namespace SSDI.RequestMonitoring.UI.Models.Common;
+
 public interface ISlipVM
 {
     int Id { get; set; }

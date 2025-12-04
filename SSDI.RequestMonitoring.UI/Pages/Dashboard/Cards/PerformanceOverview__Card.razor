@@ -1,0 +1,225 @@
+﻿@using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Pages.Dashboard.Dto
+
+<div class="dashboard__card performance-card">
+    <div class="dashboard__card-header">
+        <div class="performance-header">
+            <div class="header-left">
+                <h3>Performance Overview</h3>
+                <span class="last-updated">This month</span>
+            </div>
+
+            <div class="activity-filters">
+                <button class="filter-btn @(activityFilter == "all" ? "filter-btn--active" : "")"
+                        @onclick="@(() => ChangeFilter("all"))">
+                    All
+                </button>
+
+                <button class="filter-btn @(activityFilter == "purchase" ? "filter-btn--active" : "")"
+                        @onclick="@(() => ChangeFilter("purchase"))">
+                    <i class="bi bi-cart"></i> Purchases
+                </button>
+
+                <button class="filter-btn @(activityFilter == "joborder" ? "filter-btn--active" : "")"
+                        @onclick="@(() => ChangeFilter("joborder"))">
+                    <i class="bi bi-tools"></i> Jobs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="performance-stats">
+        <div class="stat-card">
+            <div class="stat-icon completed">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">@GetCompletedCount()</span>
+                <span class="stat-label">Requests Completed</span>
+             </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon rate">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">@CalculateCompletionRate()<small>%</small></span>
+                <span class="stat-label">Completion Rate</span>
+             </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon time">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">@CalculateAverageProcessingDays()<small>d</small></span>
+                <span class="stat-label">Avg. Processing</span>
+             </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon efficiency">
+                <i class="bi bi-lightning"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">@CalculateEfficiencyScore()<small>/10</small></span>
+                <span class="stat-label">Efficiency Score</span>
+             </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<Purchase_RequestVM> Purchase_Requests { get; set; } = [];
+    [Parameter] public List<Job_OrderVM> Job_Orders { get; set; } = [];
+    [Parameter] public RequestType RequestType { get; set; } = RequestType.All;
+    [Parameter] public RequestMetrics PurchaseRequestMetrics { get; set; } = new();
+    [Parameter] public RequestMetrics JobOrderMetrics { get; set; } = new();
+
+    private string activityFilter = "all";
+    private List<Purchase_RequestVM> filteredPurchaseRequests = [];
+    private List<Job_OrderVM> filteredJobOrders = [];
+
+    protected override void OnParametersSet()
+    {
+        // Sync with parent RequestType parameter
+        activityFilter = RequestType switch
+        {
+            RequestType.Purchase => "purchase",
+            RequestType.JobOrder => "joborder",
+            _ => "all"
+        };
+
+        ApplyFilter(activityFilter);
+    }
+
+    private async Task ChangeFilter(string filter)
+    {
+        await Task.Delay(1);
+        activityFilter = filter;
+        ApplyFilter(filter);
+    }
+
+    private void ApplyFilter(string filter)
+    {
+        filteredPurchaseRequests = Purchase_Requests;
+        filteredJobOrders = Job_Orders;
+
+        if (filter == "purchase")
+        {
+            filteredJobOrders = [];
+        }
+        else if (filter == "joborder")
+        {
+            filteredPurchaseRequests = [];
+        }
+        // If "all", keep both as they are
+    }
+
+    private int GetTotalCount()
+    {
+        if (activityFilter == "purchase")
+            return PurchaseRequestMetrics.TotalCount;
+        else if (activityFilter == "joborder")
+            return JobOrderMetrics.TotalCount;
+        else
+            return PurchaseRequestMetrics.TotalCount + JobOrderMetrics.TotalCount;
+    }
+
+    private int GetCompletedCount()
+    {
+        if (activityFilter == "purchase")
+            return PurchaseRequestMetrics.CompletedCount;
+        else if (activityFilter == "joborder")
+            return JobOrderMetrics.CompletedCount;
+        else
+            return PurchaseRequestMetrics.CompletedCount + JobOrderMetrics.CompletedCount;
+    }
+
+    private int GetRejectedCount()
+    {
+        if (activityFilter == "purchase")
+            return PurchaseRequestMetrics.RejectedCount;
+        else if (activityFilter == "joborder")
+            return JobOrderMetrics.RejectedCount;
+        else
+            return PurchaseRequestMetrics.RejectedCount + JobOrderMetrics.RejectedCount;
+    }
+
+    private int CalculateCompletionRate()
+    {
+        var total = GetTotalCount();
+        var completed = GetCompletedCount();
+
+        if (total == 0) return 0;
+        return (int)Math.Round((completed * 100.0) / total);
+    }
+
+    private int CalculateAverageProcessingDays()
+    {
+        // Get filtered completed requests
+        var allCompletedRequests = filteredPurchaseRequests
+            .Where(r => r.Status == RequestStatus.Closed)
+            .Select(r => new PerformanceStatItem
+            {
+                DateRequested = r.DateRequested,
+                DateClosed = r.DateCompleted
+            })
+            .Concat(filteredJobOrders
+                .Where(r => r.Status == RequestStatus.Closed)
+                .Select(r => new PerformanceStatItem
+                {
+                    DateRequested = r.DateRequested,
+                    DateClosed = r.DateCompleted
+                }))
+            .Where(r => r.DateRequested.HasValue && r.DateClosed.HasValue)
+            .ToList();
+
+        if (!allCompletedRequests.Any()) return 0;
+
+        int totalDays = 0;
+        int count = 0;
+
+        foreach (var request in allCompletedRequests)
+        {
+            var days = (request.DateClosed!.Value - request.DateRequested!.Value).Days;
+            if (days > 0)
+            {
+                totalDays += days;
+                count++;
+            }
+        }
+
+        return count > 0 ? (int)Math.Round(totalDays / (double)count) : 0;
+    }
+
+    private int CalculateEfficiencyScore()
+    {
+        var total = GetTotalCount();
+        if (total == 0) return 0;
+
+        var score = 0;
+
+        // Factor 1: Completion rate (0-4 points)
+        var completionRate = CalculateCompletionRate();
+        score += Math.Min(4, completionRate / 25);
+
+        // Factor 2: Rejection rate (0-3 points, lower is better)
+        var rejectedCount = GetRejectedCount();
+        var rejectionRate = total > 0 ? (rejectedCount * 100.0) / total : 0;
+        if (rejectionRate <= 10) score += 3;
+        else if (rejectionRate <= 20) score += 2;
+        else if (rejectionRate <= 30) score += 1;
+
+        // Factor 3: Average processing time (0-3 points, faster is better)
+        var avgDays = CalculateAverageProcessingDays();
+        if (avgDays <= 3) score += 3;
+        else if (avgDays <= 7) score += 2;
+        else if (avgDays <= 14) score += 1;
+
+        return Math.Min(10, score);
+    } 
+}

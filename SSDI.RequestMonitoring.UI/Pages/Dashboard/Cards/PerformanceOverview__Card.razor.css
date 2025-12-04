@@ -1,0 +1,278 @@
+﻿/* Performance Card */
+.performance-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+    .performance-card .dashboard__card-header {
+        margin-bottom: 1.25rem;
+        padding: 0;
+    }
+
+.performance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column; 
+}
+
+    .header-left h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #374151;
+        font-weight: 600;
+        line-height: normal;
+    }
+
+.last-updated {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Activity Filters */
+.activity-filters {
+    display: flex;
+    gap: 0.45rem;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: white;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    gap: 0.35rem;
+}
+
+    .filter-btn:first-child {
+        width: auto;
+        padding: 0 0.75rem;
+    }
+
+    .filter-btn:hover {
+        border-color: var(--color-darkmidnightblue);
+        color: var(--color-darkmidnightblue);
+        background: #f8fafc;
+    }
+
+.filter-btn--active {
+    background: var(--color-darkmidnightblue);
+    color: white;
+    border-color: var(--color-darkmidnightblue);
+}
+
+    .filter-btn--active:hover {
+        background: var(--color-darkmidnightblue);
+        color: white;
+    }
+
+/* Performance Stats Grid */
+.performance-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+/* Stat Card */
+.stat-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    height: 100%;
+}
+
+    .stat-card:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+/* Stat Icons with Different Colors */
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+    .stat-icon.completed {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .stat-icon.rate {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .stat-icon.time {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+
+    .stat-icon.efficiency {
+        background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    }
+
+    .stat-icon i {
+        font-size: 1.25rem;
+        color: white;
+    }
+
+/* Stat Content */
+.stat-content {
+    flex: 1;
+    min-width: 0; /* Prevent text overflow */
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #1e293b;
+}
+
+    .stat-value small {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #64748b;
+        margin-left: 0.125rem;
+    }
+
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.stat-filter-info {
+    display: block;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 500;
+    margin-top: 0.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .performance-stats {
+        gap: 0.875rem;
+    }
+
+    .stat-card {
+        padding: 0.875rem;
+        gap: 0.875rem;
+    }
+
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+    }
+
+        .stat-icon i {
+            font-size: 1.1rem;
+        }
+
+    .stat-value {
+        font-size: 1.35rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .performance-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .activity-filters {
+        align-self: stretch;
+        justify-content: center;
+    }
+
+    .performance-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .performance-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .activity-filters {
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+/* Animation for stat cards on hover */
+@keyframes statCardHover {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+
+    100% {
+        transform: translateY(-2px);
+    }
+}
+
+.stat-card:hover {
+    animation: statCardHover 0.3s ease forwards;
+}
+
+/* Empty state for when there's no data */
+.performance-stats:empty::after {
+    content: "No performance data available";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #9ca3af;
+    font-size: 0.875rem;
+    grid-column: 1 / -1;
+    text-align: center;
+}

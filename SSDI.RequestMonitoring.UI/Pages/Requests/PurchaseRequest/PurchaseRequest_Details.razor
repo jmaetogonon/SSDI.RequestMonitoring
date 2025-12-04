@@ -5,10 +5,12 @@
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
 @using SSDI.RequestMonitoring.UI.Services.Adapters.Requests
+@using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip
 @inject IPurchaseRequestSvc purchaseRequestSvc
 @inject NavigationManager navigationManager
 @inject IJSRuntime jsRuntime
 @inject PRAttachSvcAdapter prAttachAdapter
+@inject PRRequisitionSvcAdapter prRequisitionSvcAdapter
 
 <PageTitle>Purchase Request #@Request?.Id</PageTitle>
 
@@ -101,7 +103,8 @@
                         }
                         else if (ActiveTab == "slips")
                         {
-                            <RequestRequisitionSlips__Control Request="Request" ConfirmModal="confirmModal" />
+                            @* <RequestRequisitionSlips__Control Request="Request" AttachSvc="prAttachAdapter" ConfirmModal="confirmModal" /> *@
+                            <RequestRequisition__Control Request="Request" AttachSvc="prAttachAdapter" SlipSvc="prRequisitionSvcAdapter" OnRequestChanged="Reload" ConfirmModal="confirmModal" />
                         }
                         else if (ActiveTab == "approval")
                         {

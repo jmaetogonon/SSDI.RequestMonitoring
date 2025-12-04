@@ -1,0 +1,36 @@
+﻿@using ChartJs.Blazor
+@using ChartJs.Blazor.BarChart
+@using ChartJs.Blazor.Common
+@using ChartJs.Blazor.Common.Axes
+@using ChartJs.Blazor.Common.Axes.Ticks
+@using ChartJs.Blazor.Common.Enums
+@using ChartJs.Blazor.Util
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase 
+@inject NavigationManager navigationManager
+
+<div class="volume-comparison-chart">
+    <div class="chart-header">
+        <h3>@ChartTitle</h3>
+        <div class="chart-controls">
+            <select class="chart-period-select" @bind="chartPeriod" @bind:after="RefreshChart">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
+    </div>
+    <div class="chart-container">
+        @if (ChartData.Sum(e=>e.PurchaseCount)  != 0 || ChartData.Sum(e=>e.JobOrderCount)  != 0)
+        {
+            <Chart Config="chartConfig" @ref="chartRef" />
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-bar-chart"></i>
+                <p>@EmptyMessage</p>
+            </div>
+        }
+    </div>
+</div>

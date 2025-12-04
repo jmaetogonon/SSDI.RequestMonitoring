@@ -3,6 +3,7 @@ using Microsoft.FluentUI.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Filters;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
+using System.Web;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
 
@@ -51,22 +52,30 @@ public partial class PurchaseRequest_Index : ComponentBase
             {
                 var requests = await purchaseRequestSvc.GetAllPurchaseRequestsByAdmin();
                 AllRequests = requests.AsQueryable();
+                OnStatusFilterChanged([RequestStatus.ForAdminVerification, RequestStatus.ForRequisition]);
+                statusFilter?.SetSelectedStatus(selectedStatuses);
             }
             else
             {
                 var requests = await purchaseRequestSvc.GetAllPurchaseReqBySupervisor(currentUser.UserId, true, true);
                 AllRequests = requests.AsQueryable();
-                if (requests.FirstOrDefault()?.ReportType == "Division")
+                if (requests.Any(e => e.ReportType == "Division"))
                 {
                     AllRequests = requests.Where(e => e.Status == RequestStatus.ForEndorsement).AsQueryable();
+                    OnStatusFilterChanged([RequestStatus.ForEndorsement]);
+                    statusFilter?.SetSelectedStatus(selectedStatuses);
                 }
 
                 if (utils.IsCEO())
                 {
                     var ceoRequests = await purchaseRequestSvc.GetAllPurchaseReqByCeo();
-                    AllRequests = AllRequests.Concat(ceoRequests).AsQueryable();
+                    AllRequests = AllRequests.Concat(ceoRequests).DistinctBy(r => r.Id).AsQueryable();
+                    OnStatusFilterChanged([RequestStatus.ForEndorsement, RequestStatus.ForCeoApproval]);
+                    statusFilter?.SetSelectedStatus(selectedStatuses);
                 }
             }
+
+            PreLoadFilter();
             ApplyFilters();
             BuildStatusSummaries();
         }
@@ -77,6 +86,25 @@ public partial class PurchaseRequest_Index : ComponentBase
     }
 
     private void Refresh() => InvokeAsync(StateHasChanged);
+
+    private void PreLoadFilter()
+    {
+        var uri = new Uri(navigationManager.Uri);
+        var queryParams = HttpUtility.ParseQueryString(uri.Query);
+        var statusValue = queryParams["status"];
+        var actionValue = queryParams["action"];
+
+        if (Enum.TryParse<RequestStatus>(statusValue, out var parsedStatus))
+        {
+            selectedStatuses = [parsedStatus];
+            statusFilter?.SetSelectedStatus(selectedStatuses);
+        }
+
+        if (actionValue == "new")
+        {
+            isNewRequestModalVisible = true;
+        }
+    }
 
     private void OnViewDetails(FluentDataGridRow<Purchase_RequestVM>? row)
     {

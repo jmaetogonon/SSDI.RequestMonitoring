@@ -1,19 +1,26 @@
 ﻿using Microsoft.AspNetCore.Components;
+using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.Common;
+using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
+using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals;
 
 public partial class NewRequisition__Modal : ComponentBase
 {
+    [Parameter] public IRequestDetailVM? RequestHeader { get; set; }
+    [Parameter] public IAttachmentSvc AttachSvc { get; set; } = default!;
+    [Parameter] public IRequisitionSlipSvc SlipSvc { get; set; } = default!;
+    [Parameter] public RequestType RequestType { get; set; }
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
-    [Parameter] public Purchase_RequestVM? PurchaseRequestHeader { get; set; }
 
+    private ISlipVM Model { get; set; } = default!;
+    private ICollection<IAttachmentVM> Attachments { get; set; } = [];
     private Confirmation__Modal? confirmModal;
-    private Purchase_Request_SlipVM Model { get; set; } = new();
-    private ICollection<Purchase_Request_AttachVM> Attachments { get; set; } = [];
 
     private bool _isDisabledBtns = false;
     private bool IsShowAlert { get; set; }
@@ -21,7 +28,8 @@ public partial class NewRequisition__Modal : ComponentBase
 
     protected override void OnParametersSet()
     {
-        Model.PurchaseRequestId = PurchaseRequestHeader!.Id;
+        Model = RequestType is RequestType.JobOrder ? new Job_Order_SlipVM() : new Purchase_Request_SlipVM();
+
         Model.RequisitionerId = currentUser.UserId;
         Model.RequisitionerName = currentUser.FullName;
         Model.DateOfRequest = DateTime.Now;
@@ -52,23 +60,28 @@ public partial class NewRequisition__Modal : ComponentBase
             _isDisabledBtns = true;
             IsShowAlert = false;
 
-            var response = await slipSvc.CreatePRRequisition(Model);
+            var response = await SlipSvc.CreateRequisition(Model, RequestHeader!.Id);
             if (response.Success)
             {
-
-                var command = new UploadAttachmentPurchaseCommandVM
-                {
-                    PurchaseRequestId = PurchaseRequestHeader!.Id,
-                    //Files = Attachments,
-                    Type = RequestAttachType.Requisition,
-                    RequisitionId = response.Data
-                };
-
-                var res = await attachSvc.UploadAttachPurchase(command);
+                var res = await AttachSvc.UploadAsync(RequestHeader, Attachments, RequestAttachType.Requisition, response.Data);
                 if (!res.Success)
                 {
                     toastSvc.ShowError("Error uploading attachments. Please try again.");
                 }
+
+                //var command = new UploadAttachmentPurchaseCommandVM
+                //{
+                //    PurchaseRequestId = RequestHeader!.Id,
+                //    Files = Attachments,
+                //    Type = RequestAttachType.Requisition,
+                //    RequisitionId = response.Data
+                //};
+
+                //var res = await attachSvc.UploadAttachPurchase(command);
+                //if (!res.Success)
+                //{
+                //    toastSvc.ShowError("Error uploading attachments. Please try again.");
+                //}
 
                 ResetForm();
                 await confirmModal!.SetLoadingAsync(false);
@@ -87,7 +100,8 @@ public partial class NewRequisition__Modal : ComponentBase
 
     private void ResetForm()
     {
-        Model = new();
+        Model = RequestType is RequestType.JobOrder ? new Job_Order_SlipVM() : new Purchase_Request_SlipVM();
+        IsShowAlert = false;
         _isDisabledBtns = false;
     }
 }

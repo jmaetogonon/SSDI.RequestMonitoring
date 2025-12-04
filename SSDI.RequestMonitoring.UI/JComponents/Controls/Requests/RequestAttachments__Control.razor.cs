@@ -32,6 +32,9 @@ public partial class RequestAttachments__Control : ComponentBase
     private int currentDownloadIndex = 0;
     private HashSet<string> downloadingAttachments = [];
 
+    private async Task Refresh()
+    { if (OnRequestChanged.HasDelegate) await OnRequestChanged.InvokeAsync(); }
+
     private async Task OnFilesSelected(InputFileChangeEventArgs e)
     {
         List<TempAttachmentForUpload> temps = [];
@@ -79,7 +82,7 @@ public partial class RequestAttachments__Control : ComponentBase
             toastSvc.ShowError("Error uploading attachments. Please try again.");
         }
 
-        if (OnRequestChanged.HasDelegate) await OnRequestChanged.InvokeAsync();
+        await Refresh();
     }
 
     private async Task ViewAttachment(IAttachmentVM attachment)
@@ -244,7 +247,7 @@ public partial class RequestAttachments__Control : ComponentBase
 
         await AttachSvc.DeleteAsync(attachment.Id);
         toastSvc.ShowSuccess("Attachment deleted successfully.");
-        if (OnRequestChanged.HasDelegate) await OnRequestChanged.InvokeAsync();
+        await Refresh();
     }
 
     private async Task DownloadAll()
@@ -347,5 +350,7 @@ public partial class RequestAttachments__Control : ComponentBase
         public DateTime? DateCreated { get; set; } = DateTime.Now;
         public byte[]? ImgData { get; set; }
         public RequestAttachType AttachType { get; set; }
+        public int RequisitionId { get; set; }
+        public decimal ReceiptAmount { get; set; }
     }
 }

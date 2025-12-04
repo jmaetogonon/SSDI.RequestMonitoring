@@ -5,4 +5,5 @@ namespace SSDI.RequestMonitoring.UI.Contracts.Users;
 public interface IUserSvc
 {
     Task<List<SupervisorVM>> GetSupervisors();
+    Task<bool> SyncUsers();
 }

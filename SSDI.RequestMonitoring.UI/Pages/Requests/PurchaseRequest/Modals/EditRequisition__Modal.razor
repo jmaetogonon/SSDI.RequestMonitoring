@@ -3,9 +3,6 @@
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 
-
-@inject IPRRequisitionSvc slipSvc
-
 <Confirmation__Modal @ref="confirmModal" />
 <div class="modal__overlay" id="@(IsModalVisible ? "show__edit__purchase-requisition-modal" : "hide__edit__purchase-requisition-modal")">
     <div class="modal">
@@ -23,6 +20,6 @@
             <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
         </div>
 
-        <PurchaseReqRequisition__Form FormModel="Model" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />
+        <RequestRequisition__Form FormModel="@Model" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="@_isDisabledBtns" IsForUpdate="true" />
     </div>
 </div>

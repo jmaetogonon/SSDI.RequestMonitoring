@@ -12,12 +12,14 @@ public class JobOrderMappingConfig : Profile
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<JobOrderByUserDto, Job_OrderVM>()
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<JobOrderByIdDto, Job_OrderVM>()
@@ -32,18 +34,21 @@ public class JobOrderMappingConfig : Profile
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<JobOrderByAdminDto, Job_OrderVM>()
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<JobOrderByCEODto, Job_OrderVM>()
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<JobOrderApprovalByIdDto, Job_Order_ApprovalVM>()

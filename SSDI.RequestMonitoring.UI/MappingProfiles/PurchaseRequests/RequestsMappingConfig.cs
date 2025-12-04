@@ -12,12 +12,14 @@ public class RequestsMappingConfig : Profile
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<PurchaseReqByUserDto, Purchase_RequestVM>()
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<PurchaseRequestByIdDto, Purchase_RequestVM>()
@@ -32,18 +34,21 @@ public class RequestsMappingConfig : Profile
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<PurchaseReqByAdminDto, Purchase_RequestVM>()
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<PurchaseReqByCEODto, Purchase_RequestVM>()
             .ForMember(q => q.DateCreated, opt => opt.MapFrom(x => x.DateCreated.DateTime))
             .ForMember(q => q.DateRequested, opt => opt.MapFrom(x => x.DateRequested!.Value.DateTime))
             .ForMember(q => q.DateModified, opt => opt.MapFrom(x => x.DateModified!.Value.DateTime))
+            .ForMember(q => q.DateCompleted, opt => opt.MapFrom(x => x.DateCompleted!.Value.DateTime))
             .ReverseMap();
 
         CreateMap<PurchaseRequestApprovalByIdDto, Purchase_Request_ApprovalVM>()
