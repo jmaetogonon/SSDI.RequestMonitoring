@@ -7,6 +7,7 @@ public interface IJOAttachSvc
 {
     Task<byte[]?> GetAttachByte(int attachmentId);
     Task<byte[]?> DownloadAllAttachZip(int requestId);
+    Task<byte[]?> DownloadAllSlipAttachZip(int requestId);
 
     Task<Response<Guid>> UploadAttachPurchase(UploadAttachmentJobOrderCommandVM command);
 

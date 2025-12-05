@@ -73,4 +73,18 @@ public class PRAttachSvc : BaseHttpService, IPRAttachSvc
             return null;
         }
     }
+
+    public async Task<byte[]?> DownloadAllSlipAttachZip(int requestId)
+    {
+        try
+        {
+            var fileResponse = await _client.DownloadAllSlipAttachAsync(requestId);
+            return fileResponse;
+        }
+        catch (ApiException ex)
+        {
+            Console.WriteLine($"Download failed: {ex.Message}");
+            return null;
+        }
+    }
 }

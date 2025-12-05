@@ -1,23 +1,23 @@
 ﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
-@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.JComponents.Alerts
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Models.Requests
-@inject IPurchaseRequestSvc purchaseRequestSvc
+@inject IJobOrderSvc jobOrderSvc
 
 <Confirmation__Modal @ref="confirmModal" />
-<div class="modal__overlay" id="@(IsModalVisible ? "show__new__purchase-request-modal" : "hide__new__purchase-request-modal")">
+<div class="modal__overlay" id="@(IsModalVisible ? "show__new__job-order-modal" : "hide__new__job-order-modal")">
     <div class="modal">
         <div class="modal__header">
-            <h5 class="modal__header-title">NEW PURCHASE REQUEST </h5>
+            <h5 class="modal__header-title">NEW JOB ORDER </h5>
         </div>
 
         <div class="modal__alert">
             <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="@IsShowAlert" />
         </div>
 
-        <PurchaseReq__Form FormModel="@RequestModel" FormDepartments="Departments" FormDivisions="Divisions" OnValidSubmit="@HandleSave" OnCloseModal="@CloseModal" IsDisabledBtns="@_isDisabledBtns" />
+        <JobOrder__Form FormModel="@RequestModel" FormDepartments="Departments" FormDivisions="Divisions" OnValidSubmit="@HandleSave" OnCloseModal="@CloseModal" IsDisabledBtns="@_isDisabledBtns" />
     </div>
 </div>

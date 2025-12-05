@@ -3,9 +3,9 @@ using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 
-namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals;
+namespace SSDI.RequestMonitoring.UI.Pages.Auth;
 
-public partial class NewJORequest__Modal : ComponentBase
+public partial class NewJobOrderLogin__Modal : ComponentBase
 {
     [Parameter] public List<DivisionVM> Divisions { get; set; } = [];
     [Parameter] public List<DepartmentVM> Departments { get; set; } = [];
@@ -19,14 +19,6 @@ public partial class NewJORequest__Modal : ComponentBase
     private bool _isDisabledBtns = false;
     private bool IsShowAlert { get; set; }
     private string AlertMessage { get; set; } = string.Empty;
-
-    protected override void OnParametersSet()
-    {
-        if (utils.IsUser())
-        {
-            RequestModel.Name = currentUser.FullName;
-        }
-    }
 
     private async void CloseModal()
     {
@@ -42,6 +34,19 @@ public partial class NewJORequest__Modal : ComponentBase
             AlertMessage = "Please select a department.";
             return;
         }
+        if (RequestModel.ReportToDeptSupId is 0)
+        {
+            IsShowAlert = true;
+            AlertMessage = "Please select a department supervisor.";
+            return;
+        }
+        if (RequestModel.ReportToDivSupId is 0)
+        {
+            IsShowAlert = true;
+            AlertMessage = "Please select a division supervisor.";
+            return;
+        }
+
         var options = new ConfirmationModalOptions
         {
             Message = "Are you sure you want to save this request?",
@@ -58,10 +63,9 @@ public partial class NewJORequest__Modal : ComponentBase
 
             _isDisabledBtns = true;
             IsShowAlert = false;
-            RequestModel.Status = utils.IsSupervisor() ? RequestStatus.ForEndorsement : RequestStatus.Draft;
+
+            RequestModel.Status = RequestStatus.Draft;
             RequestModel.DateRequested = DateTime.Now;
-            RequestModel.RequestedById = currentUser.UserId;
-            RequestModel.RequestedByDeptHeadId = utils.IsSupervisor() ? currentUser.UserId : null;
 
             var response = await jobOrderSvc.CreateJobOrder(RequestModel);
             if (response.Success)

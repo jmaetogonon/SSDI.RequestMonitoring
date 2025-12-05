@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.JComponents.Filters;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 using System.Web;
 
@@ -13,6 +16,9 @@ public partial class PurchaseRequest_Index : ComponentBase
     private IQueryable<Purchase_RequestVM>? Requests;
     private List<StatusSummary> StatusSummaries = [];
     private Purchase_RequestVM editModel = new();
+
+    private List<DivisionVM> divisions = [];
+    private List<DepartmentVM> departments = [];
 
     private string searchValue = "";
     private Status__Filter? statusFilter;
@@ -29,11 +35,32 @@ public partial class PurchaseRequest_Index : ComponentBase
     private bool isLoading = false;
     private bool isShowNewBtn => CheckNewBtnPermission();
 
+    //carousel fields
+    private int currentSlide = 0;
+
+    private ElementReference carouselContainer;
+    private DotNetObjectReference<PurchaseRequest_Index>? dotNetRef;
+    private IJSObjectReference? jsModule;
+
     protected override async Task OnInitializedAsync()
     {
         await currentUser.InitializeAsync();
         currentUser.OnUserChanged += Refresh;
+        divisions = await divisionSvc.GetAllDivisions();
+        departments = await departmentSvc.GetAllDepartments();
         await LoadDataAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Create a reference to this component for JavaScript to call
+            dotNetRef = DotNetObjectReference.Create(this);
+
+            // Initialize the carousel with JavaScript
+            await InitializeCarousel();
+        }
     }
 
     private async Task LoadDataAsync()
@@ -301,6 +328,137 @@ public partial class PurchaseRequest_Index : ComponentBase
     {
         return utils.IsUser() || AllRequests?.FirstOrDefault()?.ReportType == "Department" || (AllRequests?.FirstOrDefault() is null && utils.IsSupervisor() && !utils.IsAdmin());
     }
+
+    #region Carousel
+
+    private async Task InitializeCarousel()
+    {
+        try
+        {
+            // Add data-carousel attribute to the carousel container
+            await JSRuntime.InvokeVoidAsync("eval",
+                @"
+                (function() {
+                    const container = document.querySelector('.metrics-carousel');
+                    if (!container) return;
+
+                    // Add data attribute for identification
+                    container.setAttribute('data-carousel', 'true');
+
+                    let touchStartX = 0;
+                    let touchEndX = 0;
+                    const swipeThreshold = 50;
+
+                    // Touch events for swipe
+                    container.addEventListener('touchstart', (e) => {
+                        touchStartX = e.changedTouches[0].screenX;
+                    }, { passive: true });
+
+                    container.addEventListener('touchend', (e) => {
+                        touchEndX = e.changedTouches[0].screenX;
+                        handleSwipe();
+                    }, { passive: true });
+
+                    function handleSwipe() {
+                        const diff = touchStartX - touchEndX;
+
+                        if (Math.abs(diff) > swipeThreshold) {
+                            if (diff > 0) {
+                                // Swipe left - next slide
+                                if (window.__purchaseRequestDotNetHelper) {
+                                    window.__purchaseRequestDotNetHelper.invokeMethodAsync('NextSlideJS');
+                                }
+                            } else {
+                                // Swipe right - previous slide
+                                if (window.__purchaseRequestDotNetHelper) {
+                                    window.__purchaseRequestDotNetHelper.invokeMethodAsync('PrevSlideJS');
+                                }
+                            }
+                        }
+                    }
+                })();
+                ");
+
+            // Store the .NET helper globally with unique name
+            //await JSRuntime.InvokeVoidAsync("eval",
+            //    "window.__purchaseRequestDotNetHelper = arguments[0];", dotNetRef);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing carousel: {ex.Message}");
+        }
+    }
+
+    // Carousel methods
+    private void NextSlide()
+    {
+        if (StatusSummaries.Count > 0 && currentSlide < StatusSummaries.Count - 1)
+        {
+            currentSlide++;
+            StateHasChanged();
+        }
+    }
+
+    private void PrevSlide()
+    {
+        if (currentSlide > 0)
+        {
+            currentSlide--;
+            StateHasChanged();
+        }
+    }
+
+    private void GoToSlide(int slideIndex)
+    {
+        if (slideIndex >= 0 && slideIndex < StatusSummaries.Count)
+        {
+            currentSlide = slideIndex;
+            StateHasChanged();
+        }
+    }
+
+    // These methods will be called from JavaScript
+    [JSInvokable]
+    public async Task NextSlideJS()
+    {
+        NextSlide();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task PrevSlideJS()
+    {
+        PrevSlide();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleWheel(WheelEventArgs e)
+    {
+        try
+        {
+            // Check if mobile view using a simpler approach
+            var isMobile = await JSRuntime.InvokeAsync<bool>("eval",
+                "window.innerWidth <= 768");
+
+            if (isMobile)
+            {
+                if (e.DeltaY > 0)
+                {
+                    NextSlide();
+                }
+                else
+                {
+                    PrevSlide();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling wheel: {ex.Message}");
+        }
+    }
+
+    #endregion Carousel
 
     public void Dispose()
     {

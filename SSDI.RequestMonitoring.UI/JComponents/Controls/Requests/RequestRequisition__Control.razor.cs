@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.Common;
-using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
+using SSDI.RequestMonitoring.UI.Services.Adapters.Requests;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Requests;
 
@@ -243,14 +243,21 @@ public partial class RequestRequisition__Control : ComponentBase
 
         try
         {
-            foreach (var attachment in Request.SlipsBase)
-            {
-                currentDownloadIndex++;
-                StateHasChanged();
+            var fileBytes = await AttachSvc.DownloadAllSlipZipAsync(Request.Id);
+            var fileName = $"{(AttachSvc is JOAttachSvcAdapter ? "JO" : "PR")}#{Request.Id}_{Request.Name.Replace(" ", "")}_RequisitionSlips.zip";
 
-                await DownloadSlipPdf(attachment);
-                await Task.Delay(200);
+            if (fileBytes != null && fileBytes.Length > 0)
+            {
+                await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
+            //foreach (var attachment in Request.SlipsBase)
+            //{
+            //    currentDownloadIndex++;
+            //    StateHasChanged();
+
+            //    await DownloadSlipPdf(attachment);
+            //    await Task.Delay(200);
+            //}
         }
         catch (Exception ex)
         {
@@ -284,6 +291,11 @@ public partial class RequestRequisition__Control : ComponentBase
             var response = await SlipSvc.DeleteRequisition(slip.Id);
             if (response.Success)
             {
+                foreach (var attach in Request.AttachmentsBase.Where(a => a.RequisitionId == slip.Id).ToList())
+                {
+                    await AttachSvc.DeleteAsync(attach.Id);
+                }
+
                 await ConfirmModal!.SetLoadingAsync(false);
                 await ConfirmModal!.HideAsync();
                 await Refresh();

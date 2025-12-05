@@ -34,7 +34,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddFluentUIComponents();
 
 builder.Services.AddTransient<JwtAuthorizationMessageHandler>();
-builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("https://localhost:7042"))
+//builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("https://localhost:7042"))
+builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("http://192.168.1.96:4116/"))
     .AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddBlazoredLocalStorage();

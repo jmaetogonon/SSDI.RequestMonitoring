@@ -8,6 +8,7 @@ public interface IAttachmentSvc
 {
     Task<byte[]?> GetBytesAsync(int attachmentId);
     Task<byte[]?> DownloadAllZipAsync(int requestId, RequestAttachType attachType);
+    Task<byte[]?> DownloadAllSlipZipAsync(int requestId);
     Task<Response<Guid>> UploadAsync(IRequestDetailVM request, IEnumerable<IAttachmentVM> files, RequestAttachType attachType, int? requisitionId = null, decimal? receiptAmount = null);
     Task<Response<Guid>> DeleteAsync(int attachmentId);
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals;
@@ -7,6 +8,8 @@ namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals;
 public partial class EditRequest__Modal : ComponentBase
 {
     [Parameter] public Purchase_RequestVM RequestModel { get; set; } = new();
+    [Parameter] public List<DivisionVM> Divisions { get; set; } = [];
+    [Parameter] public List<DepartmentVM> Departments { get; set; } = [];
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public bool IsResubmit { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
@@ -42,13 +45,16 @@ public partial class EditRequest__Modal : ComponentBase
                 var command = new UploadAttachmentPurchaseCommandVM
                 {
                     PurchaseRequestId = RequestModel.Id,
-                    //Files = RequestModel.Attachments
+                    Files = RequestModel.Attachments
                 };
 
                 var res = await attachSvc.UploadAttachPurchase(command);
                 if (!res.Success)
                 {
-                    toastSvc.ShowError("Error uploading attachments. Please try again.");
+                    if (RequestModel.Attachments.Count != 0)
+                    {
+                        toastSvc.ShowError("Error uploading attachments. Please try again.");
+                    }
                 }
 
                 ResetForm();

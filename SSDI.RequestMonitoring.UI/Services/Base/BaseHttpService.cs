@@ -1,6 +1,5 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
-using System.Net.Http.Headers;
 
 namespace SSDI.RequestMonitoring.UI.Services.Base;
 
@@ -35,36 +34,37 @@ public class BaseHttpService
             }
             return default!;
         }
+        catch (HttpRequestException httpEx)
+        {
+            // ⛔ This catches "Failed to fetch"
+            Console.WriteLine($"NETWORK ERROR: {httpEx.Message}");
+            return default!;
+        }
+        catch (TaskCanceledException)
+        {
+            // ⛔ Timeout
+            Console.WriteLine("HTTP REQUEST TIMEOUT");
+
+            return default!;
+        }
+        catch (Exception ex)
+        {
+            // 🔥 Unexpected crash protection
+            Console.WriteLine($"UNEXPECTED ERROR in SafeApiCall: {ex}");
+
+            return default!;
+        }
     }
 
     protected Response<Guid> ConvertApiExceptions<Guid>(ApiException ex)
     {
-        if (ex.StatusCode == 400)
+        return ex.StatusCode switch
         {
-            return new Response<Guid>() { Message = "Invalid data was submitted", ValidationErrors = ex.Response, Success = false };
-        }
-        else if (ex.StatusCode == 401)
-        {
-            return new Response<Guid>() { Message = "Unauthorized - please log in again.", Success = false };
-        }
-        else if (ex.StatusCode == 404)
-        {
-            return new Response<Guid>() { Message = "The record was not found", Success = false };
-        }
-        else if (ex.StatusCode == 500)
-        {
-            return new Response<Guid>() { Message = "An unexpected error occurred on the server. Please try again later.", Success = false };
-        }
-        else
-        {
-            return new Response<Guid>() { Message = "Something went wrong, please try again later.", Success = false };
-        }
-    }
-
-    protected async Task AddBearerToken()
-    {
-        if (await _localStorage.ContainKeyAsync("token"))
-            _client.HttpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", await _localStorage.GetItemAsync<string>("token"));
+            400 => new Response<Guid> { Message = "Invalid data was submitted", ValidationErrors = ex.Response, Success = false },
+            401 => new Response<Guid> { Message = "Unauthorized - please log in again.", Success = false },
+            404 => new Response<Guid> { Message = "The record was not found", Success = false },
+            500 => new Response<Guid> { Message = "Server error occurred. Try again later.", Success = false },
+            _ => new Response<Guid> { Message = "Something went wrong. Please try again later.", Success = false }
+        };
     }
 }

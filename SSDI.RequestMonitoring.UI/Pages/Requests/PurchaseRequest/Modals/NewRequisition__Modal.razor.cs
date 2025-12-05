@@ -4,7 +4,6 @@ using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.Common;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
-using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals;
 
@@ -101,6 +100,7 @@ public partial class NewRequisition__Modal : ComponentBase
     private void ResetForm()
     {
         Model = RequestType is RequestType.JobOrder ? new Job_Order_SlipVM() : new Purchase_Request_SlipVM();
+        Attachments.Clear();
         IsShowAlert = false;
         _isDisabledBtns = false;
     }

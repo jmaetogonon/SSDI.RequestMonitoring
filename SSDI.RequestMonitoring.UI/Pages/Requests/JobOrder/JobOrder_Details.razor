@@ -1,4 +1,5 @@
 ﻿@page "/requests/job-orders/{paramId:int}/{reportType?}"
+@using SSDI.RequestMonitoring.UI.Contracts.MasterData
 @using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
 @using SSDI.RequestMonitoring.UI.JComponents.Controls.Requests
@@ -11,6 +12,8 @@
 @inject IJSRuntime jsRuntime
 @inject JOAttachSvcAdapter joAttachAdapter
 @inject JORequisitionSvcAdapter joRequisitionSvcAdapter
+@inject IDivisionSvc divisionSvc
+@inject IDepartmentSvc departmentSvc
 
 <PageTitle>Job Order #@Request?.Id</PageTitle>
 
@@ -20,7 +23,7 @@
 </BreadcrumbNav>
 
 <Confirmation__Modal @ref="confirmModal" />
-<EditJORequest__Modal IsModalVisible="@isEditRequestModalVisible" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
+<EditJORequest__Modal IsModalVisible="@isEditRequestModalVisible" Departments="departments" Divisions="divisions" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
 <PdfViewer__Modal IsVisible="@isPdfModalVisible"
                   PdfBase64="@pdfBase64"
                   FileName="@($"{Request?.Name}_PR.pdf")"

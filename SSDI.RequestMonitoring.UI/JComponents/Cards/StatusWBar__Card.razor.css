@@ -199,27 +199,12 @@
         left: 100%;
     }
 }
-
-/* Reduced motion support for accessibility */
-@media (prefers-reduced-motion: reduce) {
-    .page__card,
-    .page__card-icon i,
-    .page__card-count,
-    .page__card-progress-bar,
-    .page__card-shine {
-        animation: none !important;
-        transition: none !important;
-    }
-
-    .page__card-progress-bar {
-        animation: none !important;
-    }
-}
-
+ 
 /* Responsive design */
 @media (max-width: 768px) {
     .page__card {
         padding: 1rem 1.25rem;
+        width: 100% !important;
     }
 
     .page__card-icon i {

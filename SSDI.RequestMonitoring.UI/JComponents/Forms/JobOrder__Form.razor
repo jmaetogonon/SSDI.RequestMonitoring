@@ -1,11 +1,8 @@
-﻿@using SSDI.RequestMonitoring.UI.Contracts.MasterData
-@using SSDI.RequestMonitoring.UI.Contracts.Users
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Users
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.Models.MasterData
 @using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.Models.Users
-@inject IDivisionSvc divisionSvc
-@inject IDepartmentSvc departmentSvc
 @inject IUserSvc userSvc
 
 <EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
@@ -14,19 +11,19 @@
         <div class="modal__form-group position-relative">
             <!-- Name -->
             <div class="form-group">
-                <label for="name">Name</label>
-                <input id="name" @bind="FormModel.Name" class="form-control" style="font-weight: 500;" placeholder="Enter your full name" disabled="@(utils.IsUser())" required />
+                <label for="joname">Name</label>
+                <input id="joname" @bind="FormModel.Name" class="form-control" style="font-weight: 500;" placeholder="Enter your full name" disabled="@(utils.IsUser())" required />
             </div>
 
             <!-- Nature of Request -->
             <div class="form-group">
-                <label for="nature">Nature of Request</label>
-                <input id="nature" @bind="FormModel.Nature_Of_Request" class="form-control" placeholder="e.g., Purchase of Equipment" required />
+                <label for="jonature">Nature of Request</label>
+                <input id="jonature" @bind="FormModel.Nature_Of_Request" class="form-control" placeholder="e.g., Purchase of Equipment" required />
             </div>
 
             <!-- Division / Department -->
             <div class="form-group">
-                <label for="divisionId" class="labelwithicon">
+                <label for="jodivisionId" class="labelwithicon">
                     Division
                     @if (FormModel.DivisionId == 0)
                     {
@@ -37,9 +34,9 @@
                         <i class="bi bi-arrow-clockwise" @onclick="@ResetSelectedDivision" style="color: var(--color-green); cursor:pointer;" />
                     }
                 </label>
-                <InputSelect id="divisionId" class="form-select" @bind-Value="FormModel.DivisionId" disabled="@(FormModel.DepartmentId != 0)" required>
+                <InputSelect id="jodivisionId" class="form-select" @bind-Value="FormModel.DivisionId" disabled="@(FormModel.DepartmentId != 0)" required>
                     <option value="0">--Select--</option>
-                    @foreach (var item in Divisions)
+                    @foreach (var item in FormDivisions ?? [])
                     {
                         <option value="@item.Id">@item.Name</option>
                     }
@@ -47,10 +44,10 @@
             </div>
 
             <div class="form-group">
-                <label for="departmentid">Department</label>
-                <InputSelect id="departmentid" class="form-select" @bind-Value="FormModel.DepartmentId" disabled="@(FormModel.DivisionId == 0)" required>
+                <label for="jodepartmentid">Department</label>
+                <InputSelect id="jodepartmentid" class="form-select" @bind-Value="FormModel.DepartmentId" disabled="@(FormModel.DivisionId == 0)" required>
                     <option value="0">--Select--</option>
-                    @foreach (var item in Departments.Where(e => e.DivisionId == FormModel.DivisionId))
+                    @foreach (var item in FormDepartments?.Where(e => e.DivisionId == FormModel.DivisionId) ?? [])
                     {
                         <option value="@item.Id">@item.Name</option>
                     }
@@ -60,8 +57,8 @@
 
             <!-- Justification -->
             <div class="form-group full-width">
-                <label for="justification">Justification</label>
-                <textarea id="justification" @bind="FormModel.Justification" class="form-control" placeholder="Describe the reason for this request..." rows="2" required />
+                <label for="jojustification">Justification</label>
+                <textarea id="jojustification" @bind="FormModel.Justification" class="form-control" placeholder="Describe the reason for this request..." rows="2" required />
             </div>
 
 
@@ -69,8 +66,8 @@
             {
                 <!-- Supervisors -->
                 <div class="form-group">
-                    <label for="deptSupp">Department Supervisor</label>
-                    <InputSelect id="deptSupp" class="form-select" @bind-Value="FormModel.ReportToDeptSupId" required>
+                    <label for="jodeptSupp">Department Supervisor</label>
+                    <InputSelect id="jodeptSupp" class="form-select" @bind-Value="FormModel.ReportToDeptSupId" required>
                         <option value="0">--Select--</option>
                         @foreach (var item in Supervisors)
                         {
@@ -80,10 +77,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="divSupp">Division Supervisor</label>
-                    <InputSelect id="divSupp" class="form-select" @bind-Value="FormModel.ReportToDivSupId" required>
+                    <label for="jodivSupp">Division Supervisor</label>
+                    <InputSelect id="jodivSupp" class="form-select" @bind-Value="FormModel.ReportToDivSupId" required>
                         <option value="0">--Select--</option>
-                        @foreach (var item in Supervisors)
+                        @foreach (var item in Supervisors ?? [])
                         {
                             <option value="@item.Id">@item.FullName</option>
                         }
@@ -111,7 +108,7 @@
 
             <!-- File Upload -->
             <div class="form-group full-width">
-                <label for="file-upload">
+                <label for="jofile-upload">
                     @(!IsForUpdate ? "Supporting Documents" : "Add More Supporting Documents")
                     @if (FormModel.Attachments.Any())
                     {
@@ -122,7 +119,7 @@
                 <div class="file-upload-area"
                      @ondragover="OnDragOver"
                      @ondrop="OnDrop">
-                    <InputFile id="file-upload"
+                    <InputFile id="jofile-upload"
                                multiple
                                OnChange="OnFilesSelected"
                                class="file-input" />
@@ -168,24 +165,21 @@
 
     [Parameter] public bool Disabled { get; set; } = false;
     [Parameter] public Job_OrderVM FormModel { get; set; } = new();
+    [Parameter] public List<DivisionVM> FormDivisions { get; set; } = new();
+    [Parameter] public List<DepartmentVM> FormDepartments { get; set; } = new();
     [Parameter] public bool IsDisabledBtns { get; set; }
     [Parameter] public EventCallback OnValidSubmit { get; set; }
     [Parameter] public EventCallback OnCloseModal { get; set; }
     [Parameter] public bool IsForUpdate { get; set; }
 
     private List<IBrowserFile> uploadedFiles = [];
-    private List<DivisionVM> Divisions = [];
-    private List<DepartmentVM> Departments = [];
-    private List<SupervisorVM> Supervisors = [];
+    private List<SupervisorVM> Supervisors = new();
 
     protected override async Task OnParametersSetAsync()
     {
-        Divisions = await divisionSvc.GetAllDivisions();
-        Departments = await departmentSvc.GetAllDepartments();
-
-        if (!currentUser.IsAuthenticated)
+        if (!currentUser.IsAuthenticated && FormDivisions is not null)
         {
-            Supervisors = await userSvc.GetSupervisors();
+            Supervisors = await userSvc.GetSupervisors() ?? new();
         }
     }
 

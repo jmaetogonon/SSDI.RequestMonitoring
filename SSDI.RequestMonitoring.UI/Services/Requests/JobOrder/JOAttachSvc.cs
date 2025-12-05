@@ -73,4 +73,18 @@ public class JOAttachSvc : BaseHttpService, IJOAttachSvc
             return null;
         }
     }
+
+    public async Task<byte[]?> DownloadAllSlipAttachZip(int requestId)
+    {
+        try
+        {
+            var fileResponse = await _client.DownloadAllSlipAttachJobOrderAsync(requestId);
+            return fileResponse;
+        }
+        catch (ApiException ex)
+        {
+            Console.WriteLine($"Download failed: {ex.Message}");
+            return null;
+        }
+    }
 }

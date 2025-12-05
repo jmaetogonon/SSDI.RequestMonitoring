@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
-using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals;
 
 public partial class EditJORequest__Modal : ComponentBase
 {
     [Parameter] public Job_OrderVM RequestModel { get; set; } = new();
+    [Parameter] public List<DivisionVM> Divisions { get; set; } = [];
+    [Parameter] public List<DepartmentVM> Departments { get; set; } = [];
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public bool IsResubmit { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
@@ -49,7 +51,10 @@ public partial class EditJORequest__Modal : ComponentBase
                 var res = await attachSvc.UploadAttachPurchase(command);
                 if (!res.Success)
                 {
-                    toastSvc.ShowError("Error uploading attachments. Please try again.");
+                    if (RequestModel.Attachments.Count != 0)
+                    {
+                        toastSvc.ShowError("Error uploading attachments. Please try again.");
+                    }
                 }
 
                 ResetForm();

@@ -1,11 +1,8 @@
-﻿@using SSDI.RequestMonitoring.UI.Contracts.MasterData
-@using SSDI.RequestMonitoring.UI.Contracts.Users
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Users
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.Models.MasterData
- @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.Models.Users
-@inject IDivisionSvc divisionSvc
-@inject IDepartmentSvc departmentSvc
 @inject IUserSvc userSvc
 
 <EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
@@ -39,7 +36,7 @@
                 </label>
                 <InputSelect id="divisionId" class="form-select" @bind-Value="FormModel.DivisionId" disabled="@(FormModel.DepartmentId != 0)" required>
                     <option value="0">--Select--</option>
-                    @foreach (var item in Divisions)
+                    @foreach (var item in FormDivisions ?? [])
                     {
                         <option value="@item.Id">@item.Name</option>
                     }
@@ -50,7 +47,7 @@
                 <label for="departmentid">Department</label>
                 <InputSelect id="departmentid" class="form-select" @bind-Value="FormModel.DepartmentId" disabled="@(FormModel.DivisionId == 0)" required>
                     <option value="0">--Select--</option>
-                    @foreach (var item in Departments.Where(e => e.DivisionId == FormModel.DivisionId))
+                    @foreach (var item in FormDepartments?.Where(e => e.DivisionId == FormModel.DivisionId) ?? [])
                     {
                         <option value="@item.Id">@item.Name</option>
                     }
@@ -72,7 +69,7 @@
                     <label for="deptSupp">Department Supervisor</label>
                     <InputSelect id="deptSupp" class="form-select" @bind-Value="FormModel.ReportToDeptSupId" required>
                         <option value="0">--Select--</option>
-                        @foreach (var item in Supervisors)
+                        @foreach (var item in Supervisors ?? [])
                         {
                             <option value="@item.Id">@item.FullName</option>
                         }
@@ -168,24 +165,21 @@
 
     [Parameter] public bool Disabled { get; set; } = false;
     [Parameter] public Purchase_RequestVM FormModel { get; set; } = new();
+    [Parameter] public List<DivisionVM> FormDivisions { get; set; } = new();
+    [Parameter] public List<DepartmentVM> FormDepartments { get; set; } = new();
     [Parameter] public bool IsDisabledBtns { get; set; }
     [Parameter] public EventCallback OnValidSubmit { get; set; }
     [Parameter] public EventCallback OnCloseModal { get; set; }
     [Parameter] public bool IsForUpdate { get; set; }
 
     private List<IBrowserFile> uploadedFiles = [];
-    private List<DivisionVM> Divisions = [];
-    private List<DepartmentVM> Departments = [];
-    private List<SupervisorVM> Supervisors = [];
+    private List<SupervisorVM> Supervisors = new();
 
     protected override async Task OnParametersSetAsync()
     {
-        Divisions = await divisionSvc.GetAllDivisions();
-        Departments = await departmentSvc.GetAllDepartments();
-
-        if (!currentUser.IsAuthenticated)
+        if (!currentUser.IsAuthenticated && FormDivisions is not null)
         {
-            Supervisors = await userSvc.GetSupervisors();
+            Supervisors = await userSvc.GetSupervisors() ?? new();
         }
     }
 

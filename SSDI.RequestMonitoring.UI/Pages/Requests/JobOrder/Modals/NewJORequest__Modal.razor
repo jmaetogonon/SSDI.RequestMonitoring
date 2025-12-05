@@ -17,6 +17,6 @@
             <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
         </div>
 
-        <JobOrder__Form FormModel="RequestModel" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />
+        <JobOrder__Form FormModel="RequestModel" FormDepartments="Departments" FormDivisions="Divisions" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />
     </div>
-</div>
+</div> 

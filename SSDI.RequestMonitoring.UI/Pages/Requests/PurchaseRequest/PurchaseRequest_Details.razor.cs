@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
+using SSDI.RequestMonitoring.UI.Services.MasterData;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
 
@@ -20,11 +22,19 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private Confirmation__Modal? confirmModal;
 
+    private List<DivisionVM> divisions = [];
+    private List<DepartmentVM> departments = [];
+
     private string? pdfBase64;
     private bool isPdfModalVisible = false;
 
     private string ActiveTab = "details";
 
+    protected override async Task OnInitializedAsync()
+    { 
+        divisions = await divisionSvc.GetAllDivisions();
+        departments = await departmentSvc.GetAllDepartments();
+     }
     protected override async Task OnParametersSetAsync()
     {
         await LoadRequestDetails();

@@ -139,7 +139,7 @@ public class JobOrderSvc : BaseHttpService, IJobOrderSvc
     {
         try
         {
-            var requests = await _client.GeneratePdfAsync(id);
+            var requests = await _client.GeneratePdfJobOrderAsync(id);
             return requests;
         }
         catch (ApiException ex)

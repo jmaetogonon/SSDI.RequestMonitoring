@@ -17,6 +17,8 @@ public class JOAttachSvcAdapter : IAttachmentSvc
 
     public Task<byte[]?> DownloadAllZipAsync(int requestId, RequestAttachType attachType) => _svc.DownloadAllAttachZip(requestId);
 
+    public Task<byte[]?> DownloadAllSlipZipAsync(int requestId) => _svc.DownloadAllSlipAttachZip(requestId);
+
     public async Task<Response<Guid>> UploadAsync(IRequestDetailVM request, IEnumerable<IAttachmentVM> files, RequestAttachType attachType, int? requisitionId = null, decimal? receiptAmount = null)
     {
         if (request is not Job_OrderVM pr) return new Response<Guid>() { Success = false };
@@ -37,7 +39,8 @@ public class JOAttachSvcAdapter : IAttachmentSvc
                 ContentType = f.ContentType,
                 ImgData = f.ImgData,
                 Size = f.Size,
-                AttachType = f.AttachType
+                AttachType = f.AttachType,
+                RequisitionId = requisitionId ?? 0,
             }).ToList()
         };
 

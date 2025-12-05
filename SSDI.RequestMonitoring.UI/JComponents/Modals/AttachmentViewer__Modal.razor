@@ -237,7 +237,7 @@
         {
             await ClosePreview();
         }
-        else if (ShowPreview && IsImage(SelectedAttachment.FileName))
+        else if (ShowPreview && IsImage(SelectedAttachment!.FileName))
         {
             if (e.Key == "+" || e.Key == "=")
             {

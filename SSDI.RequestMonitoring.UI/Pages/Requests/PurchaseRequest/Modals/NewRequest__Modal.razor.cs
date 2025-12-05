@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals;
 
 public partial class NewRequest__Modal : ComponentBase
 {
+    [Parameter] public List<DivisionVM> Divisions { get; set; } = [];
+    [Parameter] public List<DepartmentVM> Departments { get; set; } = [];
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }

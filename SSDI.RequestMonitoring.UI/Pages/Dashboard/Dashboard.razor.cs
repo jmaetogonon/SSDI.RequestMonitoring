@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
@@ -6,9 +8,13 @@ using SSDI.RequestMonitoring.UI.Pages.Dashboard.Dto;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Dashboard;
 
-public partial class Dashboard : ComponentBase
+public partial class Dashboard : ComponentBase, IAsyncDisposable
 {
     private string activeTab = "all";
+    private int currentSlide = 0;
+    private ElementReference carouselContainer;
+    private DotNetObjectReference<Dashboard>? dotNetRef;
+    private IJSObjectReference? jsModule;
 
     private RequestMetrics purchaseRequestMetrics = new();
     private RequestMetrics jobOrderMetrics = new();
@@ -21,12 +27,12 @@ public partial class Dashboard : ComponentBase
 
     private int totalDraftCount = 0;
     private int totalPendingSubmissionCount = 0;
-    private int totalPendingApprovalCount = 0;
 
     private bool isLoading = true;
     private RequestType requestType = RequestType.All;
 
     private Confirmation__Modal? confirmModal;
+
     protected override async Task OnInitializedAsync()
     {
         await currentUser.InitializeAsync();
@@ -34,6 +40,48 @@ public partial class Dashboard : ComponentBase
         isLoading = false;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Create a reference to this component for JavaScript to call
+            dotNetRef = DotNetObjectReference.Create(this);
+
+            // Initialize the carousel with JavaScript
+            await InitializeCarousel();
+        }
+    }
+
+    private void SwitchTab(string tab)
+    {
+        activeTab = tab;
+        currentSlide = 0; // Reset to first slide
+        requestType = tab switch
+        {
+            "purchase" => RequestType.Purchase,
+            "joborder" => RequestType.JobOrder,
+            _ => RequestType.All
+        };
+
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Clean up JavaScript references
+        if (jsModule != null)
+        {
+            await jsModule.DisposeAsync();
+        }
+
+        // Clean up global reference
+        await JSRuntime.InvokeVoidAsync("eval",
+            "if (window.__dashboardDotNetHelper) { window.__dashboardDotNetHelper = null; }");
+
+        dotNetRef?.Dispose();
+    }
+
+    // ... rest of your existing methods remain the same
     private async Task LoadDashboardData()
     {
         try
@@ -194,7 +242,6 @@ public partial class Dashboard : ComponentBase
             }
 
             var allTeamRequests = purchaseTeamRequests
-                //.Where(r => r.RequestedById != currentUser.UserId)
                 .Select(r => new TeamRequestItem
                 {
                     Id = r.Id,
@@ -202,11 +249,10 @@ public partial class Dashboard : ComponentBase
                     Title = r.Nature_Of_Request,
                     RequestedBy = r.Name,
                     Status = r.Status,
-                    Date = r.DateRequested ?? DateTime.Now,
+                    Date = r.DateModified ?? DateTime.Now,
                     Priority = r.Priority,
                 })
                 .Concat(jobOrderTeamRequests
-                    //.Where(r => r.RequestedById != currentUser.UserId)
                     .Select(r => new TeamRequestItem
                     {
                         Id = r.Id,
@@ -214,7 +260,7 @@ public partial class Dashboard : ComponentBase
                         Title = r.Nature_Of_Request,
                         RequestedBy = r.Name,
                         Status = r.Status,
-                        Date = r.DateRequested ?? DateTime.Now,
+                        Date = r.DateModified ?? DateTime.Now,
                         Priority = r.Priority,
                     }))
                 .OrderByDescending(r => r.Date)
@@ -228,21 +274,6 @@ public partial class Dashboard : ComponentBase
             Console.WriteLine($"Error loading team requests: {ex.Message}");
             teamRequestsNeedingAttention = [];
         }
-    }
-
-
-    // Tab and Filter Methods
-    private void SwitchTab(string tab)
-    {
-        activeTab = tab;
-        requestType = tab switch
-        {
-            "purchase" => RequestType.Purchase,
-            "joborder" => RequestType.JobOrder,
-            _ => RequestType.All
-        };
-
-        StateHasChanged();
     }
 
     // Navigation Methods
@@ -298,16 +329,6 @@ public partial class Dashboard : ComponentBase
         toastSvc.ShowSuccess("Dashboard refreshed!");
     }
 
-    private void ExportReports()
-    {
-        navigationManager.NavigateTo("/reports/export");
-    }
-
-    private void ViewReports()
-    {
-        navigationManager.NavigateTo("/reports");
-    }
-
     private string GetTimeOfDayGreeting()
     {
         var hour = DateTime.Now.Hour;
@@ -318,4 +339,175 @@ public partial class Dashboard : ComponentBase
             _ => "evening"
         };
     }
+
+    #region Carousel
+
+    private async Task InitializeCarousel()
+    {
+        try
+        {
+            // Add data-carousel attribute to the carousel container
+            await JSRuntime.InvokeVoidAsync("eval",
+                @"
+                (function() {
+                    const container = document.querySelector('.metrics-carousel');
+                    if (!container) return;
+
+                    // Add data attribute for identification
+                    container.setAttribute('data-carousel', 'true');
+
+                    let touchStartX = 0;
+                    let touchEndX = 0;
+                    const swipeThreshold = 50;
+
+                    // Touch events for swipe
+                    container.addEventListener('touchstart', (e) => {
+                        touchStartX = e.changedTouches[0].screenX;
+                    }, { passive: true });
+
+                    container.addEventListener('touchend', (e) => {
+                        touchEndX = e.changedTouches[0].screenX;
+                        handleSwipe();
+                    }, { passive: true });
+
+                    function handleSwipe() {
+                        const diff = touchStartX - touchEndX;
+
+                        if (Math.abs(diff) > swipeThreshold) {
+                            if (diff > 0) {
+                                // Swipe left - next slide
+                                if (window.__dashboardDotNetHelper) {
+                                    window.__dashboardDotNetHelper.invokeMethodAsync('NextSlideJS');
+                                }
+                            } else {
+                                // Swipe right - previous slide
+                                if (window.__dashboardDotNetHelper) {
+                                    window.__dashboardDotNetHelper.invokeMethodAsync('PrevSlideJS');
+                                }
+                            }
+                        }
+                    }
+                })();
+                ");
+
+            //// Store the .NET helper globally
+            //await JSRuntime.InvokeVoidAsync("eval",
+            //    "window.__dashboardDotNetHelper = arguments[0];", dotNetRef);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing carousel: {ex.Message}");
+        }
+    }
+
+    // Carousel methods
+    private void NextSlide()
+    {
+        var totalSlides = GetTotalSlides();
+        if (currentSlide < totalSlides - 1)
+        {
+            currentSlide++;
+            StateHasChanged();
+        }
+    }
+
+    private void PrevSlide()
+    {
+        if (currentSlide > 0)
+        {
+            currentSlide--;
+            StateHasChanged();
+        }
+    }
+
+    private void GoToSlide(int slideIndex)
+    {
+        currentSlide = slideIndex;
+        StateHasChanged();
+    }
+
+    // These methods will be called from JavaScript
+    [JSInvokable]
+    public async Task NextSlideJS()
+    {
+        NextSlide();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task PrevSlideJS()
+    {
+        PrevSlide();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleWheel(WheelEventArgs e)
+    {
+        try
+        {
+            // Check if mobile view using a simpler approach
+            var isMobile = await JSRuntime.InvokeAsync<bool>("eval",
+                "window.innerWidth <= 768");
+
+            if (isMobile)
+            {
+                if (e.DeltaY > 0)
+                {
+                    NextSlide();
+                }
+                else
+                {
+                    PrevSlide();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling wheel: {ex.Message}");
+        }
+    }
+
+    private int GetTotalSlides()
+    {
+        if (activeTab == "all")
+        {
+            var count = 1; // Total Requests
+
+            if (utils.IsUser()) count += 2; // My Drafts + Pending For Close
+
+            if (purchaseRequests.Any(e => e.ReportType == "Department")) count += 2; // For Submission + Rejected
+
+            if (purchaseRequests.Any(e => e.ReportType == "Division")) count += 1; // For Endorsement
+
+            if (utils.IsAdmin()) count += 2; // For Approval + For Requisition
+
+            if (utils.IsCEO()) count += 1; // For Approval
+
+            count += 1; // Completed
+
+            return Math.Max(1, count);
+        }
+        else if (activeTab == "purchase" || activeTab == "joborder")
+        {
+            var count = 1; // Total
+
+            if (utils.IsUser()) count += 2; // My Drafts + Pending For Close
+
+            if (purchaseRequests.Any(e => e.ReportType == "Department")) count += 2; // For Submission + Rejected
+
+            if (purchaseRequests.Any(e => e.ReportType == "Division")) count += 1; // For Endorsement
+
+            if (utils.IsAdmin()) count += 2; // For Approval + For Requisition
+
+            if (utils.IsCEO()) count += 1; // For Approval
+
+            count += 1; // Closed
+
+            return Math.Max(1, count);
+        }
+
+        return 1;
+    }
+
+    #endregion Carousel
 }

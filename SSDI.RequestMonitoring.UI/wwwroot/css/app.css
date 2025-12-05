@@ -3,6 +3,27 @@
 .navmenu-icon {
     display: none;
 }
+.navmenu__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--color-darkmidnightblue);
+    margin-bottom: 1rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+    .navmenu__logo p {
+        color: var(--color-white) !important;
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+
+    .navmenu__logo img {
+        filter: brightness(0) invert(1);
+        width: 50px;
+    }
+
 
 .main {
     min-height: calc(100dvh - 50px);

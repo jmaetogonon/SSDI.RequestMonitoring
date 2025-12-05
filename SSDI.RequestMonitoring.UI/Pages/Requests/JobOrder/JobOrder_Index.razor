@@ -1,4 +1,5 @@
 ﻿@page "/requests/job-orders/"
+@using SSDI.RequestMonitoring.UI.Contracts.MasterData
 @using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
@@ -8,6 +9,8 @@
 @using SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals
 @inject IJobOrderSvc jobOrderSvc
 @inject NavigationManager navigationManager
+@inject IDivisionSvc divisionSvc
+@inject IDepartmentSvc departmentSvc
 @attribute [Authorize]
 
 <PageTitle>Job Orders</PageTitle>
@@ -30,18 +33,66 @@
     </div>
 
     <Confirmation__Modal @ref="confirmModal" />
-    <NewJORequest__Modal IsModalVisible="@isNewRequestModalVisible" OnSave="@OnSaveNewReqModal" OnClose="OnCloseNewReqModal" />
+    <NewJORequest__Modal IsModalVisible="@isNewRequestModalVisible" Departments="departments" Divisions="divisions" OnSave="@OnSaveNewReqModal" OnClose="OnCloseNewReqModal" />
 
     <div class="page__main__section">
-        <div class="page__cards">
-            @foreach (var summary in StatusSummaries)
-            {
-                <StatusWBar__Card Label="@summary.Label"
-                                  Count="@summary.Count"
-                                  TotalCount="@summary.TotalCount"
-                                  Icon="@summary.Icon"
-                                  OnClick="@(() => OnStatusCardClick(summary.Status))" />
-            }
+        <!-- Metrics Container -->
+        <div class="metrics-container">
+            <!-- Desktop Grid View -->
+            <div class="metrics-grid">
+                @foreach (var summary in StatusSummaries)
+                {
+                    <StatusWBar__Card Label="@summary.Label"
+                                      Count="@summary.Count"
+                                      TotalCount="@summary.TotalCount"
+                                      Icon="@summary.Icon"
+                                      OnClick="@(() => OnStatusCardClick(summary.Status))" />
+                }
+            </div>
+
+            <!-- Mobile Carousel View -->
+            <div class="metrics-carousel" @ref="carouselContainer" @onwheel="HandleWheel">
+                <!-- Previous Button (Left side) -->
+                <div class="carousel-nav prev">
+                    <button class="carousel-btn prev-btn" @onclick="PrevSlide"
+                            disabled="@(currentSlide == 0)" title="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                </div>
+
+                <!-- Carousel Slides -->
+                <div class="carousel-inner" style="transform: translateX(@($"-{currentSlide * 100}%"));">
+                    @foreach (var summary in StatusSummaries)
+                    {
+                        <div class="carousel-slide">
+                            <StatusWBar__Card Label="@summary.Label"
+                                              Count="@summary.Count"
+                                              TotalCount="@summary.TotalCount"
+                                              Icon="@summary.Icon"
+                                              OnClick="@(() => OnStatusCardClick(summary.Status))" />
+                        </div>
+                    }
+                </div>
+
+                <!-- Next Button (Right side) -->
+                <div class="carousel-nav next">
+                    <button class="carousel-btn next-btn" @onclick="NextSlide"
+                            disabled="@(currentSlide == StatusSummaries.Count - 1)" title="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Slide Indicators (Below the card) -->
+                <div class="carousel-indicators">
+                    @for (int i = 0; i < StatusSummaries.Count; i++)
+                    {
+                        <button class="indicator @(i == currentSlide ? "active" : "")"
+                                @onclick="@(() => GoToSlide(i))"
+                                aria-label="Go to slide @(i + 1)">
+                        </button>
+                    }
+                </div>
+            </div>
         </div>
 
         <div class="page__filters">

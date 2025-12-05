@@ -1,11 +1,14 @@
 ﻿@page "/"
 @using SSDI.RequestMonitoring.UI.Contracts
+@using SSDI.RequestMonitoring.UI.Contracts.MasterData
 @using SSDI.RequestMonitoring.UI.Contracts.Users
 @using SSDI.RequestMonitoring.UI.JComponents.Alerts
 @layout LoginLayout
 @inject IJSRuntime JSRuntime
 @inject NavigationManager navigationManager
 @inject IAuthenticationSvc authenticationSvc
+@inject IDivisionSvc divisionSvc
+@inject IDepartmentSvc departmentSvc
 
 <PageTitle>Request Monitoring</PageTitle>
 
@@ -17,9 +20,26 @@
 
             <p>Submit, track, and manage your <strong>Purchase Requests</strong> and <strong>Job Orders</strong> efficiently.</p>
 
-            <button type="button" class="btn-new-request" @onclick="ToggleNewRequest">
-                <i class="bi bi-plus-circle-fill"></i> New Request
-            </button>
+            <!-- ADD THIS: Button Container -->
+            <div class="login-actions">
+                <button type="button" class="login-action-btn purchase-btn" @onclick="ToggleNewPurchaseRequest">
+                    <i class="bi bi-cart-plus-fill"></i>
+                    <div class="btn-content">
+                        <span class="btn-title">New Purchase Request</span>
+                        <span class="btn-subtitle">Request for purchasing items</span>
+                    </div>
+                    <i class="bi bi-chevron-right btn-arrow"></i>
+                </button>
+
+                <button type="button" class="login-action-btn joborder-btn" @onclick="ToggleNewJobOrderRequest">
+                    <i class="bi bi-tools"></i>
+                    <div class="btn-content">
+                        <span class="btn-title">New Job Order</span>
+                        <span class="btn-subtitle">Request for services or repairs</span>
+                    </div>
+                    <i class="bi bi-chevron-right btn-arrow"></i>
+                </button>
+            </div>
         </div>
         <img src="/images/auth/login-teamwork.svg" alt="Request Illustration" class="login-illustration" />
     </div>
@@ -63,4 +83,5 @@
     </div>
 </div>
 
-<NewRequestLogin__Modal IsModalVisible="@_isNewRequestModalFormVisible" OnSave="OnAddRequestModalSave" OnClose="OnAddRequestModalClose" />
+<NewRequestLogin__Modal IsModalVisible="@_isNewRequestModalFormVisible" Departments="departments" Divisions="divisions" OnSave="OnAddRequestModalSave" OnClose="OnAddRequestModalClose" />
+<NewJobOrderLogin__Modal IsModalVisible="@_isNewJobOrderModalFormVisible" Departments="departments" Divisions="divisions" OnSave="OnAddJobOrderModalSave" OnClose="OnAddJobOrderModalClose" />
