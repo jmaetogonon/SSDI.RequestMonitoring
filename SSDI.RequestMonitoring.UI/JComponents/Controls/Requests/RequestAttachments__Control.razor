@@ -4,7 +4,6 @@
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Models.Requests
-@inject IJSRuntime JS
 @implements IAsyncDisposable
 
 <Details__Card>
@@ -81,7 +80,7 @@
                     </div>
                     <div class="attachment-card__actions">
                         <button class="attachment-card__btn"
-                                @onclick="(e) => DownloadAttachment(attachment, e)"
+                                @onclick="@(() => DownloadAttachment(attachment))"
                                 @onclick:stopPropagation="true"
                                 title="Download"
                                 disabled="@isDownloadingThis">
@@ -97,7 +96,7 @@
                         @if ((Request?.Status == RequestStatus.Draft || Request?.Status == RequestStatus.Rejected) && ReportType == "Department")
                         {
                             <button class="attachment-card__btn"
-                                    @onclick="(e) => DeleteAttachment(attachment, e)"
+                                    @onclick="@(() => DeleteAttachment(attachment))"
                                     @onclick:stopPropagation="true"
                                     title="Delete">
                                 <i class="bi bi-trash"></i>

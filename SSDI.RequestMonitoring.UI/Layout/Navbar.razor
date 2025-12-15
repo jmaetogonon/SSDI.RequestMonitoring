@@ -1,30 +1,51 @@
 ﻿@using SSDI.RequestMonitoring.UI.Contracts
 @using SSDI.RequestMonitoring.UI.Helpers.States
 @inject IAuthenticationSvc authService
-@inject NavigationManager navManager
 
 <div class="navbar">
-    <div class="navbar__logo">
+    <!-- Left Section: Logo -->
+    <div class="navbar__logo" @onclick="@(() => navigationManager.NavigateTo("/dashboard"))">
         <img src="/images/logo/app-logo-square-trans.png" />
-        <p> Requests Monitoring</p>
+        <p>Requests Monitoring</p>
     </div>
-    <div class="navbar__right__section">
+
+    <!-- Right Section: User Account -->
+    <div class="navbar__right">
         <div class="navbar__user__account">
-            <FluentStack HorizontalAlignment="@HorizontalAlignment.End"
-                         VerticalAlignment="@VerticalAlignment.Center"
-                         Style="height: 50px;">
-                <FluentProfileMenu Status="@PresenceStatus.Available"
-                                   HeaderLabel="@currentUser.Username"
-                                   Initials="@GetInitials(currentUser.FullName)"
-                                   FullName="@currentUser.FullName"
-                                   EMail="@currentUser.RoleDesc"
-                                   PopoverStyle="min-width: 330px;"
-                                   OnHeaderButtonClick="Logout" />
-            </FluentStack>
+            <div class="user-menu" @onclick="ToggleMenu">
+                <div class="user-avatar">
+                    @GetInitials(currentUser.FullName)
+                </div>
+                @* <i class="bi bi-chevron-down dropdown-arrow @(isMenuOpen ? "rotated" : "")"></i> *@
+            </div>
+
+            @if (isMenuOpen)
+            {
+                <div class="dropdown-backdrop" @onclick="CloseMenu"></div>
+                <div class="user-dropdown">
+                    <div class="dropdown-header">
+                        <div class="avatar-big">@GetInitials(currentUser.FullName)</div>
+                        <div class="user-info">
+                            <strong>@currentUser.FullName</strong>
+                            <span>@currentUser.RoleDesc</span>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-actions">
+                        <button class="btn btn--danger btn--full" @onclick="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
+
 @code {
+    private bool isMenuOpen = false;
+
     protected override async Task OnInitializedAsync()
     {
         await currentUser.InitializeAsync();
@@ -34,6 +55,16 @@
     private void Refresh()
     {
         InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        isMenuOpen = false;
     }
 
     private string GetInitials(string name)
@@ -52,11 +83,11 @@
         return $"{char.ToUpper(first)}{char.ToUpper(last)}";
     }
 
-
     private async Task Logout()
     {
+        isMenuOpen = false;
         await authService.Logout();
-        navManager.NavigateTo("/");
+        navigationManager.NavigateTo("/");
     }
 
     public void Dispose()

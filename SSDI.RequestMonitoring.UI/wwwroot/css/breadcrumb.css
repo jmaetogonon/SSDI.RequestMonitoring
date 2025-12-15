@@ -6,6 +6,10 @@
     display: flex;
 }
 
+    .breadcrumb-nav.nopadding {
+        padding: 0;
+    }
+
 .breadcrumb-list {
     display: flex;
     align-items: center;
@@ -235,7 +239,6 @@
 }
 
 @media (max-width: 480px) {
-
     .breadcrumb-item {
         font-size: 0.75rem;
     }
@@ -248,7 +251,7 @@
 /* Print Styles */
 @media print {
     .breadcrumb-nav {
-         padding: 0;
+        padding: 0;
     }
 
     .breadcrumb-link:hover {

@@ -1,0 +1,76 @@
+﻿@page "/system-configuration"
+@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
+@attribute [Authorize(Roles = TokenCons.Role__Admin)]
+@inject ISystemConfigSvc systemConfigSvc
+
+
+<PageTitle>System Configurations</PageTitle>
+
+<div class="main--content">
+    <div class="page__header">
+        <div class="page__title-section">
+            <p class="page__header-title">System Configurations</p>
+            <p class="page__header-subtitle">Configure the system items.</p>
+        </div>
+    </div>
+
+    <div class="page__main__section">
+        <div class="page__table-container @(uiStateSvc.IsStriped ? "striped-grid" : "")" tabindex="-1" style="min-height: 50dvh;max-height: calc(100dvh - 14rem);">
+            @if (SystemConfigs == null)
+            {
+                <div class="page__table-loading">
+                    <p>Loading purchase requests...</p>
+                </div>
+            }
+            else
+            {
+                <div class="page__table-wrapper">
+                    <FluentDataGrid Class="page__table"
+                                    TGridItem="SystemConfig"
+                                    ShowHover="true"
+                                    OnRowClick="@(row => GoToPage(row))"
+                                    GenerateHeader="GenerateHeaderOption.Sticky"
+                                    RowSize="DataGridRowSize.Medium"
+                                    Items="SystemConfigs">
+                        <PropertyColumn Property="@(p => p.Name)" Width="20%" />
+                        <PropertyColumn Property="@(p => p.NoOfItems)" Title="No. of Items" />
+                    </FluentDataGrid>
+                </div>
+
+                <Pagination__Control IsStripedChanged="@(() => StateHasChanged())" />
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    IQueryable<SystemConfig>? SystemConfigs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var configs = await systemConfigSvc.GetSystemConfigAsync();
+
+        SystemConfigs = new List<SystemConfig>
+        {
+            new SystemConfig { Name = "Divisions", NoOfItems = configs.DivisionCount , Link = "/system-configuration/divisions"},
+            new SystemConfig { Name = "Departments", NoOfItems = configs.DepartmentCount , Link = "/system-configuration/departments"},
+        }.AsQueryable();
+    }
+
+    private void GoToPage(FluentDataGridRow<SystemConfig> args)
+    {
+        if (args != null && !string.IsNullOrEmpty(args.Item?.Link))
+        {
+            navigationManager.NavigateTo(args.Item.Link);
+        }
+    }
+
+    public class SystemConfig
+    {
+        public string Name { get; set; } = string.Empty;
+        public int NoOfItems { get; set; }
+        public string Link { get; set; } = string.Empty;
+    }
+}

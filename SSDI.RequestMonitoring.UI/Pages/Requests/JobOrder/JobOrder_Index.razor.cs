@@ -13,8 +13,8 @@ namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder;
 
 public partial class JobOrder_Index : ComponentBase
 {
-    private IQueryable<Job_OrderVM>? AllRequests;
-    private IQueryable<Job_OrderVM>? Requests;
+    private IQueryable<Job_OrderVM>? AllItems;
+    private IQueryable<Job_OrderVM>? FilteredItems;
     private List<StatusSummary> StatusSummaries = [];
     private Job_OrderVM editModel = new();
 
@@ -34,7 +34,7 @@ public partial class JobOrder_Index : ComponentBase
     private Confirmation__Modal? confirmModal;
     private bool isNewRequestModalVisible = false;
     private bool isLoading = false;
-    private bool isShowNewBtn => CheckNewBtnPermission();
+    private bool IsShowNewBtn => CheckNewBtnPermission();
 
     //carousel fields
     private int currentSlide = 0;
@@ -62,22 +62,22 @@ public partial class JobOrder_Index : ComponentBase
             if (utils.IsUser())
             {
                 var requests = await jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
-                AllRequests = requests.AsQueryable();
+                AllItems = requests.AsQueryable();
             }
             else if (utils.IsAdmin())
             {
                 var requests = await jobOrderSvc.GetAllJobOrdersByAdmin();
-                AllRequests = requests.AsQueryable();
+                AllItems = requests.AsQueryable();
                 OnStatusFilterChanged([RequestStatus.ForAdminVerification, RequestStatus.ForRequisition]);
                 statusFilter?.SetSelectedStatus(selectedStatuses);
             }
             else
             {
                 var requests = await jobOrderSvc.GetAllJobOrderBySupervisor(currentUser.UserId, true, true);
-                AllRequests = requests.AsQueryable();
+                AllItems = requests.AsQueryable();
                 if (requests.Any(e => e.ReportType == "Division"))
                 {
-                    AllRequests = requests.Where(e => e.Status == RequestStatus.ForEndorsement).AsQueryable();
+                    AllItems = requests.Where(e => e.Status == RequestStatus.ForEndorsement).AsQueryable();
                     OnStatusFilterChanged([RequestStatus.ForEndorsement]);
                     statusFilter?.SetSelectedStatus(selectedStatuses);
                 }
@@ -85,7 +85,7 @@ public partial class JobOrder_Index : ComponentBase
                 if (utils.IsCEO())
                 {
                     var ceoRequests = await jobOrderSvc.GetAllJobOrderByCeo();
-                    AllRequests = AllRequests.Concat(ceoRequests).DistinctBy(r => r.Id).AsQueryable();
+                    AllItems = AllItems.Concat(ceoRequests).DistinctBy(r => r.Id).AsQueryable();
                     OnStatusFilterChanged([RequestStatus.ForEndorsement, RequestStatus.ForCeoApproval]);
                     statusFilter?.SetSelectedStatus(selectedStatuses);
                 }
@@ -133,7 +133,7 @@ public partial class JobOrder_Index : ComponentBase
     private async Task OnSaveNewReqModal()
     {
         isNewRequestModalVisible = false;
-        AllRequests = null;
+        AllItems = null;
         await LoadDataAsync();
         toastSvc.ShowSuccess("The request has been added successfully.");
     }
@@ -147,9 +147,9 @@ public partial class JobOrder_Index : ComponentBase
 
     private void ApplyFilters()
     {
-        if (AllRequests == null) return;
+        if (AllItems == null) return;
 
-        var query = AllRequests.AsQueryable();
+        var query = AllItems.AsQueryable();
 
         // Apply status filter
         if (selectedStatuses.Count > 0)
@@ -173,7 +173,7 @@ public partial class JobOrder_Index : ComponentBase
             );
         }
 
-        Requests = query;
+        FilteredItems = query;
     }
 
     private void OnStatusFilterChanged(HashSet<RequestStatus> _selectedStatuses)
@@ -209,12 +209,12 @@ public partial class JobOrder_Index : ComponentBase
 
     private void BuildStatusSummaries()
     {
-        if (AllRequests == null) return;
+        if (AllItems == null) return;
 
-        var totalCount = AllRequests.Count();
+        var totalCount = AllItems.Count();
 
         // Single pass to get all counts
-        var statusCounts = AllRequests
+        var statusCounts = AllItems
             .GroupBy(r => r.Status)
             .ToDictionary(g => g.Key, g => g.Count());
 
@@ -267,6 +267,12 @@ public partial class JobOrder_Index : ComponentBase
         await pagination.SetCurrentPageIndexAsync(0);
     }
 
+    private void ClearSearch()
+    {
+        searchValue = "";
+        ApplyFilters();
+    }
+
     private void ClearAllFilters()
     {
         searchValue = "";
@@ -280,7 +286,7 @@ public partial class JobOrder_Index : ComponentBase
 
     public bool CheckNewBtnPermission()
     {
-        return utils.IsUser() || AllRequests?.FirstOrDefault()?.ReportType == "Department" || (AllRequests?.FirstOrDefault() is null && utils.IsSupervisor() && !utils.IsAdmin());
+        return !utils.IsAdmin() && !utils.IsCEO();
     }
 
     #region Carousel
@@ -290,7 +296,7 @@ public partial class JobOrder_Index : ComponentBase
         try
         {
             // Add data-carousel attribute to the carousel container
-            await JSRuntime.InvokeVoidAsync("eval",
+            await jsRuntime.InvokeVoidAsync("eval",
                 @"
                 (function() {
                     const container = document.querySelector('.metrics-carousel');
@@ -334,7 +340,7 @@ public partial class JobOrder_Index : ComponentBase
                 ");
 
             // Store the .NET helper globally with unique name
-            //await JSRuntime.InvokeVoidAsync("eval",
+            //await jsRuntime.InvokeVoidAsync("eval",
             //    "window.__jobOrderDotNetHelper = arguments[0];", dotNetRef);
         }
         catch (Exception ex)
@@ -391,7 +397,7 @@ public partial class JobOrder_Index : ComponentBase
         try
         {
             // Check if mobile view using a simpler approach
-            var isMobile = await JSRuntime.InvokeAsync<bool>("eval",
+            var isMobile = await jsRuntime.InvokeAsync<bool>("eval",
                 "window.innerWidth <= 768");
 
             if (isMobile)
@@ -416,8 +422,8 @@ public partial class JobOrder_Index : ComponentBase
 
     public void Dispose()
     {
-        AllRequests = null;
-        Requests = null;
+        AllItems = null;
+        FilteredItems = null;
         StatusSummaries?.Clear();
         currentUser.OnUserChanged -= Refresh;
     }

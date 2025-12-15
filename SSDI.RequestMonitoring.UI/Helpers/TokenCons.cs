@@ -19,4 +19,6 @@ public static class TokenCons
 
     public const string AttTypeReq__Sheet = "Sheet";
     public const string AttTypeReq__Receipt = "Receipt";
+
+    public const string Message_MainPage = "MESSAGE_MAINPAGE";
 }

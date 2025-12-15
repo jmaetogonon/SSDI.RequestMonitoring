@@ -1,6 +1,5 @@
 ﻿@using SSDI.RequestMonitoring.UI.Models.Enums
 @using SSDI.RequestMonitoring.UI.Pages.Dashboard.Dto
-@inject NavigationManager nav
 
 <div class="dashboard__card">
     <div class="dashboard__card-header">
@@ -69,7 +68,7 @@
         {
             <div class="empty-state">
                 <i class="bi bi-check-circle"></i>
-                <p>All caught up! No pending team requests.</p>
+                <p>You're all caught up — no requests require your action.</p>
             </div>
         }
     </div>
@@ -114,9 +113,9 @@
     private void ViewRequestDetails(TeamRequestItem request)
     {
         var url = request.RequestType == "purchase"
-            ? $"/requests/purchase-requests/{request.Id}"
-            : $"/requests/job-orders/{request.Id}";
-        nav.NavigateTo(url);
+            ? $"/requests/purchase-requests/{request.Id}/{request.ReportType}"
+            : $"/requests/job-orders/{request.Id}/{request.ReportType}";
+        navigationManager.NavigateTo(url);
     }
 
     private string GetPriorityIcon(RequestPriority priority)

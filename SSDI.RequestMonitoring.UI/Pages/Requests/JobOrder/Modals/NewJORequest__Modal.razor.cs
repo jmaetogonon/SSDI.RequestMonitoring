@@ -44,8 +44,8 @@ public partial class NewJORequest__Modal : ComponentBase
         }
         var options = new ConfirmationModalOptions
         {
-            Message = "Are you sure you want to save this request?",
-            Title = "Save Request",
+            Message = "Are you sure you want to save this job order?",
+            Title = "Save Job Order",
             Variant = ConfirmationModalVariant.confirmation,
             ConfirmText = "Save",
             CancelText = "Cancel",

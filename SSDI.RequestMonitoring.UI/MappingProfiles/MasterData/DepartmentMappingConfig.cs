@@ -8,6 +8,7 @@ public class DepartmentMappingConfig : Profile
 {
     public DepartmentMappingConfig()
     {
+        CreateMap<SystemConfigDto, SystemConfigVM>().ReverseMap();
         CreateMap<DepartmentDto, DepartmentVM>().ReverseMap();
     }
 }

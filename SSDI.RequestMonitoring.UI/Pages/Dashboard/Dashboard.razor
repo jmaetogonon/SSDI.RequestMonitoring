@@ -13,8 +13,8 @@
 @inject IPurchaseRequestSvc purchaseRequestSvc
 @inject IJobOrderSvc jobOrderSvc
 @inject IUserSvc userSvc
-@inject NavigationManager navigationManager
-@inject IJSRuntime JSRuntime
+
+<PageTitle>Dashboard</PageTitle>
 
 <div class="dashboard">
     <!-- Header -->
@@ -38,10 +38,13 @@
 
             <!-- Quick Actions -->
             <div class="header-quick-actions">
-                <button class="header-action-btn" @onclick="SyncUsers" title="Sync Users from Active Directory">
-                    <i class="bi bi-people"></i>
-                    <span>Sync Users</span>
-                </button>
+                @if (utils.IsAdmin())
+                {
+                    <button class="header-action-btn" @onclick="SyncUsers" title="Sync Users from Active Directory">
+                        <i class="bi bi-people"></i>
+                        <span>Sync Users</span>
+                    </button>
+                }
 
                 <button class="header-action-btn" @onclick="RefreshDashboard" title="Refresh dashboard data">
                     <i class="bi bi-arrow-clockwise"></i>

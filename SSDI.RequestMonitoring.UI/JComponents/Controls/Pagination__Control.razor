@@ -3,16 +3,19 @@
 <div class="page__pagination">
     <!-- Left Section: Display Controls -->
     <div class="page__pagination-left">
-        <div class="page__pagination-setter">
-            <span class="page__pagination-label">Rows</span>
-            <select @bind="@uiStateSvc.PageSize"
-                    @bind:after="OnPageSizeChanged"
-                    class="page__pagination-select">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-            </select>
-        </div>
+        @if (Pagination != null)
+        {
+            <div class="page__pagination-setter">
+                <span class="page__pagination-label">Rows</span>
+                <select @bind="@uiStateSvc.PageSize"
+                        @bind:after="OnPageSizeChanged"
+                        class="page__pagination-select">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+        }
 
         <FluentSwitch @bind-Value="@uiStateSvc.IsStriped"
                       @bind-Value:after="OnStripeChanged"
@@ -26,21 +29,23 @@
         @ChildContent
     </div>
 
-    <!-- Right Section: Paginator -->
-    <div class="page__pagination-right">
-        <FluentPaginator State="@Pagination">
-            <SummaryTemplate>
-                <span class="page__pagination-summary">
-                    <strong>@(Pagination.TotalItemCount ?? 0)</strong> items
-                </span>
-            </SummaryTemplate>
-            <PaginationTextTemplate>
-                <span class="page__pagination-text">
-                    Page <strong>@(Pagination.CurrentPageIndex + 1)</strong> of <strong>@(Pagination.LastPageIndex + 1)</strong>
-                </span>
-            </PaginationTextTemplate>
-        </FluentPaginator>
-    </div>
+    <!-- Right Section: Paginator --> @if (Pagination != null)
+    {
+        <div class="page__pagination-right">
+            <FluentPaginator State="@Pagination">
+                <SummaryTemplate>
+                    <span class="page__pagination-summary">
+                        <strong>@(Pagination.TotalItemCount ?? 0)</strong> items
+                    </span>
+                </SummaryTemplate>
+                <PaginationTextTemplate>
+                    <span class="page__pagination-text">
+                        Page <strong>@(Pagination.CurrentPageIndex + 1)</strong> of <strong>@(Pagination.LastPageIndex + 1)</strong>
+                    </span>
+                </PaginationTextTemplate>
+            </FluentPaginator>
+        </div>
+    }
 </div>
 
 @code {

@@ -1,4 +1,5 @@
-﻿
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
 <div class="navmenu">
     @if (isMobile)
     {
@@ -25,9 +26,26 @@
                         <p> Requests Monitoring</p>
                     </div>
                 }
-                <FluentNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Dashboard</FluentNavLink>
-                <FluentNavLink Href="/requests/purchase-requests" Icon="@(new Icons.Regular.Size20.ShoppingBag())" IconColor="Color.Accent">Purchase Requests</FluentNavLink>
-                <FluentNavLink Href="/requests/job-orders" Icon="@(new Icons.Regular.Size20.Wrench())" IconColor="Color.Accent">Job Orders</FluentNavLink>
+                <div class="sidebar__section-title una" style="margin-top: 1rem !important;">General</div>
+
+                <FluentNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())">Dashboard</FluentNavLink>
+                <FluentNavLink Href="/requests/purchase-requests" Icon="@(new Icons.Regular.Size20.ShoppingBag())">Purchase Requests</FluentNavLink>
+                <FluentNavLink Href="/requests/job-orders" Icon="@(new Icons.Regular.Size20.Wrench())">Job Orders</FluentNavLink>
+
+
+                <AuthorizeView Roles="@TokenCons.Role__Admin">
+                    <Authorized>
+                        @* <div class="sidebar__section-title">Master Data</div> 
+                        <FluentNavGroup Title="Organization" Icon="@(new Icons.Regular.Size20.Building())">
+                            <FluentNavLink Href="/masterdata/divisions" Icon="@(new Icons.Regular.Size20.People())">Divisions</FluentNavLink>
+                            <FluentNavLink Href="/masterdata/job-departments" Icon="@(new Icons.Regular.Size20.PeopleTeam())">Departments</FluentNavLink>
+                        </FluentNavGroup> *@
+
+                        <div class="sidebar__section-title">Settings</div>
+                        <FluentNavLink Href="/system-configuration" Icon="@(new Icons.Regular.Size20.Settings())">System Configuration</FluentNavLink>
+                    </Authorized>
+                </AuthorizeView>
+
             </FluentNavMenu>
         </FluentNavMenu>
     </nav>
@@ -37,17 +55,20 @@
 @code {
     private bool expanded = true;
     private bool isMobile = false;
+    protected override async Task OnInitializedAsync()
+    {
+        await currentUser.InitializeAsync();
+        currentUser.OnUserChanged += Refresh;
+    }
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("addResizeListener", DotNetObjectReference.Create(this));
+            await jsRuntime.InvokeVoidAsync("addResizeListener", DotNetObjectReference.Create(this));
         }
     }
-
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private NavigationManager navigationManager { get; set; } = default!;
 
     [JSInvokable]
     public void SetIsMobile(int width)
@@ -60,5 +81,14 @@
     private void HideMenu()
     {
         expanded = false;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        currentUser.OnUserChanged -= Refresh;
     }
 }

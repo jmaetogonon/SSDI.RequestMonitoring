@@ -2,18 +2,15 @@
 @using SSDI.RequestMonitoring.UI.Contracts.Requests
 @using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Cards
+@using SSDI.RequestMonitoring.UI.JComponents.Controls.Requests.Modals
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
-@using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
 @using SSDI.RequestMonitoring.UI.Services.Adapters.Requests
 @using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip
-@inject IJSRuntime JS
 @implements IAsyncDisposable
-
-
 
 <NewRequisition__Modal RequestHeader="@Request" RequestType="@(SlipSvc is JORequisitionSvcAdapter ? RequestType.JobOrder : RequestType.Purchase)" AttachSvc="AttachSvc" SlipSvc="SlipSvc" IsModalVisible="@showNewSlipModal" OnSave="@SaveNewSlip" OnClose="CloseSlipModal" />
 
@@ -54,7 +51,7 @@
                     else
                     {
                         <i class="bi bi-file-earmark-pdf"></i>
-                        <span>Download All PDF</span>
+                        <span>Download All</span>
                     }
                 </button>
             </div>
@@ -418,10 +415,10 @@
                                                             </div>
                                                         </div>
                                                         <div class="attachment-actions">
-                                                            <button class="btn btn--outline btn--xs" @onclick="(e) => ViewAttachment(attachment, e)" @onclick:stopPropagation="true" title="View">
+                                                            <button class="btn btn--outline btn--xs" @onclick="@(() => ViewAttachment(attachment))" @onclick:stopPropagation="true" title="View">
                                                                 <i class="bi bi-eye"></i>
                                                             </button>
-                                                            <button class="btn btn--outline btn--xs" @onclick="(e) => DownloadAttachment(attachment, e)" @onclick:stopPropagation="true" title="Download" disabled="@isDownloadingThis">
+                                                            <button class="btn btn--outline btn--xs" @onclick="@(() => DownloadAttachment(attachment))" @onclick:stopPropagation="true" title="Download" disabled="@isDownloadingThis">
                                                                 @if (isDownloadingThis)
                                                                 {
                                                                     <i class="bi bi-arrow-repeat spinning"></i>
@@ -466,10 +463,10 @@
                                                         </div>
                                                         <div class="attachment-amount">₱@receipt.ReceiptAmount.ToString("N2")</div>
                                                         <div class="attachment-actions">
-                                                            <button class="btn btn--outline btn--xs" @onclick="(e) => ViewAttachment(receipt, e)" @onclick:stopPropagation="true" title="View">
+                                                            <button class="btn btn--outline btn--xs" @onclick="@(() => ViewAttachment(receipt))" @onclick:stopPropagation="true" title="View">
                                                                 <i class="bi bi-eye"></i>
                                                             </button>
-                                                            <button class="btn btn--outline btn--xs" @onclick="(e) => DownloadAttachment(receipt, e)" title="Download" @onclick:stopPropagation="true" disabled="@isDownloadingThis">
+                                                            <button class="btn btn--outline btn--xs" @onclick="@(() => DownloadAttachment(receipt))" title="Download" @onclick:stopPropagation="true" disabled="@isDownloadingThis">
                                                                 @if (isDownloadingThis)
                                                                 {
                                                                     <i class="bi bi-arrow-repeat spinning"></i>

@@ -4,7 +4,6 @@
 @using SSDI.RequestMonitoring.UI.Models.Common
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 @inject IPRAttachSvc attachSvc
-@inject IJSRuntime JS
 
 @if (SelectedAttachment != null)
 {
@@ -283,7 +282,7 @@
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
-                await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+                await jsRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
         }
         catch (Exception ex)

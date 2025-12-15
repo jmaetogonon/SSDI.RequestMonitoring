@@ -60,11 +60,11 @@ public class BaseHttpService
     {
         return ex.StatusCode switch
         {
-            400 => new Response<Guid> { Message = "Invalid data was submitted", ValidationErrors = ex.Response, Success = false },
-            401 => new Response<Guid> { Message = "Unauthorized - please log in again.", Success = false },
-            404 => new Response<Guid> { Message = "The record was not found", Success = false },
-            500 => new Response<Guid> { Message = "Server error occurred. Try again later.", Success = false },
-            _ => new Response<Guid> { Message = "Something went wrong. Please try again later.", Success = false }
+            400 => new Response<Guid> { Details = ex.Message, Message = "Invalid data was submitted", ValidationErrors = ex.Response, Success = false },
+            401 => new Response<Guid> { Details = ex.Message, Message = "Unauthorized - please log in again.", Success = false },
+            404 => new Response<Guid> { Details = ex.Message, Message = "The record was not found", Success = false },
+            500 => new Response<Guid> { Details = ex.Message, Message = "Server error occurred. Try again later.", Success = false },
+            _ => new Response<Guid> { Details = ex.Message, Message = "Something went wrong. Please try again later.", Success = false }
         };
     }
 }

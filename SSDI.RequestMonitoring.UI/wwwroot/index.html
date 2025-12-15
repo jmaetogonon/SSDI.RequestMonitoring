@@ -8,15 +8,18 @@
     <base href="/" />
     <link href="_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!--<link rel="icon" type="image/x-icon" href="favicon.ico" />-->
+    <link rel="icon" type="image/x-icon" href="/images/logo/app-logo-outline.png" />
     <link href="SSDI.RequestMonitoring.UI.styles.css" rel="stylesheet" />
 
     <link rel="stylesheet" href="/css/fontface.css" />
     <link rel="stylesheet" href="/css/navbar.css" />
     <link rel="stylesheet" href="/css/breadcrumb.css" />
     <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/notification.css" />
     <link rel="stylesheet" href="/css/pages/page.css" />
     <link rel="stylesheet" href="/css/pages/pagedetails.css" />
+    <link rel="stylesheet" href="/css/pages/sysconfigpage.css" />
     <link rel="stylesheet" href="/css/modal/modal.css" />
     <link rel="stylesheet" href="/css/controls/tabs.css" />
     <link rel="stylesheet" href="/css/controls/buttons.css" />
@@ -41,21 +44,12 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+    
+    <script src="/js/helpers.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
     <script src="_content/ChartJs.Blazor.Fork/ChartJsBlazorInterop.js"></script>
     <script src="/js/typingAnimation.js"></script>
-    <script src="/js/exportAttach.js"></script>
-
-    <script> 
-        function addResizeListener(dotNetHelper) {
-            function updateSize() {
-                dotNetHelper.invokeMethodAsync('SetIsMobile', window.innerWidth);
-            }
-
-            window.addEventListener('resize', updateSize);
-            updateSize(); // Initial call
-        }
-    </script>
+    <script src="/js/exportAttach.js"></script> 
 </body>
 </html>

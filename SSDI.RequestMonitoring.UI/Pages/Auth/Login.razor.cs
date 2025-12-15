@@ -44,7 +44,7 @@ public partial class Login : ComponentBase
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("initializeTypingAnimation");
+            await jsRuntime.InvokeVoidAsync("initializeTypingAnimation");
         }
     }
 
@@ -80,7 +80,6 @@ public partial class Login : ComponentBase
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
         var returnUrl = query["returnUrl"];
-        var tokenExpired = query["tokenExpired"];
 
         if (await authenticationSvc.AuthenticateAsync(_loginModel.Username, _loginModel.Password))
         {

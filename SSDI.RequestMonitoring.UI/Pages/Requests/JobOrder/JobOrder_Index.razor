@@ -8,7 +8,6 @@
 @using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder.Modals
 @inject IJobOrderSvc jobOrderSvc
-@inject NavigationManager navigationManager
 @inject IDivisionSvc divisionSvc
 @inject IDepartmentSvc departmentSvc
 @attribute [Authorize]
@@ -22,7 +21,7 @@
             <p class="page__header-subtitle">View and manage job orders.</p>
         </div>
 
-        @if (isShowNewBtn)
+        @if (IsShowNewBtn)
         {
             <div class="page__header-cta">
                 <button class="page__primary-btn" @onclick="OnAddNewRequest">
@@ -108,18 +107,40 @@
         </div>
 
         <div class="page__table-container @(uiStateSvc.IsStriped ? "striped-grid" : "")" tabindex="-1">
-            @if (Requests == null || isLoading)
+            @if (AllItems == null || isLoading)
             {
                 <div class="page__table-loading">
                     <p>Loading purchase requests...</p>
                 </div>
             }
-            else if (!Requests.Any())
+            else if (AllItems.Count() == 0)
             {
                 <div class="page__table-empty">
                     <i class="bi bi-inbox"></i>
                     <p>No job orders found</p>
                     <p class="text-muted">Create your first request to get started</p>
+                </div>
+            }
+            else if (FilteredItems?.Count() == 0 && !string.IsNullOrEmpty(searchValue))
+            {
+                <div class="sysconfig-empty">
+                    <i class="bi bi-search"></i>
+                    <h3>No job orders found</h3>
+                    <p>No job orders match your search "<strong>@searchValue</strong>"</p>
+                    <button class="btn btn--ghost" @onclick="ClearSearch">
+                        <i class="bi bi-x-lg"></i> Clear Search
+                    </button>
+                </div>
+            }
+            else if (FilteredItems?.Count() == 0)
+            {
+                <div class="sysconfig-empty">
+                    <i class="bi bi-search"></i>
+                    <h3>No matching job orders</h3>
+                    <p>No job orders match the selected filters</p>
+                    <button class="btn btn--ghost" @onclick="ClearAllFilters">
+                        <i class="bi bi-x-lg"></i> Clear All Filters
+                    </button>
                 </div>
             }
             else
@@ -132,8 +153,8 @@
                                     OnRowClick="@OnViewDetails"
                                     GenerateHeader="GenerateHeaderOption.Sticky"
                                     RowSize="DataGridRowSize.Medium"
-                                    Items="Requests">
-                        <PropertyColumn Title="ID" Property="@(c => c.Id)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
+                                    Items="FilteredItems">
+                        <PropertyColumn Title="ID" Property="@(c => c.RequestNumber)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
                         <PropertyColumn Title="Requested By" Property="@(c => c.Name)" Sortable="true" />
                         <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
                         <PropertyColumn Title="Division/Department" Property="@(c => c.Division_Department)" />
@@ -166,5 +187,4 @@
             }
         </div>
     </div>
-
 </div>

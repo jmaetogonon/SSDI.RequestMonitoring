@@ -56,12 +56,30 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpsertDepartmentsAsync(System.Collections.Generic.IEnumerable<DepartmentDto> body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpsertDepartmentsAsync(System.Collections.Generic.IEnumerable<DepartmentDto> body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DivisionDto>> GetAllDivisionsAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DivisionDto>> GetAllDivisionsAsync(System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpsertDivisionsAsync(System.Collections.Generic.IEnumerable<DivisionDto> body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UpsertDivisionsAsync(System.Collections.Generic.IEnumerable<DivisionDto> body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -533,6 +551,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<SystemConfigDto> GetSystemConfigAsync();
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<SystemConfigDto> GetSystemConfigAsync(System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<SystemRoleFromApiDto>> GetAllSystemRolesFromApiAsync();
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -836,6 +863,82 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task UpsertDepartmentsAsync(System.Collections.Generic.IEnumerable<DepartmentDto> body)
+        {
+            return UpsertDepartmentsAsync(body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task UpsertDepartmentsAsync(System.Collections.Generic.IEnumerable<DepartmentDto> body, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/Department/UpsertDepartments"
+                    urlBuilder_.Append("api/Department/UpsertDepartments");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<DivisionDto>> GetAllDivisionsAsync()
         {
             return GetAllDivisionsAsync(System.Threading.CancellationToken.None);
@@ -891,6 +994,82 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task UpsertDivisionsAsync(System.Collections.Generic.IEnumerable<DivisionDto> body)
+        {
+            return UpsertDivisionsAsync(body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task UpsertDivisionsAsync(System.Collections.Generic.IEnumerable<DivisionDto> body, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/Division/UpsertDivisions"
+                    urlBuilder_.Append("api/Division/UpsertDivisions");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            return;
                         }
                         else
                         {
@@ -5644,6 +5823,84 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<SystemConfigDto> GetSystemConfigAsync()
+        {
+            return GetSystemConfigAsync(System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<SystemConfigDto> GetSystemConfigAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/SystemConfig/GetSystemConfig"
+                    urlBuilder_.Append("api/SystemConfig/GetSystemConfig");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<SystemConfigDto>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<SystemRoleFromApiDto>> GetAllSystemRolesFromApiAsync()
         {
             return GetAllSystemRolesFromApiAsync(System.Threading.CancellationToken.None);
@@ -6365,6 +6622,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("divisionId")]
+        public int DivisionId { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("departmentId")]
         public int DepartmentId { get; set; }
 
@@ -6484,6 +6744,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("divisionId")]
+        public int DivisionId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("departmentId")]
         public int DepartmentId { get; set; }
@@ -6923,6 +7186,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -6980,6 +7246,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7036,6 +7305,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -7121,6 +7393,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7190,6 +7465,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7246,6 +7524,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -7394,8 +7675,17 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
         public System.DateTimeOffset? DateModified { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("division")]
+        public Division Division { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("divisionId")]
+        public int DivisionId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("department")]
         public Department Department { get; set; }
@@ -7754,6 +8044,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7811,6 +8104,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7867,6 +8163,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -7936,6 +8235,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -8069,6 +8371,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -8152,6 +8457,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -8315,8 +8623,17 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
         public System.DateTimeOffset? DateModified { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
+        public string RequestNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("division")]
+        public Division Division { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("divisionId")]
+        public int DivisionId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("department")]
         public Department Department { get; set; }
@@ -8722,6 +9039,18 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("fullName")]
         public string FullName { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class SystemConfigDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("divisionCount")]
+        public int DivisionCount { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("departmentCount")]
+        public int DepartmentCount { get; set; }
 
     }
 

@@ -8,8 +8,6 @@
 @using SSDI.RequestMonitoring.UI.Services.Adapters.Requests
 @using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip
 @inject IPurchaseRequestSvc purchaseRequestSvc
-@inject NavigationManager navigationManager
-@inject IJSRuntime jsRuntime
 @inject PRAttachSvcAdapter prAttachAdapter
 @inject PRRequisitionSvcAdapter prRequisitionSvcAdapter
 @inject IDivisionSvc divisionSvc
@@ -37,7 +35,7 @@
             <!-- Header Section -->
             <div class="details-page__header">
                 <div class="details-page__title-section">
-                    <h1 class="details-page__title">Purchase Request #@Request?.Id</h1>
+                    <h1 class="details-page__title">Purchase Request #@Request?.RequestNumber</h1>
                 </div>
             </div>
 

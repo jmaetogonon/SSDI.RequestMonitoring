@@ -15,7 +15,7 @@
 .dashboard__welcome h1 {
     margin: 0;
     color: var(--color-darkmidnightblue);
-    font-size: 1.75rem;
+    font-size: 1.70rem;
     font-weight: 700;
     line-height: 1.2;
 }
@@ -325,9 +325,10 @@
     background: #e5e7eb;
     color: #6b7280;
     border-radius: 12px;
-    padding: 0.125rem 0.5rem;
+    padding: 0.4rem 0.5rem;
     font-size: 0.75rem;
     font-weight: 600;
+    line-height: normal;
 }
 
 .dashboard__tab--active .tab-badge {
@@ -396,7 +397,7 @@
         margin: 0;
         font-size: 1.1rem;
         color: #374151;
-        font-weight: 600;
+        font-weight: 500;
     }
 
 /* Empty States */

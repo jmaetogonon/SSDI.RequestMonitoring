@@ -62,12 +62,17 @@ builder.Services.AddScoped<IJORequisitionSvc, JORequisitionSvc>();
 builder.Services.AddScoped<JOAttachSvcAdapter>();
 builder.Services.AddScoped<JORequisitionSvcAdapter>();
 
-
+builder.Services.AddScoped<ISystemConfigSvc, SystemConfigSvc>();
 builder.Services.AddScoped<IDivisionSvc, DivisionSvc>();
 builder.Services.AddScoped<IDepartmentSvc, DepartmentSvc>();
 
 builder.Services.AddScoped<IUserSvc, UserSvc>();
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+//builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
+//builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.None);
+//builder.Logging.AddFilter("System.Net.Http", LogLevel.None);
 
 await builder.Build().RunAsync();

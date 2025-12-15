@@ -1,4 +1,4 @@
-﻿<nav class="breadcrumb-nav">
+﻿<nav class="breadcrumb-nav @(IsNoPadding ? "nopadding" : "") ">
     <ol class="breadcrumb-list">
         @ChildContent
     </ol>
@@ -6,4 +6,5 @@
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool IsNoPadding { get; set; } = false;
 }

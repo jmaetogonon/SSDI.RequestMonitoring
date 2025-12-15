@@ -75,7 +75,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         }
 
         // Clean up global reference
-        await JSRuntime.InvokeVoidAsync("eval",
+        await jsRuntime.InvokeVoidAsync("eval",
             "if (window.__dashboardDotNetHelper) { window.__dashboardDotNetHelper = null; }");
 
         dotNetRef?.Dispose();
@@ -251,6 +251,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
                     Status = r.Status,
                     Date = r.DateModified ?? DateTime.Now,
                     Priority = r.Priority,
+                    ReportType = r.ReportType,
                 })
                 .Concat(jobOrderTeamRequests
                     .Select(r => new TeamRequestItem
@@ -262,6 +263,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
                         Status = r.Status,
                         Date = r.DateModified ?? DateTime.Now,
                         Priority = r.Priority,
+                        ReportType = r.ReportType,
                     }))
                 .OrderByDescending(r => r.Date)
                 .Take(10)
@@ -347,7 +349,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         try
         {
             // Add data-carousel attribute to the carousel container
-            await JSRuntime.InvokeVoidAsync("eval",
+            await jsRuntime.InvokeVoidAsync("eval",
                 @"
                 (function() {
                     const container = document.querySelector('.metrics-carousel');
@@ -446,7 +448,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         try
         {
             // Check if mobile view using a simpler approach
-            var isMobile = await JSRuntime.InvokeAsync<bool>("eval",
+            var isMobile = await jsRuntime.InvokeAsync<bool>("eval",
                 "window.innerWidth <= 768");
 
             if (isMobile)

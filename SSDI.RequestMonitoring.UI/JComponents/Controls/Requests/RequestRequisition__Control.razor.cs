@@ -23,7 +23,7 @@ public partial class RequestRequisition__Control : ComponentBase
     private ISlipVM? EditModel = default!;
     private ISlipVM? selectedSlip = null;
     private string? currentPdfBase64 = null;
-    private HashSet<int> expandedSlips = new();
+    private HashSet<int> expandedSlips = [];
     private string activeAttachmentTab = "requisition";
 
     private Dictionary<int, bool> viewLoading = [];
@@ -220,7 +220,7 @@ public partial class RequestRequisition__Control : ComponentBase
             // Generate and download PDF
             var pdfBytes = await SlipSvc.GenerateRequisitionPdf(slip.Id);
             var pdfBase64 = Convert.ToBase64String(pdfBytes);
-            await JS.InvokeVoidAsync("downloadBase64File", "application/pdf", pdfBase64, $"{Request.Name}_RequisitionSlip_{slip.Id}.pdf");
+            await jsRuntime.InvokeVoidAsync("downloadBase64File", "application/pdf", pdfBase64, $"{Request.Name}_RequisitionSlip_{slip.Id}.pdf");
         }
         catch (Exception ex)
         {
@@ -248,7 +248,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
-                await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+                await jsRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
             //foreach (var attachment in Request.SlipsBase)
             //{
@@ -443,7 +443,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
     private string FormatFileSize(long bytes)
     {
-        string[] sizes = { "B", "KB", "MB", "GB" };
+        string[] sizes = ["B", "KB", "MB", "GB"];
         int order = 0;
         double len = bytes;
         while (len >= 1024 && order < sizes.Length - 1)
@@ -454,7 +454,7 @@ public partial class RequestRequisition__Control : ComponentBase
         return $"{len:0.##} {sizes[order]}";
     }
 
-    private async Task ViewAttachment(IAttachmentVM attachment, MouseEventArgs? e = null)
+    private async Task ViewAttachment(IAttachmentVM attachment)
     {
         selectedAttachment = attachment;
         isLoadingPreview = true;
@@ -488,7 +488,7 @@ public partial class RequestRequisition__Control : ComponentBase
         }
     }
 
-    private async Task DownloadAttachment(IAttachmentVM attachment, MouseEventArgs? e = null)
+    private async Task DownloadAttachment(IAttachmentVM attachment)
     {
         if (downloadingAttachments.Contains(attachment.Id.ToString()))
             return;
@@ -503,7 +503,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
-                await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+                await jsRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
         }
         catch (Exception ex)
@@ -526,7 +526,7 @@ public partial class RequestRequisition__Control : ComponentBase
                 return string.Empty;
 
             var base64 = Convert.ToBase64String(bytes);
-            var blobUrl = await JS.InvokeAsync<string>("createBlobUrl", base64, "application/pdf");
+            var blobUrl = await jsRuntime.InvokeAsync<string>("createBlobUrl", base64, "application/pdf");
 
             if (!string.IsNullOrEmpty(blobUrl))
             {
@@ -578,7 +578,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
     private bool IsPdf(string fileName)
     {
-        return Path.GetExtension(fileName).ToLower() == ".pdf";
+        return Path.GetExtension(fileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
     }
 
     private string GetSlipIcon(RequisitionSlip_For slipFor)
@@ -631,7 +631,7 @@ public partial class RequestRequisition__Control : ComponentBase
             {
                 try
                 {
-                    await JS.InvokeVoidAsync("revokeBlobUrl", blobUrl);
+                    await jsRuntime.InvokeVoidAsync("revokeBlobUrl", blobUrl);
                 }
                 catch (Exception ex)
                 {
@@ -653,7 +653,7 @@ public partial class RequestRequisition__Control : ComponentBase
             {
                 try
                 {
-                    await JS.InvokeVoidAsync("revokeBlobUrl", blobUrl);
+                    await jsRuntime.InvokeVoidAsync("revokeBlobUrl", blobUrl);
                 }
                 catch (Exception ex)
                 {

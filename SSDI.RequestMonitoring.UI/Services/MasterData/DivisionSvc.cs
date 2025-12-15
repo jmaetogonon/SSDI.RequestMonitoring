@@ -24,4 +24,21 @@ public class DivisionSvc : BaseHttpService, IDivisionSvc
             return _mapper.Map<List<DivisionVM>>(requests);
         });
     }
+
+    public async Task<Response<Guid>> BulkUpsertDivisions(List<DivisionVM> divisionList)
+    {
+        try
+        {
+            var comm = _mapper.Map<List<DivisionDto>>(divisionList);
+            await _client.UpsertDivisionsAsync(comm);
+            return new Response<Guid>()
+            {
+                Success = true,
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
+    }
 }

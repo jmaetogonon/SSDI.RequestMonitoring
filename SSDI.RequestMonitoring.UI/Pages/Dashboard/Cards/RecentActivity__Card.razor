@@ -1,7 +1,6 @@
 ﻿@using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Contracts.Requests
 @using SSDI.RequestMonitoring.UI.Pages.Dashboard.Dto
-@inject NavigationManager Nav
 
 <div class="dashboard__card">
     <div class="dashboard__card-header">
@@ -110,6 +109,6 @@
         var route = requestType == "purchase"
             ? $"/requests/purchase-requests/{id}"
             : $"/requests/job-orders/{id}";
-        Nav.NavigateTo(route);
+        navigationManager.NavigateTo(route);
     }
 }

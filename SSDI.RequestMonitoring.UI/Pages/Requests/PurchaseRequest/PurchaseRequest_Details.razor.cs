@@ -31,10 +31,11 @@ public partial class PurchaseRequest_Details : ComponentBase
     private string ActiveTab = "details";
 
     protected override async Task OnInitializedAsync()
-    { 
+    {
         divisions = await divisionSvc.GetAllDivisions();
         departments = await departmentSvc.GetAllDepartments();
-     }
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         await LoadRequestDetails();
@@ -71,7 +72,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task SubmitRequestByDept()
     {
-        var result = await confirmModal!.ShowSubmitAsync(Request!.Id);
+        var result = await confirmModal!.ShowSubmitAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DepartmentHead, ApprovalAction.Approve, "submitted");
@@ -118,7 +119,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task RejectEndorseRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.Id);
+        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DivisionHead, ApprovalAction.Reject, "rejected");
@@ -143,7 +144,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task RejectVerifyByAdminRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.Id);
+        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.Admin, ApprovalAction.Reject, "rejected");
@@ -168,7 +169,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task RejectByCeoRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.Id);
+        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.CeoOrAvp, ApprovalAction.Reject, "rejected");

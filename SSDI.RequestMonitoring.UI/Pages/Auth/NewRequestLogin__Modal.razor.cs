@@ -28,19 +28,19 @@ public partial class NewRequestLogin__Modal : ComponentBase
 
     private async Task HandleSave()
     {
-        if (RequestModel.DepartmentId is 0)
+        if (RequestModel.DepartmentId == 0)
         {
             IsShowAlert = true;
             AlertMessage = "Please select a department.";
             return;
         }
-        if (RequestModel.ReportToDeptSupId is 0)
+        if (RequestModel.ReportToDeptSupId == null || RequestModel.ReportToDeptSupId == 0)
         {
             IsShowAlert = true;
             AlertMessage = "Please select a department supervisor.";
             return;
         }
-        if (RequestModel.ReportToDivSupId is 0)
+        if (RequestModel.ReportToDivSupId == null || RequestModel.ReportToDivSupId == 0)
         {
             IsShowAlert = true;
             AlertMessage = "Please select a division supervisor.";

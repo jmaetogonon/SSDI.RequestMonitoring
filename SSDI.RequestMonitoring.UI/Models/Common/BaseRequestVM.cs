@@ -3,6 +3,7 @@
 public abstract class BaseRequestVM : IRequestDetailVM
 {
     public int Id { get; set; }
+    public string RequestNumber { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
 
     public int DivisionId { get; set; }

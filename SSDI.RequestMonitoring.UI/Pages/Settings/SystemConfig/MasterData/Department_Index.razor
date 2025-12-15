@@ -1,0 +1,184 @@
+﻿@page "/system-configuration/departments"
+@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
+@using SSDI.RequestMonitoring.UI.JComponents.Filters
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.MasterData
+@attribute [Authorize(Roles = TokenCons.Role__Admin)]
+@inject IDivisionSvc divisionSvc
+@inject IDepartmentSvc departmentSvc
+
+<PageTitle>Departments</PageTitle>
+
+<div class="main--content">
+    <BreadcrumbNav IsNoPadding="true">
+        <BreadcrumbItem Label="System Configuration" Href="/system-configuration" />
+        <BreadcrumbItem Label="Departments" IsCurrent="true" />
+    </BreadcrumbNav>
+
+    <FluentMessageBarProvider Section="DEPARTMENTSC" ClearAfterNavigation=true MaxMessageCount="1" />
+
+    <div class="sysconfig-page__header">
+        <div class="sysconfig-page__title-section">
+            <p class="sysconfig-page__header-title">Departments</p>
+            <p class="sysconfig-page__header-subtitle">Manage organizational departments</p>
+        </div>
+
+        <div class="sysconfig-page__header-cta">
+            <button class="btn btn--secondary" @onclick="OnCancel">
+                <i class="bi bi-x-lg"></i> Cancel
+            </button>
+            <button class="btn btn--primary" @onclick="OnSave">
+                <i class="bi bi-check-lg"></i> Save Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="sysconfig-filter-container">
+        <FluentSearch @bind-Value="@searchValue"
+                      @bind-Value:after="HandleSearch"
+                      Immediate="true"
+                      Placeholder="Search"
+                      Class="page__filters-search" />
+
+        <Division__Filter @ref="divisionFilter"
+                          Divisions="@Divisions"
+                          SelectedDivisionsChanged="OnDivisionFilterChanged" />
+
+        <Clear__Filters OnClear="@ClearAllFilters" />
+    </div>
+
+    <div class="sysconfig-page__main__section">
+        <div class="sysconfig__table-container">
+            @if (AllItems == null || Divisions == null)
+            {
+                <div class="sysconfig-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading departments...</p>
+                </div>
+            }
+            else if (AllItems.Count == 0)
+            {
+                <div class="sysconfig-empty">
+                    <i class="bi bi-building"></i>
+                    <h3>No Departments Found</h3>
+                    <p>Start by adding your first department</p>
+                    <button class="btn btn--primary" @onclick="OnAdd">
+                        <i class="bi bi-plus-lg"></i> Add First Department
+                    </button>
+                </div>
+            }
+            else if (FilteredItems.Count == 0)
+            {
+                <div class="sysconfig-empty">
+                    <i class="bi bi-search"></i>
+                    <h3>No Results Found</h3>
+                    <p>No departments match your search "<strong>@searchValue</strong>"</p>
+                    <button class="btn btn--ghost" @onclick="ClearSearch">
+                        <i class="bi bi-x-lg"></i> Clear Search
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="sysconfig-table">
+                    <!-- Table Header -->
+                    <div class="sysconfig-table-header">
+                        <div class="sysconfig-table-row header-row">
+                            <div class="sysconfig-table-cell header-cell" style="flex: 0 0 60px;">#</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 1;">Department Name</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 1;">Division</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 0 0 100px;">Actions</div>
+                        </div>
+                    </div>
+
+                    <!-- Table Body -->
+                    <div class="sysconfig-table-body" id="departmentTableBody">
+                        @{
+                            var displayIndex = 1;
+                        }
+                        @foreach (var department in FilteredItems)
+                        {
+                            var isNew = department.Id == 0;
+                            var divisionName = Divisions.FirstOrDefault(d => d.Id == department.DivisionId)?.Name ?? "Not assigned";
+                            <div class="sysconfig-table-row data-row @(isNew ? "new-item" : "")" key="@department.Id">
+                                <div class="sysconfig-table-cell" style="flex: 0 0 60px;" data-label="#">
+                                    <span class="row-number">@(displayIndex++)</span>
+                                </div>
+                                <div class="sysconfig-table-cell" style="flex: 1;" data-label="Department Name">
+                                    <div class="input-wrapper">
+                                        <input type="text"
+                                               class="table-text-input"
+                                               @bind="department.Name"
+                                               @bind:event="oninput"
+                                               placeholder="Enter department name"
+                                               @onkeydown="@(e => OnInputKeyDown(e, department))" />
+                                        @if (!string.IsNullOrEmpty(department.Name) && department.Name.Length > 0)
+                                        {
+                                            <span class="input-counter">@department.Name.Length/100</span>
+                                        }
+                                    </div>
+                                    @if (string.IsNullOrEmpty(department.Name) && showValidations)
+                                    {
+                                        <span class="validation-error">Department name is required</span>
+                                    }
+                                </div>
+                                <div class="sysconfig-table-cell" style="flex: 1;" data-label="Division">
+                                    <div class="select-wrapper">
+                                        <select class="table-select-input"
+                                                @bind="department.DivisionId">
+                                            <option value="0">-- Select Division --</option>
+                                            @foreach (var division in Divisions)
+                                            {
+                                                <option value="@division.Id">@division.Name</option>
+                                            }
+                                        </select>
+                                        <i class="bi bi-chevron-down table-select-arrow"></i>
+                                    </div>
+                                    @if (department.DivisionId == 0 && showValidations)
+                                    {
+                                        <span class="validation-error">Division is required</span>
+                                    }
+                                </div>
+                                <div class="sysconfig-table-cell actions-cell" style="flex: 0 0 100px;" data-label="Actions">
+                                    @if (department.Id > 0)
+                                    {
+                                        <button class="btn-icon danger" @onclick="() => OnDelete(department)"
+                                                title="Delete department">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-icon remove" @onclick="() => OnRemoveNew(department)"
+                                                title="Remove new entry">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Add New Button -->
+                <div class="sysconfig-table-footer">
+                    <button class="btn btn--ghost" @onclick="OnAdd">
+                        <i class="bi bi-plus-lg"></i> Add New Department
+                    </button>
+
+                    @if (AllItems.Any(d => d.Id == 0))
+                    {
+                        <div class="new-items-count" @onclick="ScrollToNewItems" title="Click to scroll to new items">
+                            <i class="bi bi-arrow-down-circle"></i>
+                            <span>@AllItems.Count(d => d.Id == 0) new department(s) pending save</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<Confirmation__Modal @ref="confirmModal" />

@@ -8,8 +8,6 @@
 @using SSDI.RequestMonitoring.UI.Services.Adapters.Requests
 @using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip
 @inject IJobOrderSvc jobOrderSvc
-@inject NavigationManager navigationManager
-@inject IJSRuntime jsRuntime
 @inject JOAttachSvcAdapter joAttachAdapter
 @inject JORequisitionSvcAdapter joRequisitionSvcAdapter
 @inject IDivisionSvc divisionSvc
@@ -37,7 +35,7 @@
             <!-- Header Section -->
             <div class="details-page__header">
                 <div class="details-page__title-section">
-                    <h1 class="details-page__title">Job Order #@Request?.Id</h1>
+                    <h1 class="details-page__title">Job Order #@Request?.RequestNumber</h1>
                 </div>
             </div>
 

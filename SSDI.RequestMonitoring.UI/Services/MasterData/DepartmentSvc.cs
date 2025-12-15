@@ -24,4 +24,21 @@ public class DepartmentSvc : BaseHttpService, IDepartmentSvc
             return _mapper.Map<List<DepartmentVM>>(requests);
         });
     }
+
+    public async Task<Response<Guid>> BulkUpsertDepartments(List<DepartmentVM> departmentList)
+    {
+        try
+        {
+            var comm = _mapper.Map<List<DepartmentDto>>(departmentList);
+            await _client.UpsertDepartmentsAsync(comm);
+            return new Response<Guid>()
+            {
+                Success = true,
+            };
+        }
+        catch (ApiException ex)
+        {
+            return ConvertApiExceptions<Guid>(ex);
+        }
+    }
 }

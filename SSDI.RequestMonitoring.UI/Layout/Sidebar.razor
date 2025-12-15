@@ -1,6 +1,4 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
-@inject IJSRuntime JS
-@inject NavigationManager NavigationManager
 
 <div class="sidebar">
     <button class="sidebar__toggle-btn" @onclick="ToggleSidebar">
@@ -69,7 +67,7 @@
 
     private async Task ToggleSidebarIfMobile()
     {
-        var isMobile = await JS.InvokeAsync<int>("eval", "window.innerWidth") <= 600;
+        var isMobile = await jsRuntime.InvokeAsync<int>("eval", "window.innerWidth") <= 600;
 
         if (isMobile)
         {
@@ -83,7 +81,7 @@
         if (firstRender && !initialized)
         {
             initialized = true;
-            var width = await JS.InvokeAsync<int>("eval", "window.innerWidth");
+            var width = await jsRuntime.InvokeAsync<int>("eval", "window.innerWidth");
             isSidebarOpen = width > 600;
             StateHasChanged();
         }
@@ -91,7 +89,7 @@
 
     private string GetNavLinkClass(string path)
     {
-        return NavigationManager.Uri.EndsWith(path) ? "active" : "";
+        return navigationManager.Uri.EndsWith(path) ? "active" : "";
 
     }
 }

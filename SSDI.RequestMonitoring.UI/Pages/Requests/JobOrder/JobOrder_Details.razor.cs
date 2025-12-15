@@ -71,7 +71,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task SubmitRequestByDept()
     {
-        var result = await confirmModal!.ShowSubmitAsync(Request!.Id);
+        var result = await confirmModal!.ShowSubmitJobOrderAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DepartmentHead, ApprovalAction.Approve, "submitted");
@@ -81,8 +81,8 @@ public partial class JobOrder_Details : ComponentBase
     {
         var options = new ConfirmationModalOptions
         {
-            Message = "Are you sure you want to cancel this purchase request? This action will pernamently remove the request.",
-            Title = "Cancel Purchase Request",
+            Message = "Are you sure you want to cancel this job order? This action will pernamently remove the request.",
+            Title = "Cancel Job Order",
             Variant = ConfirmationModalVariant.warning,
             ConfirmText = "Yes, Cancel It",
             CancelText = "No, Keep It",
@@ -103,8 +103,8 @@ public partial class JobOrder_Details : ComponentBase
     {
         var options = new ConfirmationModalOptions
         {
-            Message = "Are you sure you want to endorse this purchase request? Once endorsed, it will be forwarded for the next level of approval.",
-            Title = "Endorse Purchase Request",
+            Message = "Are you sure you want to endorse this job order? Once endorsed, it will be forwarded for the next level of approval.",
+            Title = "Endorse Job Order",
             Variant = ConfirmationModalVariant.confirmation,
             ConfirmText = "Yes, Endorse",
             CancelText = "No, Cancel",
@@ -118,7 +118,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task RejectEndorseRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.Id);
+        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DivisionHead, ApprovalAction.Reject, "rejected");
@@ -128,8 +128,8 @@ public partial class JobOrder_Details : ComponentBase
     {
         var options = new ConfirmationModalOptions
         {
-            Message = "Are you sure you want to verify this purchase request? Once verified, it will be forwarded for the next level of approval.",
-            Title = "Verify Purchase Request",
+            Message = "Are you sure you want to verify this job order? Once verified, it will be forwarded for the next level of approval.",
+            Title = "Verify Job Order",
             Variant = ConfirmationModalVariant.confirmation,
             ConfirmText = "Yes, Verify",
             CancelText = "No, Cancel",
@@ -143,7 +143,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task RejectVerifyByAdminRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.Id);
+        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.Admin, ApprovalAction.Reject, "rejected");
@@ -153,8 +153,8 @@ public partial class JobOrder_Details : ComponentBase
     {
         var options = new ConfirmationModalOptions
         {
-            Message = "Are you sure you want to approve this purchase request?",
-            Title = "Approve Purchase Request",
+            Message = "Are you sure you want to approve this job order?",
+            Title = "Approve Job Order",
             Variant = ConfirmationModalVariant.confirmation,
             ConfirmText = "Yes, Approve",
             CancelText = "No, Cancel",
@@ -168,7 +168,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task RejectByCeoRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.Id);
+        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.CeoOrAvp, ApprovalAction.Reject, "rejected");
@@ -206,7 +206,7 @@ public partial class JobOrder_Details : ComponentBase
     {
         var options = new ConfirmationModalOptions
         {
-            Message = "Are you sure you want to request closure of this purchase request? This will ask the requester to confirm within 3 days.",
+            Message = "Are you sure you want to request closure of this job order? This will ask the requester to confirm within 3 days.",
             Title = "Request Close",
             Variant = ConfirmationModalVariant.confirmation,
             ConfirmText = "Yes, Request Close",

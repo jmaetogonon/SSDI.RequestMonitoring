@@ -130,7 +130,7 @@ public partial class RequestAttachments__Control : ComponentBase
                 return string.Empty;
 
             var base64 = Convert.ToBase64String(bytes);
-            var blobUrl = await JS.InvokeAsync<string>("createBlobUrl", base64, "application/pdf");
+            var blobUrl = await jsRuntime.InvokeAsync<string>("createBlobUrl", base64, "application/pdf");
 
             if (!string.IsNullOrEmpty(blobUrl))
             {
@@ -188,7 +188,7 @@ public partial class RequestAttachments__Control : ComponentBase
             {
                 try
                 {
-                    await JS.InvokeVoidAsync("revokeBlobUrl", blobUrl);
+                    await jsRuntime.InvokeVoidAsync("revokeBlobUrl", blobUrl);
                 }
                 catch (Exception ex)
                 {
@@ -202,7 +202,7 @@ public partial class RequestAttachments__Control : ComponentBase
         await Task.Delay(100); // Small delay to ensure clean state
     }
 
-    private async Task DownloadAttachment(IAttachmentVM attachment, MouseEventArgs? e = null)
+    private async Task DownloadAttachment(IAttachmentVM attachment)
     {
         if (downloadingAttachments.Contains(attachment.Id.ToString()))
             return;
@@ -217,7 +217,7 @@ public partial class RequestAttachments__Control : ComponentBase
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
-                await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+                await jsRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
         }
         catch (Exception ex)
@@ -231,7 +231,7 @@ public partial class RequestAttachments__Control : ComponentBase
         }
     }
 
-    private async Task DeleteAttachment(IAttachmentVM attachment, MouseEventArgs e)
+    private async Task DeleteAttachment(IAttachmentVM attachment)
     {
         var options = new ConfirmationModalOptions
         {
@@ -266,7 +266,7 @@ public partial class RequestAttachments__Control : ComponentBase
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
-                await JS.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+                await jsRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
         }
         catch (Exception ex)
@@ -298,7 +298,7 @@ public partial class RequestAttachments__Control : ComponentBase
 
     private string FormatFileSize(long bytes)
     {
-        string[] sizes = { "B", "KB", "MB", "GB" };
+        string[] sizes = ["B", "KB", "MB", "GB"];
         int order = 0;
         double len = bytes;
         while (len >= 1024 && order < sizes.Length - 1)
@@ -317,7 +317,7 @@ public partial class RequestAttachments__Control : ComponentBase
 
     private bool IsPdf(string fileName)
     {
-        return Path.GetExtension(fileName).ToLower() == ".pdf";
+        return Path.GetExtension(fileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
     }
 
     public async ValueTask DisposeAsync()
@@ -328,7 +328,7 @@ public partial class RequestAttachments__Control : ComponentBase
             {
                 try
                 {
-                    await JS.InvokeVoidAsync("revokeBlobUrl", blobUrl);
+                    await jsRuntime.InvokeVoidAsync("revokeBlobUrl", blobUrl);
                 }
                 catch (Exception ex)
                 {

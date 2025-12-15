@@ -44,7 +44,7 @@
                 {
                     <div class="confirmation-modal__remarks">
                         <label for="remarks-input" class="confirmation-modal__remarks-label">
-                            Remarks @(RemarksRequired ? "*" : "")
+                            @RemarksLabel@(RemarksRequired ? "*" : "")
                         </label>
                         <textarea @bind="Remarks"
                                   id="remarks-input"
