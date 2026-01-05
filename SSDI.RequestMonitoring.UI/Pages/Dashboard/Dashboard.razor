@@ -88,70 +88,19 @@
                                       Icon="bi bi-inbox"
                                       OnClick="@(() => ViewAllRequests())" />
 
-                    @if (utils.IsUser())
-                    {
-                        <StatusWBar__Card Label="My Drafts"
-                                          Count="@(purchaseRequestMetrics.DraftCount + jobOrderMetrics.DraftCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-file-earmark-text"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
+                    <StatusWBar__Card Label="Pendings"
+                                      Count="@(purchaseRequestMetrics.AllPendingCount + jobOrderMetrics.AllPendingCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
 
-                        <StatusWBar__Card Label="Pending For Close"
-                                          Count="@(purchaseRequestMetrics.PendingClosureCount + jobOrderMetrics.PendingClosureCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
-                    }
+                    <StatusWBar__Card Label="Rejected"
+                                      Count="@(purchaseRequestMetrics.RejectedCount + jobOrderMetrics.RejectedCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-x-circle"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
 
-                    @if (purchaseRequests.Any(e => e.ReportType == "Department"))
-                    {
-                        <StatusWBar__Card Label="For Submission"
-                                          Count="@(purchaseRequestMetrics.PendingSubmissionCount + jobOrderMetrics.PendingSubmissionCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
-
-                        <StatusWBar__Card Label="Rejected • Action Needed"
-                                          Count="@(purchaseRequestMetrics.RejectedCount + jobOrderMetrics.RejectedCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-x-circle"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
-                    }
-
-                    @if (purchaseRequests.Any(e => e.ReportType == "Division"))
-                    {
-                        <StatusWBar__Card Label="For Endorsement"
-                                          Count="@(purchaseRequestMetrics.PendingEndorsementCount + jobOrderMetrics.PendingEndorsementCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-                    }
-
-                    @if (utils.IsAdmin())
-                    {
-                        <StatusWBar__Card Label="For Approval"
-                                          Count="@(purchaseRequestMetrics.PendingAdminApprovalCount + jobOrderMetrics.PendingAdminApprovalCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
-
-                        <StatusWBar__Card Label="For Requisition"
-                                          Count="@(purchaseRequestMetrics.PendingAdminRequisitionCount + jobOrderMetrics.PendingAdminRequisitionCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-cart-check"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
-                    }
-
-                    @if (utils.IsCEO())
-                    {
-                        <StatusWBar__Card Label="For Approval"
-                                          Count="@(purchaseRequestMetrics.PendingCEOApprovalCount + jobOrderMetrics.PendingCEOApprovalCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
-                    }
-
-                    <StatusWBar__Card Label="Completed"
+                    <StatusWBar__Card Label="Closed"
                                       Count="@(purchaseRequestMetrics.CompletedCount + jobOrderMetrics.CompletedCount)"
                                       TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-check-circle"
@@ -165,72 +114,21 @@
                                       Icon="bi bi-cart"
                                       OnClick="@(() => ViewAllRequests())" />
 
-                    @if (utils.IsUser())
-                    {
-                        <StatusWBar__Card Label="My Drafts"
-                                          Count="@(purchaseRequestMetrics.DraftCount)"
-                                          TotalCount="@( purchaseRequestMetrics.TotalCount)"
-                                          Icon="bi bi-file-earmark-text"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
+                    <StatusWBar__Card Label="Pendings"
+                                      Count="@(purchaseRequestMetrics.AllPendingCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
 
-                        <StatusWBar__Card Label="Pending For Close"
-                                          Count="@(purchaseRequestMetrics.PendingClosureCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
-                    }
-
-                    @if (purchaseRequests.Any(e => e.ReportType == "Department"))
-                    {
-                        <StatusWBar__Card Label="For Submission"
-                                          Count="@(purchaseRequestMetrics.PendingSubmissionCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-
-                        <StatusWBar__Card Label="Rejected • Action Needed"
-                                          Count="@(purchaseRequestMetrics.RejectedCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                                          Icon="bi bi-x-circle"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
-                    }
-
-                    @if (purchaseRequests.Any(e => e.ReportType == "Division"))
-                    {
-                        <StatusWBar__Card Label="For Endorsement"
-                                          Count="@(purchaseRequestMetrics.PendingEndorsementCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-                    }
-
-                    @if (utils.IsAdmin())
-                    {
-                        <StatusWBar__Card Label="For Approval"
-                                          Count="@( purchaseRequestMetrics.PendingAdminApprovalCount)"
-                                          TotalCount="@( purchaseRequestMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
-
-                        <StatusWBar__Card Label="For Requisition"
-                                          Count="@(purchaseRequestMetrics.PendingAdminRequisitionCount)"
-                                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                                          Icon="bi bi-cart-check"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
-                    }
-
-                    @if (utils.IsCEO())
-                    {
-                        <StatusWBar__Card Label="For Approval"
-                                          Count="@( purchaseRequestMetrics.PendingCEOApprovalCount)"
-                                          TotalCount="@( purchaseRequestMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
-                    }
+                    <StatusWBar__Card Label="Rejected"
+                                      Count="@(purchaseRequestMetrics.RejectedCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                                      Icon="bi bi-x-circle"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
 
                     <StatusWBar__Card Label="Closed"
-                                      Count="@purchaseRequestMetrics.CompletedCount"
-                                      TotalCount="@purchaseRequestMetrics.TotalCount"
+                                      Count="@(purchaseRequestMetrics.CompletedCount)"
+                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
                                       Icon="bi bi-check-circle"
                                       OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
                 }
@@ -242,72 +140,21 @@
                                       Icon="bi bi-tools"
                                       OnClick="@(() => ViewAllRequests())" />
 
-                    @if (utils.IsUser())
-                    {
-                        <StatusWBar__Card Label="My Drafts"
-                                          Count="@(jobOrderMetrics.DraftCount)"
-                                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-file-earmark-text"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
+                    <StatusWBar__Card Label="Pendings"
+                                      Count="@(jobOrderMetrics.AllPendingCount)"
+                                      TotalCount="@(jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-clock"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
 
-                        <StatusWBar__Card Label="Pending For Close"
-                                          Count="@(jobOrderMetrics.PendingClosureCount)"
-                                          TotalCount="@(jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
-                    }
-
-                    @if (purchaseRequests.Any(e => e.ReportType == "Department"))
-                    {
-                        <StatusWBar__Card Label="For Submission"
-                                          Count="@(jobOrderMetrics.PendingSubmissionCount)"
-                                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-
-                        <StatusWBar__Card Label="Rejected • Action Needed"
-                                          Count="@(jobOrderMetrics.RejectedCount)"
-                                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-x-circle"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
-                    }
-
-                    @if (purchaseRequests.Any(e => e.ReportType == "Division"))
-                    {
-                        <StatusWBar__Card Label="For Endorsement"
-                                          Count="@(jobOrderMetrics.PendingEndorsementCount)"
-                                          TotalCount="@(jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-                    }
-
-                    @if (utils.IsAdmin())
-                    {
-                        <StatusWBar__Card Label="For Approval"
-                                          Count="@( jobOrderMetrics.PendingAdminApprovalCount)"
-                                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
-
-                        <StatusWBar__Card Label="For Requisition"
-                                          Count="@(jobOrderMetrics.PendingAdminRequisitionCount)"
-                                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-cart-check"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
-                    }
-
-                    @if (utils.IsCEO())
-                    {
-                        <StatusWBar__Card Label="For Approval"
-                                          Count="@(jobOrderMetrics.PendingCEOApprovalCount)"
-                                          TotalCount="@(jobOrderMetrics.TotalCount)"
-                                          Icon="bi bi-clock"
-                                          OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
-                    }
+                    <StatusWBar__Card Label="Rejected"
+                                      Count="@(jobOrderMetrics.RejectedCount)"
+                                      TotalCount="@(jobOrderMetrics.TotalCount)"
+                                      Icon="bi bi-x-circle"
+                                      OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
 
                     <StatusWBar__Card Label="Closed"
-                                      Count="@jobOrderMetrics.CompletedCount"
-                                      TotalCount="@jobOrderMetrics.TotalCount"
+                                      Count="@(jobOrderMetrics.CompletedCount)"
+                                      TotalCount="@(jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-check-circle"
                                       OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
                 }
@@ -385,6 +232,11 @@
                 <!-- Volume Comparison Chart -->
                 <VolumeComparison__Bar PurchaseRequests="purchaseRequests" JobOrders="jobOrders" RequestType="requestType" />
 
+                @if (utils.IsSupervisor())
+                {
+                    <ApprovedRequests__Card Items="approveReqyestItems" RequestType="requestType" />
+                }
+
                 <!-- Status Overview -->
                 <StatusDistribution__Bar PurchaseRequests="purchaseRequests" JobOrders="jobOrders" RequestType="requestType" />
             </div>
@@ -402,293 +254,106 @@
 
 @code {
     private RenderFragment RenderCarouselSlidesForAll() => @<text>
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Total Requests"
-                          Count="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-inbox"
-                          OnClick="@(() => ViewAllRequests())" />
-    </div>
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Total Requests"
+                              Count="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              Icon="bi bi-inbox"
+                              OnClick="@(() => ViewAllRequests())" />
+        </div>
 
-@if (utils.IsUser())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="My Drafts"
-                          Count="@(purchaseRequestMetrics.DraftCount + jobOrderMetrics.DraftCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-file-earmark-text"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
-    </div>
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Pendings"
+                              Count="@(purchaseRequestMetrics.AllPendingCount + jobOrderMetrics.AllPendingCount)"
+                              TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              Icon="bi bi-clock"
+                              OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
+        </div>
 
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Pending For Close"
-                          Count="@(purchaseRequestMetrics.PendingClosureCount + jobOrderMetrics.PendingClosureCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
-    </div>
-    }
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Rejected"
+                              Count="@(purchaseRequestMetrics.RejectedCount + jobOrderMetrics.RejectedCount)"
+                              TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              Icon="bi bi-x-circle"
+                              OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
+        </div>
 
-@if (purchaseRequests.Any(e => e.ReportType == "Department"))
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Submission"
-                          Count="@(purchaseRequestMetrics.PendingSubmissionCount + jobOrderMetrics.PendingSubmissionCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
-    </div>
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Closed"
+                              Count="@(purchaseRequestMetrics.CompletedCount + jobOrderMetrics.CompletedCount)"
+                              TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              Icon="bi bi-check-circle"
+                              OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
+        </div>
 
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Rejected • Action Needed"
-                          Count="@(purchaseRequestMetrics.RejectedCount + jobOrderMetrics.RejectedCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-x-circle"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
-    </div>
-    }
-
-@if (purchaseRequests.Any(e => e.ReportType == "Division"))
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Endorsement"
-                          Count="@(purchaseRequestMetrics.PendingEndorsementCount + jobOrderMetrics.PendingEndorsementCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-    </div>
-    }
-
-@if (utils.IsAdmin())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Approval"
-                          Count="@(purchaseRequestMetrics.PendingAdminApprovalCount + jobOrderMetrics.PendingAdminApprovalCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
-    </div>
-
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Requisition"
-                          Count="@(purchaseRequestMetrics.PendingAdminRequisitionCount + jobOrderMetrics.PendingAdminRequisitionCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-cart-check"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
-    </div>
-    }
-
-@if (utils.IsCEO())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Approval"
-                          Count="@(purchaseRequestMetrics.PendingCEOApprovalCount + jobOrderMetrics.PendingCEOApprovalCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
-    </div>
-    }
-
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Completed"
-                          Count="@(purchaseRequestMetrics.CompletedCount + jobOrderMetrics.CompletedCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-check-circle"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
-    </div>
-</text>;
+    </text>;
 
     private RenderFragment RenderCarouselSlidesForPurchase() => @<text>
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Total Purchase Requests"
-                          Count="@purchaseRequestMetrics.TotalCount"
-                          TotalCount="@purchaseRequestMetrics.TotalCount"
-                          Icon="bi bi-cart"
-                          OnClick="@(() => ViewAllRequests())" />
-    </div>
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Total Purchase Requests"
+                              Count="@purchaseRequestMetrics.TotalCount"
+                              TotalCount="@purchaseRequestMetrics.TotalCount"
+                              Icon="bi bi-cart"
+                              OnClick="@(() => ViewAllRequests())" />
+        </div>
 
-@if (utils.IsUser())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="My Drafts"
-                          Count="@(purchaseRequestMetrics.DraftCount)"
-                          TotalCount="@( purchaseRequestMetrics.TotalCount)"
-                          Icon="bi bi-file-earmark-text"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
-    </div>
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Pendings"
+                              Count="@(purchaseRequestMetrics.AllPendingCount)"
+                              TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                              Icon="bi bi-clock"
+                              OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
+        </div>
 
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Pending For Close"
-                          Count="@(purchaseRequestMetrics.PendingClosureCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
-    </div>
-    }
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Rejected"
+                              Count="@(purchaseRequestMetrics.RejectedCount)"
+                              TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                              Icon="bi bi-x-circle"
+                              OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
+        </div>
 
-@if (purchaseRequests.Any(e => e.ReportType == "Department"))
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Submission"
-                          Count="@(purchaseRequestMetrics.PendingSubmissionCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-    </div>
-
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Rejected • Action Needed"
-                          Count="@(purchaseRequestMetrics.RejectedCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                          Icon="bi bi-x-circle"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
-    </div>
-    }
-
-@if (purchaseRequests.Any(e => e.ReportType == "Division"))
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Endorsement"
-                          Count="@(purchaseRequestMetrics.PendingEndorsementCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-    </div>
-    }
-
-@if (utils.IsAdmin())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Approval"
-                          Count="@( purchaseRequestMetrics.PendingAdminApprovalCount)"
-                          TotalCount="@( purchaseRequestMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
-    </div>
-
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Requisition"
-                          Count="@(purchaseRequestMetrics.PendingAdminRequisitionCount)"
-                          TotalCount="@(purchaseRequestMetrics.TotalCount)"
-                          Icon="bi bi-cart-check"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
-    </div>
-    }
-
-@if (utils.IsCEO())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Approval"
-                          Count="@( purchaseRequestMetrics.PendingCEOApprovalCount)"
-                          TotalCount="@( purchaseRequestMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
-    </div>
-    }
-
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Closed"
-                          Count="@purchaseRequestMetrics.CompletedCount"
-                          TotalCount="@purchaseRequestMetrics.TotalCount"
-                          Icon="bi bi-check-circle"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
-    </div>
-</text>;
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Closed"
+                              Count="@purchaseRequestMetrics.CompletedCount"
+                              TotalCount="@purchaseRequestMetrics.TotalCount"
+                              Icon="bi bi-check-circle"
+                              OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
+        </div>
+    </text>;
 
     private RenderFragment RenderCarouselSlidesForJobOrder() => @<text>
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Total Job Orders"
-                          Count="@jobOrderMetrics.TotalCount"
-                          TotalCount="@jobOrderMetrics.TotalCount"
-                          Icon="bi bi-tools"
-                          OnClick="@(() => ViewAllRequests())" />
-    </div>
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Total Job Orders"
+                              Count="@jobOrderMetrics.TotalCount"
+                              TotalCount="@jobOrderMetrics.TotalCount"
+                              Icon="bi bi-tools"
+                              OnClick="@(() => ViewAllRequests())" />
+        </div>
 
-@if (utils.IsUser())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="My Drafts"
-                          Count="@(jobOrderMetrics.DraftCount)"
-                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-file-earmark-text"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Draft))" />
-    </div>
 
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Pending For Close"
-                          Count="@(jobOrderMetrics.PendingClosureCount)"
-                          TotalCount="@(jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
-    </div>
-    }
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Pendings"
+                              Count="@(jobOrderMetrics.AllPendingCount)"
+                              TotalCount="@(jobOrderMetrics.TotalCount)"
+                              Icon="bi bi-clock"
+                              OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
+        </div>
 
-@if (purchaseRequests.Any(e => e.ReportType == "Department"))
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Submission"
-                          Count="@(jobOrderMetrics.PendingSubmissionCount)"
-                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-    </div>
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Rejected"
+                              Count="@(jobOrderMetrics.RejectedCount)"
+                              TotalCount="@(jobOrderMetrics.TotalCount)"
+                              Icon="bi bi-x-circle"
+                              OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
+        </div>
 
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Rejected • Action Needed"
-                          Count="@(jobOrderMetrics.RejectedCount)"
-                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-x-circle"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
-    </div>
-    }
-
-@if (purchaseRequests.Any(e => e.ReportType == "Division"))
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Endorsement"
-                          Count="@(jobOrderMetrics.PendingEndorsementCount)"
-                          TotalCount="@(jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForEndorsement))" />
-    </div>
-    }
-
-@if (utils.IsAdmin())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Approval"
-                          Count="@( jobOrderMetrics.PendingAdminApprovalCount)"
-                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForAdminVerification))" />
-    </div>
-
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Requisition"
-                          Count="@(jobOrderMetrics.PendingAdminRequisitionCount)"
-                          TotalCount="@( jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-cart-check"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForRequisition))" />
-    </div>
-    }
-
-@if (utils.IsCEO())
-    {
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="For Approval"
-                          Count="@(jobOrderMetrics.PendingCEOApprovalCount)"
-                          TotalCount="@(jobOrderMetrics.TotalCount)"
-                          Icon="bi bi-clock"
-                          OnClick="@(() => FilterByStatus(RequestStatus.ForCeoApproval))" />
-    </div>
-    }
-
-    <div class="carousel-slide">
-        <StatusWBar__Card Label="Closed"
-                          Count="@jobOrderMetrics.CompletedCount"
-                          TotalCount="@jobOrderMetrics.TotalCount"
-                          Icon="bi bi-check-circle"
-                          OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
-    </div>
-</text>;
+        <div class="carousel-slide">
+            <StatusWBar__Card Label="Closed"
+                              Count="@jobOrderMetrics.CompletedCount"
+                              TotalCount="@jobOrderMetrics.TotalCount"
+                              Icon="bi bi-check-circle"
+                              OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
+        </div>
+    </text>;
 }

@@ -1,0 +1,167 @@
+﻿@using SSDI.RequestMonitoring.UI.Models.Enums
+@using SSDI.RequestMonitoring.UI.Pages.Dashboard.Dto
+
+<div class="dashboard__card">
+    <div class="dashboard__card-header">
+        <div class="card-header__title">
+            <h3>  Requests Pending After Your Approval   </h3>
+            @if (Items.Any())
+            {
+                <span class="card-count">@FilteredItems.Where(e => e.PendingSince != null).Count()</span>
+            }
+        </div>
+        <div class="approved-request-filter">
+            <button class="filter-btn @(filter == "all" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ApplyTeamRequestFilter("all"))"
+                    title="All requests">
+                All
+            </button>
+            <button class="filter-btn @(filter == "purchase" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ApplyTeamRequestFilter("purchase"))"
+                    title="Purchase requests">
+                <i class="bi bi-cart"></i> Purchases
+            </button>
+            <button class="filter-btn @(filter == "joborder" ? "filter-btn--active" : "")"
+                    @onclick="@(() => ApplyTeamRequestFilter("joborder"))"
+                    title="Job orders">
+                <i class="bi bi-tools"></i> Jobs
+            </button>
+        </div>
+    </div>
+
+    <div class="approved-requests">
+        @if (FilteredItems.Where(e => e.PendingSince != null).Any())
+        {
+            <div class="approved-requests__list">
+                @foreach (var request in FilteredItems.Where(e=>e.PendingSince != null))
+                {
+                    <div class="approved-request-item" @onclick="@(() => ViewRequestDetails(request))">
+
+                        <div class="approved-request__icon">
+                            <i class="bi @(request.RequestType == "purchase" ? "bi-cart" : "bi-tools")"></i>
+                        </div>
+
+                        <div class="approved-request__content">
+                            <div class="approved-request__header">
+                                <div class="approved-request__title">@request.Title</div>
+
+                                <div class="approved-request__right">
+                                    <span class="pending-since @GetPendingAgeClass(request.PendingSince)">
+                                        <i class="bi bi-hourglass-split"></i>
+                                        @utils.GetRelativeTime(request.PendingSince)
+                                    </span>
+
+                                </div>
+                            </div>
+
+                            <div class="approved-request__meta">
+                                <span class="approved-request__user">
+                                    <i class="bi bi-person"></i>
+                                    @request.RequestedBy
+                                </span>
+
+                                <span class="approved-request__priority @(request.Priority.ToString().ToLower())">
+                                    <i class="bi bi-clock-fill"></i>
+                                    @GetPriorityDisplay(request.Priority)
+                                </span>
+
+
+                                <span class="dashboard-status-badge" data-status="@request.Status">
+                                    @utils.GetStatusDisplay(request.Status)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-check-circle"></i>
+                <p>You're all caught up — all approved request was closed.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<ApprovedRequestItem> Items { get; set; } = new();
+    [Parameter] public RequestType RequestType { get; set; } = RequestType.All;
+
+    private string filter = "all";
+    private List<ApprovedRequestItem> FilteredItems = [];
+
+    protected override void OnParametersSet()
+    {
+        filter = RequestType switch
+        {
+            RequestType.Purchase => "purchase",
+            RequestType.JobOrder => "joborder",
+            _ => "all"
+        };
+
+        ApplyFilter(filter);
+    }
+
+    private async Task ApplyTeamRequestFilter(string filter)
+    {
+        await Task.Delay(1);
+        this.filter = filter;
+        ApplyFilter(filter);
+    }
+
+    private void ApplyFilter(string filter)
+    {
+        FilteredItems = filter switch
+        {
+            "purchase" => Items.Where(a => a.RequestType == "purchase").ToList(),
+            "joborder" => Items.Where(a => a.RequestType == "joborder").ToList(),
+            _ => Items
+        };
+    }
+
+    private void ViewRequestDetails(ApprovedRequestItem request)
+    {
+        var url = request.RequestType == "purchase"
+            ? $"/requests/purchase-requests/{request.Id}/{request.ReportType}"
+            : $"/requests/job-orders/{request.Id}/{request.ReportType}";
+        navigationManager.NavigateTo(url);
+    }
+
+    private string GetPriorityIcon(RequestPriority priority)
+    {
+        return priority switch
+        {
+            RequestPriority.Hrs24 => "bi-clock-fill",
+            RequestPriority.ThisWeek => "bi-calendar-week",
+            RequestPriority.Others => "bi-calendar",
+            _ => "bi-circle"
+        };
+    }
+
+    private string GetPriorityDisplay(RequestPriority priority)
+    {
+        return priority switch
+        {
+            RequestPriority.Hrs24 => "24H",
+            RequestPriority.ThisWeek => "This Week",
+            RequestPriority.Others => "Others",
+            _ => priority.ToString()
+        };
+    }
+
+    private string GetPendingAgeClass(DateTime? pendingSince)
+    {
+        var days = (DateTime.Now - pendingSince)?.Days;
+
+        return days switch
+        {
+            >= 3 => "danger",
+            >= 1 => "warning",
+            _ => "fresh"
+        };
+    }
+
+}

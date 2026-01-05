@@ -1,0 +1,182 @@
+﻿@using SSDI.RequestMonitoring.UI.Models.Enums
+@using SSDI.RequestMonitoring.UI.Models.Common
+
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="request-status-insight @CssClass">
+        <i class="bi @Icon"></i>
+        <span>@Message</span>
+    </div>
+}
+
+@code {
+    [Parameter] public IRequestDetailVM Request { get; set; } = default!;
+    [Parameter] public int CurrentUserId { get; set; }
+    [Parameter] public string ReportType { get; set; } = "Unknown";
+    [Parameter] public DateTime? AwaitingApprovalDate { get; set; }
+
+    private string Message = string.Empty;
+    private string CssClass = "info";
+    private string Icon = "bi-info-circle";
+
+    protected override void OnParametersSet()
+    {
+        BuildMessage();
+    }
+
+    private void BuildMessage()
+    {
+        if (Request == null) return;
+
+        // ============================
+        // CLOSED REQUEST
+        // ============================
+        if (Request.Status == RequestStatus.Closed && Request.DateCompleted.HasValue)
+        {
+            var duration = DateTime.Now - Request.DateCreated;
+
+            Message = $"This request was completed in {FormatDuration(duration)}.";
+            CssClass = "success";
+            Icon = "bi-check-circle";
+            return;
+        }
+
+        // ============================
+        // CANCELLED
+        // ============================
+        if (Request.Status == RequestStatus.Cancelled)
+        {
+            Message = "This request was cancelled.";
+            CssClass = "muted";
+            Icon = "bi-x-circle";
+            return;
+        }
+
+        // ============================
+        // PENDING APPROVAL
+        // ============================
+        var pendingSince = GetPendingSince();
+
+        if (pendingSince.HasValue)
+        {
+            var duration = DateTime.Now - pendingSince.Value;
+
+            if (utils.IsUser() || Request?.RequestedById == currentUser.UserId)
+            {
+                Message = $"In progress for {FormatDuration(duration)} since your submission.";
+            }
+            else
+            {
+                Message = $"In progress for {FormatDuration(duration)} since your approval.";
+            }
+            CssClass = GetSeverity(duration);
+            Icon = "bi-hourglass-split";
+
+            return;
+        }
+
+        // ============================
+        // AWAITING APPROVAL
+        // ============================
+        if (AwaitingApprovalDate.HasValue)
+        {
+            var duration = DateTime.Now - AwaitingApprovalDate.Value;
+
+            Message = $"{FormatDuration(duration)} pending since you were required to approve this request.";
+            CssClass = GetSeverity(duration);
+            Icon = "bi-hourglass-split";
+        }
+    }
+
+    // ============================
+    // HELPERS
+    // ============================
+
+    private static string FormatDuration(TimeSpan? span)
+    {
+        if (span!.Value.TotalSeconds < 60)
+            return $"{Math.Floor(span!.Value.TotalSeconds)} second{Plural(span!.Value.TotalSeconds)}";
+
+        if (span!.Value.TotalMinutes < 60)
+            return $"{Math.Floor(span!.Value.TotalMinutes)} minute{Plural(span!.Value.TotalMinutes)}";
+
+        if (span!.Value.TotalHours < 24)
+            return $"{Math.Floor(span!.Value.TotalHours)} hour{Plural(span!.Value.TotalHours)}";
+
+        return $"{Math.Floor(span!.Value.TotalDays)} day{Plural(span!.Value.TotalDays)}";
+    }
+
+    private static string Plural(double value)
+        => Math.Floor(value) == 1 ? "" : "s";
+
+    private static string GetSeverity(TimeSpan span)
+    {
+        if (span.TotalDays >= 7) return "danger";
+        if (span.TotalDays >= 3) return "warning";
+        return "info";
+    }
+
+    private DateTime? GetPendingSince()
+    {
+        var approvals = Request.ApprovalsBase?.ToList() ?? [];
+
+        // Requester is also approver
+        if (Request?.RequestedById == currentUser.UserId)
+            return Request.DateCreated;
+
+        return ReportType switch
+        {
+            "Department" => approvals
+                .LastOrDefault(a => a.Stage == ApprovalStage.DepartmentHead && a.Action == ApprovalAction.Approve)
+                ?.ActionDate,
+
+            "Division" => approvals
+                .LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead && a.Action == ApprovalAction.Approve)
+                ?.ActionDate,
+
+            _ when utils.IsCEO() => approvals
+                .LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp && a.Action == ApprovalAction.Approve)
+                ?.ActionDate,
+
+            _ when utils.IsAdmin() => approvals
+                .LastOrDefault(a => a.Stage == ApprovalStage.Admin && a.Action == ApprovalAction.Approve)
+                ?.ActionDate,
+
+            _ => null
+        };
+    }
+
+    // private DateTime? GetPendingSince()
+    // {
+    //     var approvals = Request?.ApprovalsBase.ToList();
+    //     if (Request?.RequestedById == currentUser.UserId)
+    //     {
+    //         return Request?.DateCreated;
+    //     }
+    //     if (ReportType == "Department")
+    //     {
+    //         var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DepartmentHead && a.Action == ApprovalAction.Approve); 
+    //         if (currentIndex != null) return currentIndex?.ActionDate;
+    //     }
+
+    //     if (ReportType == "Division")
+    //     {
+    //         var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead && a.Action == ApprovalAction.Approve); 
+    //         if (currentIndex != null) return currentIndex?.ActionDate;
+    //     }
+
+    //     if (utils.IsCEO())
+    //     {
+    //         var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp && a.Action == ApprovalAction.Approve); 
+    //         if (currentIndex != null) return currentIndex?.ActionDate;
+    //     }
+
+    //     if (utils.IsAdmin())
+    //     {
+    //         var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.Admin && a.Action == ApprovalAction.Approve);
+    //         if (currentIndex != null) return currentIndex?.ActionDate;
+    //     }
+
+    //     return null;
+    // }
+}

@@ -5,6 +5,8 @@ public interface IRequestDetailVM
     int Id { get; }
 
     string Name { get; }
+    string RequestNumber { get; }
+    string SeriesNumber { get; }
     int DivisionId { get; }
     int DepartmentId { get; }
     string Division_Department { get; }

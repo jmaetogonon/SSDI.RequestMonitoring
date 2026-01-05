@@ -8,5 +8,5 @@ public class ActivityItem
     public RequestStatus Status { get; set; }
     public RequestPriority Priority { get; set; }
     public DateTime Date { get; set; }
-
+    public DateTime? PendingSince { get; set; }
 }

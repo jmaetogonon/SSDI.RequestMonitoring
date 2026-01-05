@@ -4,9 +4,11 @@ using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.JComponents.Filters;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.DTO;
 using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
+using SSDI.RequestMonitoring.UI.Services.Requests.Purchase;
 using System.Web;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder;
@@ -16,7 +18,6 @@ public partial class JobOrder_Index : ComponentBase
     private IQueryable<Job_OrderVM>? AllItems;
     private IQueryable<Job_OrderVM>? FilteredItems;
     private List<StatusSummary> StatusSummaries = [];
-    private Job_OrderVM editModel = new();
 
     private List<DivisionVM> divisions = [];
     private List<DepartmentVM> departments = [];
@@ -64,13 +65,13 @@ public partial class JobOrder_Index : ComponentBase
                 var requests = await jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
                 AllItems = requests.AsQueryable();
             }
-            else if (utils.IsAdmin())
-            {
-                var requests = await jobOrderSvc.GetAllJobOrdersByAdmin();
-                AllItems = requests.AsQueryable();
-                OnStatusFilterChanged([RequestStatus.ForAdminVerification, RequestStatus.ForRequisition]);
-                statusFilter?.SetSelectedStatus(selectedStatuses);
-            }
+            //else if (utils.IsAdmin())
+            //{
+            //    var requests = await jobOrderSvc.GetAllJobOrdersByAdmin();
+            //    AllItems = requests.AsQueryable();
+            //    OnStatusFilterChanged([RequestStatus.ForAdminVerification, RequestStatus.ForRequisition]);
+            //    statusFilter?.SetSelectedStatus(selectedStatuses);
+            //}
             else
             {
                 var requests = await jobOrderSvc.GetAllJobOrderBySupervisor(currentUser.UserId, true, true);
@@ -88,6 +89,12 @@ public partial class JobOrder_Index : ComponentBase
                     AllItems = AllItems.Concat(ceoRequests).DistinctBy(r => r.Id).AsQueryable();
                     OnStatusFilterChanged([RequestStatus.ForEndorsement, RequestStatus.ForCeoApproval]);
                     statusFilter?.SetSelectedStatus(selectedStatuses);
+                }
+
+                if (utils.IsAdmin())
+                {
+                    var adminRequests = await jobOrderSvc.GetAllJobOrdersByAdmin();
+                    AllItems = AllItems.Concat(adminRequests).DistinctBy(r => r.Id).AsQueryable();
                 }
             }
 
@@ -287,6 +294,57 @@ public partial class JobOrder_Index : ComponentBase
     public bool CheckNewBtnPermission()
     {
         return !utils.IsAdmin() && !utils.IsCEO();
+    }
+
+    private async Task ExportToExcel()
+    {
+        if (FilteredItems == null || !FilteredItems.Any())
+            return;
+
+        var itemCount = FilteredItems.Count();
+
+        // Warn for large exports
+        if (itemCount > 1000)
+        {
+            var options = new ConfirmationModalOptions
+            {
+                Message = $"You are about to export {itemCount:n0} records. This may take a moment. Continue?",
+                Title = "Confirm Export",
+                Variant = ConfirmationModalVariant.warning,
+                ConfirmText = "Export",
+                CancelText = "Cancel",
+            };
+
+            var result = await confirmModal!.ShowAsync(options);
+            if (!result) return;
+        }
+
+        var progress = new Progress<int>(value =>
+        {
+            InvokeAsync(StateHasChanged);
+        });
+
+
+        var rows = FilteredItems.Select(r => new RequestExportRow
+        {
+            RequestNo = r.RequestNumber,
+            RequestedBy = r.Name,
+            NatureOfRequest = r.Nature_Of_Request,
+            DivisionDepartment = r.Division_Department,
+            Priority = utils.GetPriorityDisplay(r.Priority, r.OtherPriority, false),
+            Status = utils.GetStatusDisplay(r.Status),
+            DateRequested = $"{r.DateRequested:MM.dd.yy}"
+        }).ToList();
+
+        var fileBytes = await export.Export(
+            rows,
+            statusFilter: selectedStatuses.Count == 0 ? "All" : string.Join(",", selectedStatuses),
+            priorityFilter: selectedPriorities.Count == 0 ? "All" : string.Join(",", selectedPriorities),
+            type: "Job Order"
+        );
+        string fileName = $"JobOrderRequests_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        await jsRuntime.InvokeAsync<object>("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
+        toastSvc.ShowSuccess("Exported Successfully.");
     }
 
     #region Carousel

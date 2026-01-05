@@ -189,13 +189,26 @@
 
 /*#region filters */
 .page__filters {
+    position: relative;
     margin-top: 1.5rem;
     margin-bottom: 1rem;
     border-radius: 8px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
-    position: relative;
+    flex-wrap: wrap;
+}
+
+.page__filters-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.page__filters-right {
+    margin-left: auto;
 }
 
 .page__filters-search::part(root) {
@@ -284,6 +297,9 @@
         transform: translateY(1px);
     }
 
+.page__export-btn {
+    background: #dce7ff;
+}
 /* Checkbox Items */
 .page__filter-checkbox {
     --checked-bg: #e4e9ed;
@@ -1051,6 +1067,7 @@ tr[row-type='sticky-header'] > th {
     .main--content {
         padding: 1rem !important;
     }
+
     .page__table-container {
         height: max-content;
     }
@@ -1235,4 +1252,4 @@ tr[row-type='sticky-header'] > th {
     .page__table-status {
         padding: 0.1rem 0.5rem;
     }
-} 
+}

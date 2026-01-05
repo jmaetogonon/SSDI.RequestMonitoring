@@ -24,6 +24,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
 
     private List<ActivityItem> recentActivity = [];
     private List<TeamRequestItem> teamRequestsNeedingAttention = [];
+    private List<ApprovedRequestItem> approveReqyestItems = [];
 
     private int totalDraftCount = 0;
     private int totalPendingSubmissionCount = 0;
@@ -81,7 +82,6 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         dotNetRef?.Dispose();
     }
 
-    // ... rest of your existing methods remain the same
     private async Task LoadDashboardData()
     {
         try
@@ -106,6 +106,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             if (utils.IsSupervisor())
             {
                 await LoadTeamRequests();
+                await LoadApprovedRequests();
             }
         }
         catch (Exception ex)
@@ -123,10 +124,6 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             {
                 purchaseRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByUser(currentUser.UserId);
             }
-            else if (utils.IsAdmin())
-            {
-                purchaseRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByAdmin();
-            }
             else
             {
                 purchaseRequests = await purchaseRequestSvc.GetAllPurchaseReqBySupervisor(currentUser.UserId, true, true);
@@ -135,6 +132,12 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
                 {
                     var ceoRequests = await purchaseRequestSvc.GetAllPurchaseReqByCeo();
                     purchaseRequests = purchaseRequests.Concat(ceoRequests).DistinctBy(e => e.Id).ToList();
+                }
+
+                if (utils.IsAdmin())
+                {
+                    var adminRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByAdmin();
+                    purchaseRequests = purchaseRequests.Concat(adminRequests).DistinctBy(r => r.Id).ToList();
                 }
             }
 
@@ -155,10 +158,6 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             {
                 jobOrders = await jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
             }
-            else if (utils.IsAdmin())
-            {
-                jobOrders = await jobOrderSvc.GetAllJobOrdersByAdmin();
-            }
             else
             {
                 jobOrders = await jobOrderSvc.GetAllJobOrderBySupervisor(currentUser.UserId, true, true);
@@ -167,6 +166,12 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
                 {
                     var ceoRequests = await jobOrderSvc.GetAllJobOrderByCeo();
                     jobOrders = jobOrders.Concat(ceoRequests).DistinctBy(e => e.Id).ToList();
+                }
+
+                if (utils.IsAdmin())
+                {
+                    var adminRequests = await jobOrderSvc.GetAllJobOrdersByAdmin();
+                    jobOrders = jobOrders.Concat(adminRequests).DistinctBy(r => r.Id).ToList();
                 }
             }
 
@@ -192,6 +197,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         metrics.PendingAdminRequisitionCount = requests.Count(r => r.Status == RequestStatus.ForRequisition);
         metrics.PendingCEOApprovalCount = requests.Count(r => r.Status == RequestStatus.ForCeoApproval);
         metrics.PendingClosureCount = requests.Count(r => r.Status == RequestStatus.PendingRequesterClosure);
+        metrics.AllPendingCount = requests.Count(r => r.Status != RequestStatus.Closed && r.Status != RequestStatus.Cancelled);
         metrics.CompletedCount = requests.Count(r =>
             r.Status == RequestStatus.Closed);
         metrics.RejectedCount = requests.Count(r => r.Status == RequestStatus.Rejected);
@@ -221,24 +227,26 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             List<Purchase_RequestVM> purchaseTeamRequests = [];
             List<Job_OrderVM> jobOrderTeamRequests = [];
 
+            if (purchaseRequests.Any(e => e.ReportType == "Department")) purchaseTeamRequests = [.. purchaseRequests.Where(e => e.Status == RequestStatus.Draft || e.Status == RequestStatus.Rejected)];
+            if (jobOrders.Any(e => e.ReportType == "Department")) jobOrderTeamRequests = [.. jobOrders.Where(e => e.Status == RequestStatus.Draft || e.Status == RequestStatus.Rejected)];
+
+            if (purchaseRequests.Any(e => e.ReportType == "Division")) purchaseTeamRequests = [.. purchaseRequests.Where(e => e.Status == RequestStatus.ForEndorsement)];
+            if (jobOrders.Any(e => e.ReportType == "Division")) jobOrderTeamRequests = [.. jobOrders.Where(e => e.Status == RequestStatus.ForEndorsement)];
+
+            if (utils.IsCEO())
+            {
+                var ceoPRequests = purchaseTeamRequests.Concat(purchaseRequests.Where(e => e.Status == RequestStatus.ForCeoApproval)).ToList();
+                var ceoJORequests = jobOrderTeamRequests.Concat(jobOrders.Where(e => e.Status == RequestStatus.ForCeoApproval)).ToList();
+                purchaseTeamRequests = ceoPRequests;
+                jobOrderTeamRequests = ceoJORequests;
+            }
+
             if (utils.IsAdmin())
             {
-                purchaseTeamRequests = purchaseRequests.Where(e => e.Status == RequestStatus.ForAdminVerification || e.Status == RequestStatus.ForRequisition).ToList();
-                jobOrderTeamRequests = jobOrders.Where(e => e.Status == RequestStatus.ForAdminVerification || e.Status == RequestStatus.ForRequisition).ToList();
-            }
-            else
-            {
-                if (purchaseRequests.Any(e => e.ReportType == "Department")) purchaseTeamRequests = [.. purchaseRequests.Where(e => e.Status == RequestStatus.Draft || e.Status == RequestStatus.Rejected)];
-                if (jobOrders.Any(e => e.ReportType == "Department")) jobOrderTeamRequests = [.. jobOrders.Where(e => e.Status == RequestStatus.Draft || e.Status == RequestStatus.Rejected)];
-
-                if (purchaseRequests.Any(e => e.ReportType == "Division")) purchaseTeamRequests = [.. purchaseRequests.Where(e => e.Status == RequestStatus.ForEndorsement)];
-                if (jobOrders.Any(e => e.ReportType == "Division")) jobOrderTeamRequests = [.. jobOrders.Where(e => e.Status == RequestStatus.ForEndorsement)];
-
-                if (utils.IsCEO())
-                {
-                    purchaseTeamRequests = [.. purchaseRequests.Where(e => e.Status == RequestStatus.ForEndorsement || e.Status == RequestStatus.ForCeoApproval)];
-                    jobOrderTeamRequests = [.. jobOrders.Where(e => e.Status == RequestStatus.ForEndorsement || e.Status == RequestStatus.ForCeoApproval)];
-                }
+                var adminPRequests = purchaseTeamRequests.Concat(purchaseRequests.Where(e => e.Status == RequestStatus.ForAdminVerification || e.Status == RequestStatus.ForRequisition)).ToList();
+                var adminJORequests = jobOrderTeamRequests.Concat(jobOrders.Where(e => e.Status == RequestStatus.ForAdminVerification || e.Status == RequestStatus.ForRequisition)).ToList();
+                purchaseTeamRequests = adminPRequests;
+                jobOrderTeamRequests = adminJORequests;
             }
 
             var allTeamRequests = purchaseTeamRequests
@@ -278,11 +286,141 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         }
     }
 
+    private async Task LoadApprovedRequests()
+    {
+        try
+        {
+            await Task.Delay(100);
+
+            var allRequests = purchaseRequests
+                .Select(r => new ApprovedRequestItem
+                {
+                    Id = r.Id,
+                    RequestType = "purchase",
+                    Title = r.Nature_Of_Request,
+                    RequestedBy = r.Name,
+                    Status = r.Status,
+                    Date = r.DateModified ?? DateTime.Now,
+                    Priority = r.Priority,
+                    ReportType = r.ReportType,
+                    PendingSince = GetPendingSince(r.Id, "purchase")
+                })
+                .Concat(jobOrders
+                    .Select(r => new ApprovedRequestItem
+                    {
+                        Id = r.Id,
+                        RequestType = "joborder",
+                        Title = r.Nature_Of_Request,
+                        RequestedBy = r.Name,
+                        Status = r.Status,
+                        Date = r.DateModified ?? DateTime.Now,
+                        Priority = r.Priority,
+                        ReportType = r.ReportType,
+                        PendingSince = GetPendingSince(r.Id, "joboder")
+                    }))
+                .OrderByDescending(r => r.PendingSince)
+                .ToList();
+
+            approveReqyestItems = allRequests;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading approved requests: {ex.Message}");
+            approveReqyestItems = [];
+        }
+    }
+
+    private DateTime? GetPendingSince(int id, string type)
+    {
+        if (type == "purchase")
+        {
+            var request = purchaseRequests.FirstOrDefault(r => r.Id == id);
+            var approvals = request?.Approvals.ToList();
+
+            if (request?.Status == RequestStatus.Closed || request?.Status == RequestStatus.Cancelled)
+            {
+                return null;
+            }
+
+            if (request?.RequestedById == currentUser.UserId)
+            {
+                return request?.DateCreated;
+            }
+
+            if (request?.ReportType == "Department")
+            {
+                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DepartmentHead && a.Action == ApprovalAction.Approve);
+                if (currentIndex != null) return currentIndex?.ActionDate;
+            }
+
+            if (request?.ReportType == "Division")
+            {
+                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead && a.Action == ApprovalAction.Approve);
+                if (currentIndex != null) return currentIndex?.ActionDate;
+            }
+
+            if (utils.IsCEO())
+            {
+                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp && a.Action == ApprovalAction.Approve);
+                if (currentIndex != null) return currentIndex?.ActionDate;
+            }
+
+            if (utils.IsAdmin())
+            {
+                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.Admin && a.Action == ApprovalAction.Approve);
+                if (currentIndex != null) return currentIndex?.ActionDate;
+            }
+        }
+        else
+        {
+            var request = jobOrders.FirstOrDefault(r => r.Id == id);
+            var approvals = request?.Approvals.ToList();
+
+            if (request?.RequestedById == currentUser.UserId)
+            {
+                return request?.DateCreated;
+            }
+
+            if (request?.ReportType == "Department")
+            {
+                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DepartmentHead && a.Action == ApprovalAction.Approve);
+                if (currentIndex != null) return currentIndex?.ActionDate;
+            }
+
+            if (request?.ReportType == "Division")
+            {
+                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead && a.Action == ApprovalAction.Approve);
+                if (currentIndex != null) return currentIndex?.ActionDate;
+            }
+
+            if (utils.IsCEO())
+            {
+                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp && a.Action == ApprovalAction.Approve);
+                if (currentIndex != null) return currentIndex?.ActionDate;
+            }
+
+            if (utils.IsAdmin())
+            {
+                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.Admin && a.Action == ApprovalAction.Approve);
+                if (currentIndex != null) return currentIndex?.ActionDate;
+            }
+        }
+
+        return null;
+    }
+
     // Navigation Methods
     private void ViewAllRequests() => navigationManager.NavigateTo($"{GetRequestLink()}");
 
     private void FilterByStatus(RequestStatus status)
-        => navigationManager.NavigateTo($"{GetRequestLink()}?status={status}");
+    {
+        if (status == RequestStatus.PendingRequesterClosure)
+        {
+            navigationManager.NavigateTo($"{GetRequestLink()}");
+            return;
+        }
+        navigationManager.NavigateTo($"{GetRequestLink()}?status={status}");
+    }
 
     private string GetRequestLink() => requestType switch
     {

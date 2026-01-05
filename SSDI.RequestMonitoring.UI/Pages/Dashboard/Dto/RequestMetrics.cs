@@ -10,6 +10,7 @@ public class RequestMetrics
     public int PendingEndorsementCount { get; set; }
     public int PendingCEOApprovalCount { get; set; }
     public int PendingClosureCount { get; set; }
+    public int AllPendingCount { get; set; }
     public int CompletedCount { get; set; }
     public int RejectedCount { get; set; }
     public List<ActivityItem> RecentActivity { get; set; } = new();

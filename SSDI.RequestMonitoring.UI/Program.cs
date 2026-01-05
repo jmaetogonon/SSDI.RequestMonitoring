@@ -14,6 +14,7 @@ using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase;
 using SSDI.RequestMonitoring.UI.Contracts.Users;
 using SSDI.RequestMonitoring.UI.Handlers;
+using SSDI.RequestMonitoring.UI.Helpers.Export;
 using SSDI.RequestMonitoring.UI.Helpers.States;
 using SSDI.RequestMonitoring.UI.Providers;
 using SSDI.RequestMonitoring.UI.Services;
@@ -34,8 +35,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddFluentUIComponents();
 
 builder.Services.AddTransient<JwtAuthorizationMessageHandler>();
-//builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("https://localhost:7042"))
-builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("http://192.168.1.96:4116/"))
+builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("https://localhost:7042"))
+//builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("http://192.168.1.96:4116/"))
+//builder.Services.AddHttpClient<IClient, Client>(client => client.BaseAddress = new Uri("http://sonicsales.net:4116/"))
     .AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddBlazoredLocalStorage();
@@ -49,6 +51,8 @@ builder.Services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
 builder.Services.AddScoped<IUIStateService, UIStateService>();
 builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<Utils>();
+
+builder.Services.AddTransient<ExportRequest>();
 
 builder.Services.AddScoped<IPurchaseRequestSvc, PurchaseRequestSvc>();
 builder.Services.AddScoped<IPRAttachSvc, PRAttachSvc>();

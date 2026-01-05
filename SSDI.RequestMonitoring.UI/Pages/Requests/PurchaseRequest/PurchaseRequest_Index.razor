@@ -2,6 +2,7 @@
 @using SSDI.RequestMonitoring.UI.Contracts.MasterData
 @using SSDI.RequestMonitoring.UI.Contracts.Requests
 @using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Helpers.Export
 @using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
 @using SSDI.RequestMonitoring.UI.JComponents.Filters
@@ -11,6 +12,7 @@
 @inject IPurchaseRequestSvc purchaseRequestSvc
 @inject IDivisionSvc divisionSvc
 @inject IDepartmentSvc departmentSvc
+@inject ExportRequest export
 @attribute [Authorize]
 
 <PageTitle>Purchase Requests</PageTitle>
@@ -96,15 +98,29 @@
         </div>
 
         <div class="page__filters">
-            <FluentSearch @bind-Value="@searchValue"
-                          @bind-Value:after="HandleSearch"
-                          Immediate="true"
-                          Placeholder="Search"
-                          Class="page__filters-search" />
+            <!-- LEFT FILTERS -->
+            <div class="page__filters-left">
+                <FluentSearch @bind-Value="@searchValue"
+                              @bind-Value:after="HandleSearch"
+                              Immediate="true"
+                              Placeholder="Search"
+                              Class="page__filters-search" />
 
-            <Status__Filter @ref="statusFilter" SelectedStatusesChanged="@OnStatusFilterChanged" AnchorId="purchaseRequestStatusFilter" />
-            <Priority__Filter @ref="priorityFilter" SelectedPrioritiesChanged="@OnPriorityFilterChanged" AnchorId="purchaseRequestPriorityFilter" />
-            <Clear__Filters OnClear="@ClearAllFilters" />
+                <Status__Filter @ref="statusFilter" SelectedStatusesChanged="@OnStatusFilterChanged" AnchorId="purchaseRequestStatusFilter" />
+                <Priority__Filter @ref="priorityFilter" SelectedPrioritiesChanged="@OnPriorityFilterChanged" AnchorId="purchaseRequestPriorityFilter" />
+                <Clear__Filters OnClear="@ClearAllFilters" />
+            </div>
+
+            <!-- RIGHT ACTION -->
+            <div class="page__filters-right">
+                <button class="page__filters-btn page__export-btn"
+                        disabled="@(FilteredItems == null || !FilteredItems.Any())"
+                        @onclick="ExportToExcel"
+                        title="Export to Excel">
+                    <i class="bi bi-file-earmark-excel"></i>
+                    <span>Export</span>
+                </button>
+            </div>
         </div>
 
         <div class="page__table-container @(uiStateSvc.IsStriped ? "striped-grid" : "")" tabindex="-1">
@@ -160,7 +176,8 @@
                             <i class="bi bi-eye-fill"></i>
                         </button>
                     </TemplateColumn> *@
-                        <PropertyColumn Title="ID" Property="@(c => c.RequestNumber)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
+                        <PropertyColumn Title="ID" Property="@(c => c.Id)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
+                        <PropertyColumn Title="Series" Property="@(c => c.SeriesNumber)" Sortable="true" />
                         <PropertyColumn Title="Requested By" Property="@(c => c.Name)" Sortable="true" />
                         <PropertyColumn Title="Nature of Request" Property="@(c => c.Nature_Of_Request)" />
                         <PropertyColumn Title="Division/Department" Property="@(c => c.Division_Department)" />

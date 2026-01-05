@@ -2,7 +2,6 @@
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
-using SSDI.RequestMonitoring.UI.Services.MasterData;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
 
@@ -29,6 +28,7 @@ public partial class PurchaseRequest_Details : ComponentBase
     private bool isPdfModalVisible = false;
 
     private string ActiveTab = "details";
+    public DateTime? awaitingApprovalDate { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -322,18 +322,21 @@ public partial class PurchaseRequest_Details : ComponentBase
     private bool CheckDeptApprovalPermissions()
     {
         if (Request == null) return false;
+        awaitingApprovalDate = utils.IsUser() ? null : Request.DateCreated;
         return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && ReportType == "Department" && !utils.IsUser();
     }
 
     private bool CheckDivApprovalPermissions()
     {
         if (Request == null) return false;
+        awaitingApprovalDate = utils.IsUser() ? null : Request.Approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DepartmentHead && a.Action == ApprovalAction.Approve)?.ActionDate;
         return Request.Status == RequestStatus.ForEndorsement && ReportType == "Division" && !utils.IsUser();
     }
 
     private bool CheckAdminApprovalPermissions()
     {
         if (Request == null) return false;
+        awaitingApprovalDate = utils.IsUser() ? null : Request.Approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead && a.Action == ApprovalAction.Approve)?.ActionDate;
         return Request.Status == RequestStatus.ForAdminVerification && utils.IsAdmin();
     }
 

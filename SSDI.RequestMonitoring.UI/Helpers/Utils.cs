@@ -189,4 +189,17 @@ public class Utils
             _ => "ambot"
         };
     }
+
+    public string FormatPendingAge(DateTime since)
+    {
+        var span = DateTime.Now - since;
+
+        if (span.TotalMinutes < 60)
+            return $"{span.Minutes}m";
+
+        if (span.TotalHours < 24)
+            return $"{span.Hours}h {span.Minutes}m";
+
+        return $"{span.Days}d {span.Hours}h";
+    }
 }

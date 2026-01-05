@@ -7189,6 +7189,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7249,6 +7252,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7308,6 +7314,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -7396,6 +7405,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7468,6 +7480,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -7527,6 +7542,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -7677,6 +7695,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -8047,6 +8068,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -8094,6 +8118,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
 
     }
 
@@ -8107,6 +8134,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -8155,6 +8185,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8166,6 +8199,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -8227,6 +8263,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("reportType")]
         public string ReportType { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8238,6 +8277,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -8374,6 +8416,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -8460,6 +8505,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }
@@ -8625,6 +8673,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("requestNumber")]
         public string RequestNumber { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("seriesNumber")]
+        public string SeriesNumber { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; set; }

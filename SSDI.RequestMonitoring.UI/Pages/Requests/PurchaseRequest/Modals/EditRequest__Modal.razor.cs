@@ -89,7 +89,7 @@ public partial class EditRequest__Modal : ComponentBase
                 var attachCommand = new UploadAttachmentPurchaseCommandVM
                 {
                     PurchaseRequestId = RequestModel.Id,
-                    //Files = RequestModel.Attachments
+                    Files = RequestModel.Attachments
                 };
 
                 var res = await attachSvc.UploadAttachPurchase(attachCommand);

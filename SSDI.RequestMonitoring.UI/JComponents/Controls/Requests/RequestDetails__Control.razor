@@ -3,6 +3,8 @@
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 @typeparam TRequest where TRequest : IRequestDetailVM
 
+<RequestStatusInsight__Control Request="Request" CurrentUserId="currentUser.UserId" ReportType="@ReportType" AwaitingApprovalDate="AwaitingApprovalDate" />
+
 <!-- Basic Request Information -->
 <Details__Card>
     <DetailsRow__Card Label="Name" Value="@Request.Name" FullRow="true" />
@@ -154,4 +156,6 @@ else
 
 @code {
     [Parameter] public TRequest Request { get; set; } = default!;
+    [Parameter] public string ReportType { get; set; } = "Unknown";
+    [Parameter] public DateTime? AwaitingApprovalDate { get; set; }
 }

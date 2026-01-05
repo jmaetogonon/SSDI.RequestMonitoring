@@ -4,6 +4,7 @@ public abstract class BaseRequestVM : IRequestDetailVM
 {
     public int Id { get; set; }
     public string RequestNumber { get; set; } = string.Empty;
+    public string SeriesNumber { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
 
     public int DivisionId { get; set; }
@@ -31,12 +32,14 @@ public abstract class BaseRequestVM : IRequestDetailVM
 
     // Reporting
     public bool IsDirectReport { get; set; }
+
     public string ReportType { get; set; } = string.Empty;
     public int? ReportToDeptSupId { get; set; }
     public int? ReportToDivSupId { get; set; }
 
     // Pending closure
     public DateTime? PendingClosureDate { get; set; }
+
     public int? PendingClosureRequestedById { get; set; }
 
     public abstract ICollection<IApprovalVM> ApprovalsBase { get; }

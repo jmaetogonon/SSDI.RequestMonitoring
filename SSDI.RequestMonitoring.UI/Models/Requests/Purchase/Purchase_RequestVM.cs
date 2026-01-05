@@ -1,5 +1,4 @@
 ﻿using SSDI.RequestMonitoring.UI.Models.Common;
-using System.ComponentModel.DataAnnotations;
 
 namespace SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
