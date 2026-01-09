@@ -18,15 +18,7 @@ public class Utils
     public string GenerateUniqId() => DateTime.Now.ToString("yyyyMMddhhmmssfff");
 
     public string FormatDate(DateTime date) => date.ToString("yyyy-MM-dd");
-
-    public bool IsUser() => _currentUser.Role == TokenCons.Role__User;
-
-    public bool IsAdmin() => _currentUser.Role == TokenCons.Role__Admin;
-
-    public bool IsCEO() => _currentUser.Username == "b.palang";
-
-    public bool IsSupervisor() => _currentUser.RoleDesc.Contains(TokenCons.Role__Supervisor, StringComparison.OrdinalIgnoreCase);
-
+    
     public string GetLastModifiedDisplay(DateTime? dateModified)
     {
         if (dateModified is null) return "Never modified";

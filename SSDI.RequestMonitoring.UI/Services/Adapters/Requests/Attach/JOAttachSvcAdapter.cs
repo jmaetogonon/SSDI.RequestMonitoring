@@ -19,7 +19,7 @@ public class JOAttachSvcAdapter : IAttachmentSvc
 
     public Task<byte[]?> DownloadAllSlipZipAsync(int requestId) => _svc.DownloadAllSlipAttachZip(requestId);
 
-    public async Task<Response<Guid>> UploadAsync(IRequestDetailVM request, IEnumerable<IAttachmentVM> files, RequestAttachType attachType, int? requisitionId = null, decimal? receiptAmount = null)
+    public async Task<Response<Guid>> UploadAsync(IRequestDetailVM request, IEnumerable<IAttachmentVM> files, RequestAttachType attachType, int? requisitionId = null, decimal? receiptAmount = null, string receiptremarks = "")
     {
         if (request is not Job_OrderVM pr) return new Response<Guid>() { Success = false };
 
@@ -30,6 +30,7 @@ public class JOAttachSvcAdapter : IAttachmentSvc
             Type = attachType,
             RequisitionId = requisitionId ?? 0,
             ReceiptAmount = receiptAmount ?? 0m,
+            ReceiptRemarks = receiptremarks,
             Files = files.Select(f => new Job_Order_AttachVM
             {
                 Id = f.Id,
@@ -41,6 +42,8 @@ public class JOAttachSvcAdapter : IAttachmentSvc
                 Size = f.Size,
                 AttachType = f.AttachType,
                 RequisitionId = requisitionId ?? 0,
+                ReceiptAmount = receiptAmount ?? 0m,
+                ReceiptRemarks = receiptremarks,
             }).ToList()
         };
 

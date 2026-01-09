@@ -16,4 +16,5 @@ public class Job_Order_AttachVM : IAttachmentVM
     public RequestAttachType AttachType { get; set; }
     public int RequisitionId { get; set; }
     public decimal ReceiptAmount { get; set; }
+    public string ReceiptRemarks { get; set; } = string.Empty;
 }

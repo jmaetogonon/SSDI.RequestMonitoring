@@ -67,6 +67,7 @@ public partial class NewRequestLogin__Modal : ComponentBase
 
             RequestModel.Status = RequestStatus.Draft;
             RequestModel.DateRequested = DateTime.Now;
+            RequestModel.IsNoUser = true;
 
             var response = await purchaseRequestSvc.CreatePurchaseRequest(RequestModel);
             if (response.Success)

@@ -38,3 +38,8 @@
         border: 1px solid #a7f3d0;
         color: #065f46;
     }
+    .request-status-insight.muted {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        color: #6c757d;
+    }

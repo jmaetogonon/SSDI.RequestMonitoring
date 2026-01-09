@@ -19,6 +19,10 @@ public class CurrentUser : IDisposable
     public int DepartmentHeadId { get; private set; }
     public int DivisionHeadId { get; private set; }
     public bool IsAuthenticated { get; private set; }
+    public bool IsUser { get; private set; }
+    public bool IsAdmin { get; private set; }
+    public bool IsSupervisor { get; private set; }
+    public bool IsCEO { get; private set; }
 
     public CurrentUser(AuthenticationStateProvider authenticationStateProvider)
     {
@@ -55,6 +59,15 @@ public class CurrentUser : IDisposable
             DepartmentHeadId = int.TryParse(deptHead, out var parseddeptHeadId) ? parseddeptHeadId : 0;
             DivisionHeadId = int.TryParse(divHead, out var parseddivHeadId) ? parseddivHeadId : 0;
             IsAuthenticated = true;
+
+            IsUser = Role == TokenCons.Role__User;
+            IsAdmin = Role == TokenCons.Role__Admin;
+            IsCEO = Username == "b.palang";
+            IsSupervisor = RoleDesc.Contains("Supervisor", StringComparison.OrdinalIgnoreCase) ||
+                       RoleDesc.Contains("Admin", StringComparison.OrdinalIgnoreCase) ||
+                       RoleDesc.Contains("Lead", StringComparison.OrdinalIgnoreCase) ||
+                       RoleDesc.Contains("Head", StringComparison.OrdinalIgnoreCase) ||
+                       RoleDesc.Contains("Manager", StringComparison.OrdinalIgnoreCase);
         }
         else
         {

@@ -13,4 +13,5 @@ public interface IAttachmentVM
     RequestAttachType AttachType { get; }
     int RequisitionId { get; }
     decimal ReceiptAmount { get; }
+    string ReceiptRemarks { get; }
 }

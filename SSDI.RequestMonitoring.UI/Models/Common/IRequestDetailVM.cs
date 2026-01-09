@@ -39,8 +39,14 @@ public interface IRequestDetailVM
     DateTime? PendingClosureDate { get; }
     int? PendingClosureRequestedById { get; }
 
+    int? UserDepartmentHeadId { get; }
+    int? UserDivisionHeadId { get; }
+
+    public bool IsNoUser { get; }
+
     // Polymorphic collections
     ICollection<IApprovalVM> ApprovalsBase { get; }
+
     ICollection<IAttachmentVM> AttachmentsBase { get; }
     ICollection<ISlipVM> SlipsBase { get; }
 

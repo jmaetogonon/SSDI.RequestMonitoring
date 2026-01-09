@@ -3,7 +3,7 @@
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 @typeparam TRequest where TRequest : IRequestDetailVM
 
-<RequestStatusInsight__Control Request="Request" CurrentUserId="currentUser.UserId" ReportType="@ReportType" AwaitingApprovalDate="AwaitingApprovalDate" />
+<RequestStatusInsight__Control Request="Request" ReportType="@ReportType" AwaitingApprovalDate="AwaitingApprovalDate" />
 
 <!-- Basic Request Information -->
 <Details__Card>
@@ -119,18 +119,15 @@
         </DetailsRow__Card>
 
         <DetailsRow__Card Label="Acknowledged by">
-            @{
-                var finalApproval = Request.ApprovalsBase.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp);
-            }
-            @if (finalApproval != null && finalApproval.IsApproved)
+            @if (Request.IsCompleted)
             {
-                <div class="approval__info" data-status="@finalApproval.Action">
-                    <strong>@finalApproval.ApproverName</strong>
+                <div class="approval__info" data-status="Approve">
+                    <strong>@Request.RequestedByDeptHeadName</strong>
                     <div class="approval__subtext">
-                        <span>@finalApproval.ActionDate?.ToString("MMM dd, yyyy • hh:mm tt")</span>
+                        <span>@Request.DateCompleted?.ToString("MMM dd, yyyy • hh:mm tt")</span>
                     </div>
                 </div>
-            }
+            } 
             else
             {
                 <div class="approval__pending">Awaiting Acknowledgment</div>

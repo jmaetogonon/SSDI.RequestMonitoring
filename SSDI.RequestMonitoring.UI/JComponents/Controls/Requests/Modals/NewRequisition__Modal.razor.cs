@@ -62,25 +62,14 @@ public partial class NewRequisition__Modal : ComponentBase
             var response = await SlipSvc.CreateRequisition(Model, RequestHeader!.Id);
             if (response.Success)
             {
-                var res = await AttachSvc.UploadAsync(RequestHeader, Attachments, RequestAttachType.Requisition, response.Data);
-                if (!res.Success)
+                if (Attachments.Count != 0)
                 {
-                    toastSvc.ShowError("Error uploading attachments. Please try again.");
+                    var res = await AttachSvc.UploadAsync(RequestHeader, Attachments, RequestAttachType.Requisition, response.Data);
+                    if (!res.Success)
+                    {
+                        toastSvc.ShowError("Error uploading attachments. Please try again.");
+                    }
                 }
-
-                //var command = new UploadAttachmentPurchaseCommandVM
-                //{
-                //    PurchaseRequestId = RequestHeader!.Id,
-                //    Files = Attachments,
-                //    Type = RequestAttachType.Requisition,
-                //    RequisitionId = response.Data
-                //};
-
-                //var res = await attachSvc.UploadAttachPurchase(command);
-                //if (!res.Success)
-                //{
-                //    toastSvc.ShowError("Error uploading attachments. Please try again.");
-                //}
 
                 ResetForm();
                 await confirmModal!.SetLoadingAsync(false);

@@ -22,7 +22,7 @@ public partial class NewJORequest__Modal : ComponentBase
 
     protected override void OnParametersSet()
     {
-        if (utils.IsUser())
+        if (currentUser.IsUser)
         {
             RequestModel.Name = currentUser.FullName;
         }
@@ -42,6 +42,7 @@ public partial class NewJORequest__Modal : ComponentBase
             AlertMessage = "Please select a department.";
             return;
         }
+
         var options = new ConfirmationModalOptions
         {
             Message = "Are you sure you want to save this job order?",
@@ -58,10 +59,10 @@ public partial class NewJORequest__Modal : ComponentBase
 
             _isDisabledBtns = true;
             IsShowAlert = false;
-            RequestModel.Status = utils.IsSupervisor() ? RequestStatus.ForEndorsement : RequestStatus.Draft;
+            RequestModel.Status = currentUser.IsSupervisor ? RequestStatus.ForEndorsement : RequestStatus.Draft;
             RequestModel.DateRequested = DateTime.Now;
             RequestModel.RequestedById = currentUser.UserId;
-            RequestModel.RequestedByDeptHeadId = utils.IsSupervisor() ? currentUser.UserId : null;
+            RequestModel.RequestedByDeptHeadId = currentUser.IsSupervisor ? currentUser.UserId : null;
 
             var response = await jobOrderSvc.CreateJobOrder(RequestModel);
             if (response.Success)

@@ -40,27 +40,6 @@
                    <p class="confirmation-modal__message">@((MarkupString)Message)</p>
                 }
 
-                @if (ShowRemarksField)
-                {
-                    <div class="confirmation-modal__remarks">
-                        <label for="remarks-input" class="confirmation-modal__remarks-label">
-                            @RemarksLabel@(RemarksRequired ? "*" : "")
-                        </label>
-                        <textarea @bind="Remarks"
-                                  id="remarks-input"
-                                  class="confirmation-modal__remarks-input"
-                                  placeholder="@RemarksPlaceholder"
-                                  rows="3" disabled="@(IsLoading)"
-                                  required="@RemarksRequired"></textarea>
-                        @if (RemarksRequired && string.IsNullOrWhiteSpace(Remarks))
-                        {
-                            <div class="confirmation-modal__remarks-error">
-                                Remarks are required for this action.
-                            </div>
-                        }
-                    </div>
-                }
-
                 @if (ShowNumberField)
                 {
                     <div class="confirmation-modal__number">
@@ -86,6 +65,27 @@
                     </div>
                 }
 
+
+                @if (ShowRemarksField)
+                {
+                    <div class="confirmation-modal__remarks">
+                        <label for="remarks-input" class="confirmation-modal__remarks-label">
+                            @RemarksLabel@(RemarksRequired ? "*" : "")
+                        </label>
+                        <textarea @bind="Remarks"
+                                  id="remarks-input"
+                                  class="confirmation-modal__remarks-input"
+                                  placeholder="@RemarksPlaceholder"
+                                  rows="3" disabled="@(IsLoading)"
+                                  required="@RemarksRequired"></textarea>
+                        @if (RemarksRequired && string.IsNullOrWhiteSpace(Remarks))
+                        {
+                            <div class="confirmation-modal__remarks-error">
+                                Remarks are required for this action.
+                            </div>
+                        }
+                    </div>
+                }
 
                 @if (IsLoading)
                 {

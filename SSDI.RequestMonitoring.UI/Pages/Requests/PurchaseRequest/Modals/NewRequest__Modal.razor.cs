@@ -20,14 +20,6 @@ public partial class NewRequest__Modal : ComponentBase
     private bool IsShowAlert { get; set; }
     private string AlertMessage { get; set; } = string.Empty;
 
-    protected override void OnParametersSet()
-    {
-        if (utils.IsUser())
-        {
-            RequestModel.Name = currentUser.FullName;
-        }
-    }
-
     private async void CloseModal()
     {
         await OnClose.InvokeAsync(null);
@@ -42,6 +34,7 @@ public partial class NewRequest__Modal : ComponentBase
             AlertMessage = "Please select a department.";
             return;
         }
+
         var options = new ConfirmationModalOptions
         {
             Message = "Are you sure you want to save this request?",
@@ -58,10 +51,10 @@ public partial class NewRequest__Modal : ComponentBase
 
             _isDisabledBtns = true;
             IsShowAlert = false;
-            RequestModel.Status = utils.IsSupervisor() ? RequestStatus.ForEndorsement : RequestStatus.Draft;
+            RequestModel.Status = currentUser.IsSupervisor ? RequestStatus.ForEndorsement : RequestStatus.Draft;
             RequestModel.DateRequested = DateTime.Now;
             RequestModel.RequestedById = currentUser.UserId;
-            RequestModel.RequestedByDeptHeadId = utils.IsSupervisor() ? currentUser.UserId : null;
+            RequestModel.RequestedByDeptHeadId = currentUser.IsSupervisor ? currentUser.UserId : null;
 
             var response = await purchaseRequestSvc.CreatePurchaseRequest(RequestModel);
             if (response.Success)

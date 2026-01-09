@@ -81,7 +81,8 @@ public partial class Login : ComponentBase
 
         var returnUrl = query["returnUrl"];
 
-        if (await authenticationSvc.AuthenticateAsync(_loginModel.Username, _loginModel.Password))
+        var result = await authenticationSvc.AuthenticateAsync(_loginModel.Username, _loginModel.Password);
+        if (result == "success")
         {
             string? decodedReturnUrl = null;
             if (!string.IsNullOrEmpty(returnUrl)) decodedReturnUrl = Uri.UnescapeDataString(returnUrl);
@@ -90,8 +91,24 @@ public partial class Login : ComponentBase
             return;
         }
 
+        if (result == "NoAccess")
+        {
+            IsShowAlert = true;
+            AlertMessage = "Access not configured. Please contact your administrator.";
+            AlertType = AlertType.error;
+            return;
+        }
+
+        if (result == "DeniedAccess")
+        {
+            IsShowAlert = true;
+            AlertMessage = "You don't have permission to access this application.";
+            AlertType = AlertType.error;
+            return;
+        }
+
         IsShowAlert = true;
-        AlertMessage = "Username/password combination unknown.";
+        AlertMessage = "Invalid username or password.";
         AlertType = AlertType.error;
     }
 }

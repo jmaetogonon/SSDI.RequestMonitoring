@@ -66,6 +66,7 @@ public partial class NewJobOrderLogin__Modal : ComponentBase
 
             RequestModel.Status = RequestStatus.Draft;
             RequestModel.DateRequested = DateTime.Now;
+            RequestModel.IsNoUser = true;
 
             var response = await jobOrderSvc.CreateJobOrder(RequestModel);
             if (response.Success)

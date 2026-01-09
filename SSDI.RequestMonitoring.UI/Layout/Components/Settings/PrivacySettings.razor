@@ -1,0 +1,123 @@
+﻿@using Blazored.LocalStorage
+@using SSDI.RequestMonitoring.UI.Services
+@inject ILocalStorageService localStorage
+
+<div class="privacy-settings">
+    <div class="settings-section">
+        <h4>Privacy & Security</h4>
+
+        @* <div class="settings-item">
+            <div class="settings-item__label">
+                <label for="autoLogout">Auto-logout</label>
+                <span class="settings-hint">Automatically log out after inactivity</span>
+            </div>
+            <select id="autoLogout" class="form-select" @bind="autoLogoutTime" @bind:after="SaveAutoLogout">
+                <option value="5">5 minutes</option>
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="120">2 hours</option>
+                <option value="0">Never</option>
+            </select>
+        </div>
+
+        <div class="settings-item">
+            <div class="settings-item__label">
+                <label>Session timeout warning</label>
+                <span class="settings-hint">Show warning before session expires</span>
+            </div>
+            <div class="toggle-switch">
+                <input type="checkbox" id="sessionWarning" @bind="showSessionWarning" @bind:after="SaveSessionWarning" />
+                <label for="sessionWarning" class="toggle-slider"></label>
+            </div>
+        </div> *@
+
+        <div class="settings-item">
+            <div class="settings-item__label">
+                <label>Clear browsing data</label>
+                <span class="settings-hint">Remove local cache and cookies</span>
+            </div>
+            <button class="btn btn--secondary btn--danger" @onclick="ClearBrowserData">
+                <i class="bi bi-trash"></i>
+                <span>Clear Data</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string autoLogoutTime = "30";
+    private bool showSessionWarning = true;
+    private bool isClearingData = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPrivacySettings();
+    }
+
+    private async Task LoadPrivacySettings()
+    {
+        try
+        {
+            autoLogoutTime = await localStorage.GetItemAsync<string>("autoLogoutTime") ?? "30";
+            showSessionWarning = await localStorage.GetItemAsync<bool?>("showSessionWarning") ?? true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading privacy settings: {ex.Message}");
+        }
+    }
+
+    private async Task SaveAutoLogout()
+    {
+        await localStorage.SetItemAsync("autoLogoutTime", autoLogoutTime);
+        toastSvc.ShowSuccess("Auto-logout time updated!");
+
+        // Trigger auto-logout configuration update
+        // You might want to call a service to update the session timeout
+    }
+
+    private async Task SaveSessionWarning()
+    {
+        await localStorage.SetItemAsync("showSessionWarning", showSessionWarning);
+        toastSvc.ShowSuccess(
+          showSessionWarning ? "Session warnings enabled!" : "Session warnings disabled!"
+      );
+    }
+
+    private async Task ClearBrowserData()
+    {
+        if (isClearingData) return;
+
+        isClearingData = true;
+
+        try
+        {
+            // Clear all localStorage
+            await localStorage.ClearAsync();
+
+            // Clear sessionStorage
+            await jsRuntime.InvokeVoidAsync("sessionStorage.clear");
+
+            // Clear cookies (would need JavaScript interop)
+            await jsRuntime.InvokeVoidAsync("eval",
+                "document.cookie.split(';').forEach(c => { " +
+                "document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/'); " +
+                "});");
+
+            toastSvc.ShowSuccess("Browser data cleared successfully!");
+
+            // Refresh the page after a short delay
+            await Task.Delay(1000);
+            navigationManager.NavigateTo(navigationManager.Uri, true);
+        }
+        catch (Exception ex)
+        {
+            toastSvc.ShowError($"Error clearing data: {ex.Message}");
+        }
+        finally
+        {
+            isClearingData = false;
+        }
+    }
+}

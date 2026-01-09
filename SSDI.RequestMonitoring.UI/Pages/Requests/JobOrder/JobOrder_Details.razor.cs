@@ -2,7 +2,6 @@
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
-using SSDI.RequestMonitoring.UI.Services.MasterData;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder;
 
@@ -17,6 +16,8 @@ public partial class JobOrder_Details : ComponentBase
     private bool CanApproveDivtHead => CheckDivApprovalPermissions();
     private bool CanApproveAdmin => CheckAdminApprovalPermissions();
     private bool CanEdit => CheckEditPermissions();
+    private bool CanClose => CheckClosePermission();
+    private bool CanCEOApproveSlips => CheckCEOApproveSlipPermission();
     private bool isEditRequestModalVisible = false;
     private string EditBtnText => SetEditBtnText();
 
@@ -29,12 +30,14 @@ public partial class JobOrder_Details : ComponentBase
     private bool isPdfModalVisible = false;
 
     private string ActiveTab = "details";
+    public DateTime? awaitingApprovalDate => GetAwaitingApprovalDate();
 
     protected override async Task OnInitializedAsync()
     {
         divisions = await divisionSvc.GetAllDivisions();
         departments = await departmentSvc.GetAllDepartments();
     }
+
     protected override async Task OnParametersSetAsync()
     {
         await LoadRequestDetails();
@@ -321,26 +324,120 @@ public partial class JobOrder_Details : ComponentBase
     private bool CheckDeptApprovalPermissions()
     {
         if (Request == null) return false;
-        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && ReportType == "Department" && !utils.IsUser();
+        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && ReportType == "Department" && !currentUser.IsUser;
     }
 
     private bool CheckDivApprovalPermissions()
     {
         if (Request == null) return false;
-        return Request.Status == RequestStatus.ForEndorsement && ReportType == "Division" && !utils.IsUser();
+
+        var isSameSupervisor = Request.ReportToDeptSupId == Request.ReportToDivSupId || (!Request.IsNoUser && Request.UserDepartmentHeadId == Request.UserDivisionHeadId);
+        if (isSameSupervisor)
+        {
+            return Request.Status == RequestStatus.ForEndorsement && (Request.UserDivisionHeadId == currentUser.UserId || Request.ReportToDivSupId == currentUser.UserId) && !currentUser.IsUser;
+        }
+        return Request.Status == RequestStatus.ForEndorsement && ReportType == "Division" && !currentUser.IsUser;
     }
 
     private bool CheckAdminApprovalPermissions()
     {
         if (Request == null) return false;
-        return Request.Status == RequestStatus.ForAdminVerification && utils.IsAdmin();
+        return Request.Status == RequestStatus.ForAdminVerification && currentUser.IsAdmin;
     }
 
     private bool CheckEditPermissions()
     {
         if (Request == null) return false;
 
-        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && (ReportType == "Department" || (Request.RequestedById == currentUser.UserId && utils.IsSupervisor()));
+        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && (ReportType == "Department" || (Request.RequestedById == currentUser.UserId && currentUser.IsSupervisor));
+    }
+
+    private bool CheckClosePermission()
+    {
+        if (Request == null) return false;
+        return (Request.RequisitionSlips?.Count != 0 && !(Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending)));
+    }
+
+    private bool CheckCEOApproveSlipPermission()
+    {
+        if (Request == null) return false;
+        return (currentUser.IsCEO && Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending));
+    }
+
+    private DateTime? GetAwaitingApprovalDate()
+    {
+        if (currentUser.IsUser)
+        {
+            return null;
+        }
+
+        if (Request?.Status == RequestStatus.Rejected)
+        {
+            return GetLastRejectionDate();
+        }
+
+        if (currentUser.IsAdmin && Request?.Status == RequestStatus.ForRequisition)
+            return GetLastApprovalDate(ApprovalStage.CeoOrAvp);
+
+        // Determine which approval stage is awaiting based on user capabilities
+        return DetermineAwaitingStage() switch
+        {
+            ApprovalStage.DepartmentHead => Request?.DateCreated,
+            ApprovalStage.DivisionHead => GetLastApprovalDate(ApprovalStage.DepartmentHead),
+            ApprovalStage.Admin => GetLastApprovalDate(ApprovalStage.DivisionHead),
+            ApprovalStage.CeoOrAvp => GetLastApprovalDate(ApprovalStage.Admin),
+            _ => null
+        };
+
+        DateTime? GetLastRejectionDate()
+        {
+            return Request?.Approvals?
+                .LastOrDefault(a => a.Action == ApprovalAction.Reject)?
+                .ActionDate;
+        }
+        ApprovalStage? DetermineAwaitingStage()
+        {
+            if (CanApproveDeptHead)
+                return ApprovalStage.DepartmentHead;
+
+            if (CanApproveDivtHead)
+                return ApprovalStage.DivisionHead;
+
+            if (CanApproveAdmin)
+                return DetermineAdminStage();
+
+            if (currentUser.IsCEO && Request?.Status == RequestStatus.ForCeoApproval)
+                return ApprovalStage.CeoOrAvp;
+
+            return null;
+        }
+        ApprovalStage DetermineAdminStage()
+        {
+            // Admin can act in different roles
+            if (CanApproveDeptHead)
+                return ApprovalStage.DepartmentHead;
+
+            if (CanApproveDivtHead)
+                return ApprovalStage.DivisionHead;
+
+            // Default admin role
+            return ApprovalStage.Admin;
+        }
+
+        DateTime? GetLastApprovalDate(ApprovalStage stage)
+        {
+            var approval = Request?.Approvals?
+                .LastOrDefault(a => a.Stage == stage &&
+                                   a.Action == ApprovalAction.Approve)?
+                .ActionDate;
+
+            if (approval == null && stage == ApprovalStage.DepartmentHead)
+            {
+                approval = Request?.DateCreated;
+            }
+
+            return approval;
+        }
     }
 
     private string SetEditBtnText()

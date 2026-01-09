@@ -2,7 +2,7 @@
 {
     public interface IAuthenticationSvc
     {
-        Task<bool> AuthenticateAsync(string username, string password);
+        Task<string> AuthenticateAsync(string username, string password);
         Task Logout();
     }
 }

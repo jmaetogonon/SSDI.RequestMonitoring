@@ -9,5 +9,7 @@ public class UserMappingConfig : Profile
     public UserMappingConfig()
     {
         CreateMap<SupervisorDto, SupervisorVM>().ReverseMap();
+
+        CreateMap<UserFile, UserFileVM>().ReverseMap();
     }
 }

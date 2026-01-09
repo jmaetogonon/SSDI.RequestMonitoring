@@ -96,11 +96,10 @@
                     <div class="tabs__content">
                         @if (ActiveTab == "details")
                         {
-                            <RequestDetails__Control Request="Request" />
+                            <RequestDetails__Control Request="Request" ReportType="@ReportType" AwaitingApprovalDate="@awaitingApprovalDate" />
                         }
                         else if (ActiveTab == "slips")
                         {
-                            @* <JobOrderRequisitionSlips__Control Request="Request" ConfirmModal="confirmModal" /> *@
                             <RequestRequisition__Control Request="Request" AttachSvc="joAttachAdapter" SlipSvc="joRequisitionSvcAdapter" OnRequestChanged="Reload" ConfirmModal="confirmModal" />
 
                         }
@@ -166,7 +165,7 @@
                 <hr class="page__hr" />
             }
 
-            @if (utils.IsCEO() && Request?.Status == RequestStatus.ForCeoApproval)
+            @if (currentUser.IsCEO && Request?.Status == RequestStatus.ForCeoApproval)
             {
                 <button class="btn btn--success" @onclick="ApproveByCeoRequest" title="Approve request">
                     <i class="bi bi-check-lg"></i> Verify
@@ -178,24 +177,62 @@
                 <hr class="page__hr" />
             }
 
-            @if (utils.IsAdmin() && Request?.Status == RequestStatus.ForRequisition)
+            @if (CanClose)
             {
-                <button class="btn btn--final" @onclick="RequestClose" title="Close request">
-                    <i class="bi bi-lock-fill"></i> Request Closure
-                </button>
-                <hr class="page__hr" />
-            }
+                // if admin unya dili nya under
+                if ((currentUser.IsAdmin && Request?.Status == RequestStatus.ForRequisition) && !(Request.UserDepartmentHeadId == currentUser.UserId || Request.ReportToDeptSupId == currentUser.UserId))
+                {
+                    <button class="btn btn--final" @onclick="RequestClose" title="Close request">
+                        <i class="bi bi-lock-fill"></i> Request Closure
+                    </button>
+                    <hr class="page__hr" />
+                }
 
-            @if (Request?.RequestedByDeptHeadId == currentUser.UserId && Request?.Status == RequestStatus.ForRequisition)
+                //supervisors maka close
+                if (Request?.RequestedByDeptHeadId == currentUser.UserId && Request?.Status == RequestStatus.ForRequisition)
+                {
+                    <button class="btn btn--final" @onclick="ConfirmClose" title="Close request">
+                        <i class="bi bi-lock-fill"></i> Close Request
+                    </button>
+                    <hr class="page__hr" />
+                }
+            }
+            else if (!CanClose && Request?.Status == RequestStatus.ForRequisition)
             {
-                <button class="btn btn--final" @onclick="ConfirmClose" title="Close request">
-                    <i class="bi bi-lock-fill"></i> Close Request
-                </button>
-                <hr class="page__hr" />
+                // if admin unya dili pa pde i close
+                if ((currentUser.IsAdmin && Request?.Status == RequestStatus.ForRequisition) && !(Request.UserDepartmentHeadId == currentUser.UserId || Request.ReportToDeptSupId == currentUser.UserId))
+                {
+                    <div class="pending-close-banner">
+                        <div class="pending-close-banner__info">
+                            <div>
+                                @if (Request.RequisitionSlips?.Count == 0)
+                                {
+                                    <strong>Requisition slip required</strong>
+                                    <div class="muted">Please add at least one requisition slip before closing.</div>
+                                }
+                                @if (Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending))
+                                {
+                                    <strong>Approval pending</strong>
+                                    <div class="muted">All requisition slips must be approved before closing.</div>
+                                }
+                                <div class="action-link">
+                                    <label style="color: #023b8f;cursor: pointer;margin-top: 4px;" @onclick="@(() => SetActiveTab("slips"))">
+                                        Review Requisition Slips
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn--final" @onclick="RequestClose" title="Close request" disabled>
+                        <i class="bi bi-lock-fill"></i> Request Closure
+                    </button>
+                    <hr class="page__hr" />
+                }
             }
 
             @if (Request?.RequestedByDeptHeadId == currentUser.UserId && Request?.Status == RequestStatus.PendingRequesterClosure)
             {
+                //pending closure banner
                 <div class="pending-close-banner">
                     <div class="pending-close-banner__info">
                         <i class="bi bi-exclamation-circle"></i>
@@ -210,6 +247,32 @@
                     </div>
                 </div>
                 <hr class="page__hr" />
+            }
+
+            @if (CanCEOApproveSlips)
+            {
+                <div class="pending-close-banner">
+                    <div class="pending-close-banner__info">
+                        <div>
+                            @if (Request!.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending))
+                            {
+                                <strong>Approval Required</strong>
+                                <div class="muted">
+                                    @{
+                                        var pendingCount = Request.RequisitionSlips!.Count(e => e.Approval == ApprovalAction.Pending);
+                                        var slipText = pendingCount == 1 ? "slip" : "slips";
+                                    }
+                                    You have @pendingCount requisition @slipText awaiting your approval.
+                                </div>
+                                <div class="action-link">
+                                    <label style="color: #023b8f;cursor: pointer;margin-top: 4px;" @onclick="@(() => SetActiveTab("slips"))">
+                                        Review Requisition Slips
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
             }
 
             @if (CanEdit)

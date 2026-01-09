@@ -594,6 +594,42 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<SupervisorDto>> GetAllSupervisorsAsync(System.Threading.CancellationToken cancellationToken);
 
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<byte[]> GetUserFileByteAsync(int? id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<byte[]> GetUserFileByteAsync(int? id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<byte[]> GetUserLastSignatureByteAsync(int? id);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<byte[]> GetUserLastSignatureByteAsync(int? id, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UploadUserFileAsync(UploadUserFileCommand body);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task UploadUserFileAsync(UploadUserFileCommand body, System.Threading.CancellationToken cancellationToken);
+
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteAllUserSignaturesAsync(int? userId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task DeleteAllUserSignaturesAsync(int? userId, System.Threading.CancellationToken cancellationToken);
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -6201,6 +6237,388 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
             }
         }
 
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<byte[]> GetUserFileByteAsync(int? id)
+        {
+            return GetUserFileByteAsync(id, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<byte[]> GetUserFileByteAsync(int? id, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/User/GetUserFileByte"
+                    urlBuilder_.Append("api/User/GetUserFileByte");
+                    urlBuilder_.Append('?');
+                    if (id != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<byte[]>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<byte[]> GetUserLastSignatureByteAsync(int? id)
+        {
+            return GetUserLastSignatureByteAsync(id, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>OK</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<byte[]> GetUserLastSignatureByteAsync(int? id, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/User/GetUserLastSignatureByte"
+                    urlBuilder_.Append("api/User/GetUserLastSignatureByte");
+                    urlBuilder_.Append('?');
+                    if (id != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<byte[]>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task UploadUserFileAsync(UploadUserFileCommand body)
+        {
+            return UploadUserFileAsync(body, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Created</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task UploadUserFileAsync(UploadUserFileCommand body, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    var json_ = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerSettings);
+                    var content_ = new System.Net.Http.ByteArrayContent(json_);
+                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
+                    request_.Content = content_;
+                    request_.Method = new System.Net.Http.HttpMethod("POST");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/User/UploadUserFile"
+                    urlBuilder_.Append("api/User/UploadUserFile");
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 201)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task DeleteAllUserSignaturesAsync(int? userId)
+        {
+            return DeleteAllUserSignaturesAsync(userId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>No Content</returns>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task DeleteAllUserSignaturesAsync(int? userId, System.Threading.CancellationToken cancellationToken)
+        {
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("DELETE");
+
+                    var urlBuilder_ = new System.Text.StringBuilder();
+                
+                    // Operation Path: "api/User/DeleteAllUserSignatures"
+                    urlBuilder_.Append("api/User/DeleteAllUserSignatures");
+                    urlBuilder_.Append('?');
+                    if (userId != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("userId")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(userId, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<string>>();
+                        foreach (var item_ in response_.Headers)
+                            headers_[item_.Key] = item_.Value;
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 204)
+                        {
+                            return;
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Bad Request", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ProblemDetails>("Not Found", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await ReadAsStringAsync(response_.Content, cancellationToken).ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+
         protected struct ObjectResponseResult<T>
         {
             public ObjectResponseResult(T responseObject, string responseText)
@@ -6658,6 +7076,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
         public System.DateTimeOffset? DateRequested { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("attachments")]
         public System.Collections.Generic.ICollection<Job_Order_Attach> Attachments { get; set; }
 
@@ -6780,6 +7201,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("dateRequested")]
         public System.DateTimeOffset? DateRequested { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("attachments")]
         public System.Collections.Generic.ICollection<Purchase_Request_Attach> Attachments { get; set; }
@@ -7240,6 +7664,18 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -7302,6 +7738,18 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
 
     }
 
@@ -7383,6 +7831,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
@@ -7468,6 +7925,18 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("reportType")]
         public string ReportType { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -7530,6 +7999,18 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("approvals")]
+        public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
 
     }
 
@@ -7762,6 +8243,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<Job_Order_Approval> Approvals { get; set; }
 
@@ -7851,6 +8335,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("receiptAmount")]
         public double ReceiptAmount { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("receiptRemarks")]
+        public string ReceiptRemarks { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("jobOrder")]
         public Job_Order JobOrder { get; set; }
@@ -8119,6 +8606,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
 
@@ -8184,6 +8680,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
@@ -8263,6 +8768,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("reportType")]
         public string ReportType { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
 
@@ -8328,6 +8842,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
 
     }
 
@@ -8403,6 +8926,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("receiptAmount")]
         public double ReceiptAmount { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("receiptRemarks")]
+        public string ReceiptRemarks { get; set; }
 
     }
 
@@ -8484,6 +9010,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDepartmentHeadId")]
+        public int? UserDepartmentHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userDivisionHeadId")]
+        public int? UserDivisionHeadId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
@@ -8740,6 +9275,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("isCompleted")]
         public bool IsCompleted { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
+        public bool IsNoUser { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<Purchase_Request_Approval> Approvals { get; set; }
 
@@ -8829,6 +9367,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("receiptAmount")]
         public double ReceiptAmount { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("receiptRemarks")]
+        public string ReceiptRemarks { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("purchaseRequest")]
         public Purchase_Request PurchaseRequest { get; set; }
@@ -8943,6 +9484,8 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         _1 = 1,
 
         _2 = 2,
+
+        _3 = 3,
 
     }
 
@@ -9226,6 +9769,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("receiptAmount")]
         public double ReceiptAmount { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("receiptRemarks")]
+        public string ReceiptRemarks { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -9246,6 +9792,66 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("receiptAmount")]
         public double ReceiptAmount { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("receiptRemarks")]
+        public string ReceiptRemarks { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class UploadUserFileCommand
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("userId")]
+        public int UserId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        public RequestAttachType Type { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("files")]
+        public System.Collections.Generic.ICollection<UserFile> Files { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class UserFile
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateCreated")]
+        public System.DateTimeOffset? DateCreated { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("dateModified")]
+        public System.DateTimeOffset? DateModified { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("user")]
+        public UserM User { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("userId")]
+        public int UserId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("uniqId")]
+        public string UniqId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fileName")]
+        public string FileName { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("size")]
+        public long Size { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("contentType")]
+        public string ContentType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("imgData")]
+        public byte[] ImgData { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("attachType")]
+        public RequestAttachType AttachType { get; set; }
 
     }
 
@@ -9336,6 +9942,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("divisionMembers")]
         public System.Collections.Generic.ICollection<UserM> DivisionMembers { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<UserFile> Attachments { get; set; }
 
     }
 

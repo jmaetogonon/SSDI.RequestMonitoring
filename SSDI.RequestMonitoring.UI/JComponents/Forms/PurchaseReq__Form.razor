@@ -12,7 +12,7 @@
             <!-- Name -->
             <div class="form-group">
                 <label for="name">Name</label>
-                <input id="name" @bind="FormModel.Name" class="form-control" style="font-weight: 500;" placeholder="Enter your full name" disabled="@(utils.IsUser())" required />
+                <input id="name" @bind="FormModel.Name" class="form-control" style="font-weight: 500;" placeholder="Enter your full name" disabled="@(currentUser.IsUser)" required />
             </div>
 
             <!-- Nature of Request -->
@@ -177,6 +177,11 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        if (currentUser.IsUser)
+        {
+            FormModel.Name = currentUser.FullName;
+        }
+
         if (!currentUser.IsAuthenticated && FormDivisions is not null)
         {
             Supervisors = await userSvc.GetSupervisors() ?? new();

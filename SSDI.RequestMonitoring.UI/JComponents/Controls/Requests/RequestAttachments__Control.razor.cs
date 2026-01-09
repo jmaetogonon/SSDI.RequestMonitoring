@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
@@ -352,5 +351,6 @@ public partial class RequestAttachments__Control : ComponentBase
         public RequestAttachType AttachType { get; set; }
         public int RequisitionId { get; set; }
         public decimal ReceiptAmount { get; set; }
+        public string ReceiptRemarks { get; set; } = string.Empty;
     }
-}
+} 

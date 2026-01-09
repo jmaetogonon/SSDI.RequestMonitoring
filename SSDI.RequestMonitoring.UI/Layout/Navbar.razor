@@ -1,6 +1,11 @@
 ﻿@using SSDI.RequestMonitoring.UI.Contracts
+@using SSDI.RequestMonitoring.UI.Contracts.Users
 @using SSDI.RequestMonitoring.UI.Helpers.States
+@using SSDI.RequestMonitoring.UI.Layout.Components
+@using SSDI.RequestMonitoring.UI.Models.Common
+@using SSDI.RequestMonitoring.UI.Models.Users
 @inject IAuthenticationSvc authService
+@inject IJSRuntime JSRuntime
 
 <div class="navbar">
     <!-- Left Section: Logo -->
@@ -16,7 +21,7 @@
                 <div class="user-avatar">
                     @GetInitials(currentUser.FullName)
                 </div>
-                @* <i class="bi bi-chevron-down dropdown-arrow @(isMenuOpen ? "rotated" : "")"></i> *@
+                <i class="bi bi-chevron-down dropdown-arrow @(isMenuOpen ? "rotated" : "")"></i>
             </div>
 
             @if (isMenuOpen)
@@ -28,8 +33,19 @@
                         <div class="user-info">
                             <strong>@currentUser.FullName</strong>
                             <span>@currentUser.RoleDesc</span>
+                            <small>@currentUser.Username</small>
                         </div>
                     </div>
+
+                    <div class="dropdown-items">
+                        <button class="dropdown-item" @onclick="OpenSettings">
+                            <i class="bi bi-gear"></i>
+                            <span>Settings</span>
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="dropdown-divider"></div>
 
                     <div class="dropdown-actions">
                         <button class="btn btn--danger btn--full" @onclick="Logout">
@@ -43,8 +59,17 @@
     </div>
 </div>
 
+<!-- Settings Modal -->
+@if (showSettingsModal)
+{
+    <SettingsModal @ref="settingsModalRef"
+                   @bind-Visible="showSettingsModal" />
+}
+
 @code {
     private bool isMenuOpen = false;
+    private bool showSettingsModal = false;
+    private SettingsModal? settingsModalRef;
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,6 +90,12 @@
     private void CloseMenu()
     {
         isMenuOpen = false;
+    }
+
+    private void OpenSettings()
+    {
+        isMenuOpen = false;
+        showSettingsModal = true;
     }
 
     private string GetInitials(string name)

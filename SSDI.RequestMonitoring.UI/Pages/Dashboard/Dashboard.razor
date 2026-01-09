@@ -38,7 +38,7 @@
 
             <!-- Quick Actions -->
             <div class="header-quick-actions">
-                @if (utils.IsAdmin())
+                @if (currentUser.IsAdmin)
                 {
                     <button class="header-action-btn" @onclick="SyncUsers" title="Sync Users from Active Directory">
                         <i class="bi bi-people"></i>
@@ -212,13 +212,13 @@
             <!-- Left Column: Recent Activity & Quick Actions -->
             <div class="dashboard__column">
                 <!-- Supervisor Specific: Team Requests -->
-                @if (utils.IsSupervisor())
+                @if (currentUser.IsSupervisor)
                 {
                     <TeamRequest__Card Items="teamRequestsNeedingAttention" RequestType="requestType" />
                 }
 
                 <!-- User Recent Activity -->
-                @if (utils.IsUser() || !utils.IsSupervisor())
+                @if (currentUser.IsUser || !currentUser.IsSupervisor)
                 {
                     <RecentActivity__Card Items="recentActivity" RequestType="requestType" />
                 }
@@ -232,7 +232,7 @@
                 <!-- Volume Comparison Chart -->
                 <VolumeComparison__Bar PurchaseRequests="purchaseRequests" JobOrders="jobOrders" RequestType="requestType" />
 
-                @if (utils.IsSupervisor())
+                @if (currentUser.IsSupervisor)
                 {
                     <ApprovedRequests__Card Items="approveReqyestItems" RequestType="requestType" />
                 }

@@ -1,0 +1,529 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Users
+@using SSDI.RequestMonitoring.UI.Models.Users
+@inject IUserSvc userSvc
+
+<div class="esignature-settings">
+    <div class="settings-section">
+        <h4>Electronic Signature</h4>
+        <div class="settings-hint">Set up your digital signature for document approvals</div>
+
+        <!-- Current Signature Preview -->
+        @if (!string.IsNullOrEmpty(signatureImageData))
+        {
+            <div class="current-signature-section">
+                <div class="section-header">
+                    <h5><i class="bi bi-signature"></i> Current Signature</h5>
+                    <button class="btn btn--danger btn--small" @onclick="ClearSignature" title="Remove signature">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+                <div class="signature-preview-card">
+                    <div class="preview-container">
+                        <img src="@signatureImageData" alt="Your signature" class="signature-image" />
+                    </div>
+                    <div class="signature-info">
+                        <div class="signature-status">
+                            <i class="bi bi-check-circle-fill status-active"></i>
+                            <span>Signature active and ready to use</span>
+                        </div>
+                        <div class="signature-actions">
+                            <button class="btn btn--primary btn--small" @onclick="OpenSignatureDrawer">
+                                <i class="bi bi-pencil-square"></i> Redraw Signature
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Signature Creation Options -->
+        <div class="creation-options">
+            <h5><i class="bi bi-plus-circle"></i> Create New Signature</h5>
+
+            <div class="options-grid">
+                @if (string.IsNullOrEmpty(signatureImageData))
+                {
+                    <div class="option-card option-card-primary" @onclick="OpenSignatureDrawer">
+                        <div class="option-icon">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <div class="option-content">
+                            <h6>Draw Signature</h6>
+                            <p>Use your mouse or touch screen to create a digital signature</p>
+                            <div class="option-badge">
+                                <span class="badge-recommended">Recommended</span>
+                            </div>
+                        </div>
+                        <div class="option-action">
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                    </div>
+                }
+
+                <div class="option-card" onclick="document.getElementById('signatureUpload').click()">
+                    <div class="option-icon">
+                        <i class="bi bi-upload"></i>
+                    </div>
+                    <div class="option-content">
+                        <h6>Upload Signature</h6>
+                        <p>Upload an image file of your handwritten signature</p>
+                        <div class="file-requirements">
+                            <span>PNG, JPG, SVG</span>
+                            <span>Max 10MB</span>
+                        </div>
+                    </div>
+                    <div class="option-action">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <InputFile id="signatureUpload"
+                               OnChange="HandleSignatureUpload"
+                               accept=".png,.jpg,.jpeg,.svg"
+                               style="display: none;" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature Guidelines -->
+        <div class="guidelines-section">
+            <h5><i class="bi bi-lightbulb"></i> Tips for Best Results</h5>
+            <div class="guidelines-grid">
+                <div class="guideline-item">
+                    <div class="guideline-icon">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <div class="guideline-content">
+                        <h6>Clear and Legible</h6>
+                        <p>Ensure your signature is clear and matches official documents</p>
+                    </div>
+                </div>
+                <div class="guideline-item">
+                    <div class="guideline-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="guideline-content">
+                        <h6>Secure Storage</h6>
+                        <p>Your signature is encrypted and stored securely</p>
+                    </div>
+                </div>
+                <div class="guideline-item">
+                    <div class="guideline-icon">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </div>
+                    <div class="guideline-content">
+                        <h6>Easy Updates</h6>
+                        <p>Update your signature at any time from this page</p>
+                    </div>
+                </div>
+                <div class="guideline-item">
+                    <div class="guideline-icon">
+                        <i class="bi bi-file-earmark-check"></i>
+                    </div>
+                    <div class="guideline-content">
+                        <h6>Legal Validity</h6>
+                        <p>Digitally signed documents hold legal validity</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Signature Drawer Modal -->
+@if (showSignatureDrawer)
+{
+    <div class="signature-drawer-overlay visible" @onclick="CloseSignatureDrawer">
+        <div class="signature-drawer visible" @onclick:stopPropagation>
+            <!-- Header -->
+            <div class="drawer-header">
+                <div class="drawer-title">
+                    <i class="bi bi-pencil-square"></i>
+                    <h4>Draw Your Signature</h4>
+                </div>
+                <div class="drawer-actions">
+                    <button class="btn btn--secondary btn--icon" @onclick="ClearCanvas" title="Clear canvas">
+                        <i class="bi bi-eraser"></i>
+                    </button>
+                    <button class="btn btn--icon" @onclick="CloseSignatureDrawer" title="Close">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Area -->
+            <div class="canvas-section">
+                <div class="canvas-container">
+                    <canvas id="signatureCanvas"
+                            width="800"
+                            height="250"
+                            @onmousedown="StartDrawing"
+                            @onmousemove="Draw"
+                            @onmouseup="StopDrawing"
+                            @onmouseleave="StopDrawing"
+                            @ontouchstart="StartDrawingTouch"
+                            @ontouchmove="DrawTouch"
+                            @ontouchend="StopDrawing">
+                    </canvas>
+                    @if (!isSignatureDrawn)
+                    {
+                        <div class="canvas-placeholder">
+                            <i class="bi bi-pencil"></i>
+                            <p>Draw your signature here</p>
+                            <small>Use mouse or touch to draw</small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Drawing Tools -->
+            <div class="tools-section">
+                <div class="tools-header">
+                    <h6>Drawing Tools</h6>
+                    <div class="tool-preset">
+                        <div class="tool-indicator">
+                            <div class="current-tool">
+                                @* <div class="tool-color" style="background-color: @penColor; width: @(penWidth * 2)px; height: @(penWidth * 2)px;"></div> *@
+                                <span>@(penColor == "#000000" ? "Black" : "Blue") Pen - @(penWidth == 2 ? "Thin" : penWidth == 4 ? "Medium" : "Thick")</span>
+                            </div>
+                        </div>
+                        <button class="btn-tool @(penWidth == 2 && penColor == "#000000" ? "active" : "")"
+                                @onclick="@(() => { ChangePenWidth(2); ChangePenColor("#000000"); })"
+                                title="Thin Black Pen">
+                            <div class="tool-preview black thin"></div>
+                        </button>
+                        <button class="btn-tool @(penWidth == 4 && penColor == "#000000" ? "active" : "")"
+                                @onclick="@(() => { ChangePenWidth(4); ChangePenColor("#000000"); })"
+                                title="Medium Black Pen">
+                            <div class="tool-preview black medium"></div>
+                        </button>
+                        <button class="btn-tool @(penWidth == 6 && penColor == "#000000" ? "active" : "")"
+                                @onclick="@(() => { ChangePenWidth(6); ChangePenColor("#000000"); })"
+                                title="Thick Black Pen">
+                            <div class="tool-preview black thick"></div>
+                        </button>
+                        <button class="btn-tool @(penColor == "#1e40af" ? "active" : "")"
+                                @onclick="@(() => { ChangePenColor("#1e40af"); ChangePenWidth(4); })"
+                                title="Blue Pen">
+                            <div class="tool-preview blue"></div>
+                        </button>
+                        <button class="btn btn--secondary btn--small clearcanvasbtn" @onclick="ClearCanvas">
+                            <i class="bi bi-trash"></i> <span>Clear All</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Preview & Actions -->
+            <div class="preview-section">
+                <div class="preview-header">
+                    <h6>Preview</h6>
+                    <span class="preview-size">Appears at 25% size</span>
+                </div>
+                <div class="preview-container">
+                    <div class="preview-window">
+                        <canvas id="previewCanvas" width="400" height="150"></canvas>
+                        @if (!isSignatureDrawn)
+                        {
+                            <div class="preview-placeholder">
+                                <span>Your signature will appear here</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="drawer-tips">
+                <div class="tip-item">
+                    <i class="bi bi-lightbulb"></i>
+                    <span>Tip: Sign naturally as you would on paper</span>
+                </div>
+              @*   <div class="tip-item">
+                    <i class="bi bi-hand-index"></i>
+                    <span>Hold click/touch to draw continuously</span>
+                </div> *@
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-section">
+                <button class="btn btn--secondary" @onclick="CloseSignatureDrawer">
+                    Cancel
+                </button>
+                <button class="btn btn--primary btn--with-icon"
+                        @onclick="SaveSignature"
+                        disabled="@(!isSignatureDrawn)">
+                    <i class="bi bi-check-lg"></i>
+                    <span>Save Signature</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // YOUR EXACT CODE - NO CHANGES TO METHODS
+    private bool showSignatureDrawer = false;
+
+    // E-Signature state
+    private string signatureImageData = "";
+    private string uploadedFileName = "";
+    private bool isSignatureDrawn = false;
+    private bool isDrawing = false;
+    private int lastX = 0;
+    private int lastY = 0;
+    private string penColor = "#000000";
+    private int penWidth = 2;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSignature();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeSignatureCanvas();
+        }
+    }
+
+    private void OpenSignatureDrawer()
+    {
+        showSignatureDrawer = true;
+        isSignatureDrawn = false;
+    }
+
+    private void CloseSignatureDrawer()
+    {
+        showSignatureDrawer = false;
+    }
+
+    // Mouse events
+    private void StartDrawing(MouseEventArgs e)
+    {
+        isDrawing = true;
+        lastX = (int)e.OffsetX;
+        lastY = (int)e.OffsetY;
+    }
+
+    private async Task Draw(MouseEventArgs e)
+    {
+        if (!isDrawing) return;
+
+        await DrawOnCanvas((int)e.OffsetX, (int)e.OffsetY);
+        await UpdatePreview();
+        isSignatureDrawn = true;
+    }
+
+    // Touch events - FIXED VERSION
+    private void StartDrawingTouch(TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            isDrawing = true;
+            var touch = e.Touches[0];
+            // For touch events, we need to calculate the position relative to the canvas
+            lastX = (int)touch.ClientX;
+            lastY = (int)touch.ClientY;
+        }
+    }
+
+    private async Task DrawTouch(TouchEventArgs e)
+    {
+        if (!isDrawing || e.Touches.Length == 0) return;
+
+        var touch = e.Touches[0];
+        // Get the canvas element position to calculate correct coordinates
+        var canvasRect = await jsRuntime.InvokeAsync<DOMRect>("getCanvasBoundingRect", "signatureCanvas");
+
+        // Calculate touch position relative to canvas
+        var x = (int)(touch.ClientX - canvasRect.Left);
+        var y = (int)(touch.ClientY - canvasRect.Top);
+
+        await DrawOnCanvas(x, y);
+        await UpdatePreview();
+        isSignatureDrawn = true;
+    }
+
+    private async Task DrawOnCanvas(int x, int y)
+    {
+        await jsRuntime.InvokeVoidAsync("drawOnCanvas", new
+        {
+            canvasId = "signatureCanvas",
+            fromX = lastX,
+            fromY = lastY,
+            toX = x,
+            toY = y,
+            color = penColor,
+            width = penWidth
+        });
+
+        lastX = x;
+        lastY = y;
+    }
+
+    private void StopDrawing()
+    {
+        isDrawing = false;
+    }
+
+    private async Task UpdatePreview()
+    {
+        await jsRuntime.InvokeVoidAsync("updatePreview", "signatureCanvas", "previewCanvas");
+    }
+
+    private async Task ClearCanvas()
+    {
+        await jsRuntime.InvokeVoidAsync("clearCanvas", "signatureCanvas");
+        await jsRuntime.InvokeVoidAsync("clearCanvas", "previewCanvas");
+        isSignatureDrawn = false;
+    }
+
+    private void ChangePenColor(string color)
+    {
+        penColor = color;
+    }
+
+    private void ChangePenWidth(int width)
+    {
+        penWidth = width;
+    }
+
+    private async Task SaveSignature()
+    {
+        try
+        {
+            signatureImageData = await jsRuntime.InvokeAsync<string>("getCanvasDataURL", "signatureCanvas");
+
+            if (string.IsNullOrEmpty(signatureImageData))
+            {
+                toastSvc?.ShowError("Cannot save empty signature");
+                return;
+            }
+
+            var base64Data = signatureImageData.Split(',')[1];
+            var imageBytes = Convert.FromBase64String(base64Data);
+
+            var temps = new List<UserFileVM>
+            {
+                new UserFileVM
+                {
+                    FileName = $"signature_{DateTime.Now:yyyyMMddHHmmss}.png",
+                    ContentType = "image/png",
+                    ImgData = imageBytes,
+                    Size = imageBytes.Length,
+                    UniqId = utils.GenerateUniqId(),
+                    AttachType = RequestAttachType.ESignature
+                }
+            };
+
+            var res = await userSvc.UploadAsync(currentUser.UserId, RequestAttachType.ESignature, temps);
+
+            if (!res.Success)
+            {
+                toastSvc?.ShowError("Error saving signature. Please try again.");
+                return;
+            }
+
+            toastSvc?.ShowSuccess("Signature saved successfully!");
+            await LoadSignature();
+            CloseSignatureDrawer();
+        }
+        catch (Exception ex)
+        {
+            toastSvc?.ShowError("An error occurred while saving the signature.");
+        }
+    }
+
+    private async Task HandleSignatureUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            List<UserFileVM> temps = [];
+            var file = e.File;
+            uploadedFileName = file.Name;
+
+            byte[] fileBytes;
+            using (var stream = file.OpenReadStream(10 * 1024 * 1024))
+            using (var ms = new MemoryStream())
+            {
+                await stream.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
+
+            var attachVM = new UserFileVM
+            {
+                FileName = file.Name,
+                ContentType = file.ContentType,
+                ImgData = fileBytes,
+                Size = file.Size,
+                UniqId = utils.GenerateUniqId(),
+                AttachType = RequestAttachType.ESignature
+            };
+
+            temps.Add(attachVM);
+            var res = await userSvc.UploadAsync(currentUser.UserId, RequestAttachType.ESignature, temps);
+
+            if (!res.Success)
+            {
+                toastSvc?.ShowError("Error uploading signature. Please try again.");
+                return;
+            }
+
+            await LoadSignature();
+            toastSvc?.ShowSuccess("Signature uploaded successfully!");
+        }
+        catch (Exception ex)
+        {
+            toastSvc?.ShowError("An error occurred while uploading the signature.");
+        }
+    }
+
+    private async Task ClearSignature()
+    {
+        try
+        {
+            var result = await userSvc.DeleteAllSignatureAsync(currentUser.UserId);
+            if (result)
+            {
+                signatureImageData = "";
+                uploadedFileName = "";
+                toastSvc.ShowInfo("Signature cleared successfully");
+            }
+            else
+            {
+                toastSvc.ShowError("Failed to clear signature");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastSvc.ShowError($"Error clearing signature: {ex.Message}");
+        }
+    }
+
+    private async Task LoadSignature()
+    {
+        var bytes = await userSvc.GetLastSignatureByte(currentUser.UserId);
+        if (bytes == null || bytes.Length == 0)
+        {
+            signatureImageData = string.Empty;
+            return;
+        }
+
+        var base64 = Convert.ToBase64String(bytes);
+        signatureImageData = $"data:image/png;base64,{base64}";
+    }
+
+    private async Task InitializeSignatureCanvas()
+    {
+        await jsRuntime.InvokeVoidAsync("initializeCanvas", "signatureCanvas");
+    }
+
+    public class DOMRect
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+}

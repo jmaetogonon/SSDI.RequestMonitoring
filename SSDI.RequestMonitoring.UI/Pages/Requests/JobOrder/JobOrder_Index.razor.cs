@@ -60,12 +60,12 @@ public partial class JobOrder_Index : ComponentBase
         isLoading = true;
         try
         {
-            if (utils.IsUser())
+            if (currentUser.IsUser)
             {
                 var requests = await jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
                 AllItems = requests.AsQueryable();
             }
-            //else if (utils.IsAdmin())
+            //else if (currentUser.IsAdmin)
             //{
             //    var requests = await jobOrderSvc.GetAllJobOrdersByAdmin();
             //    AllItems = requests.AsQueryable();
@@ -83,7 +83,7 @@ public partial class JobOrder_Index : ComponentBase
                     statusFilter?.SetSelectedStatus(selectedStatuses);
                 }
 
-                if (utils.IsCEO())
+                if (currentUser.IsCEO)
                 {
                     var ceoRequests = await jobOrderSvc.GetAllJobOrderByCeo();
                     AllItems = AllItems.Concat(ceoRequests).DistinctBy(r => r.Id).AsQueryable();
@@ -91,7 +91,7 @@ public partial class JobOrder_Index : ComponentBase
                     statusFilter?.SetSelectedStatus(selectedStatuses);
                 }
 
-                if (utils.IsAdmin())
+                if (currentUser.IsAdmin)
                 {
                     var adminRequests = await jobOrderSvc.GetAllJobOrdersByAdmin();
                     AllItems = AllItems.Concat(adminRequests).DistinctBy(r => r.Id).AsQueryable();
@@ -225,7 +225,7 @@ public partial class JobOrder_Index : ComponentBase
             .GroupBy(r => r.Status)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        if (utils.IsAdmin())
+        if (currentUser.IsAdmin)
         {
             StatusSummaries =
             [
@@ -235,7 +235,7 @@ public partial class JobOrder_Index : ComponentBase
                 new(RequestStatus.Closed,TokenCons.Status__Closed, statusCounts.GetValueOrDefault(RequestStatus.Closed, 0), totalCount, utils.GetStatusIcon(RequestStatus.Closed)),
             ];
         }
-        else if (utils.IsCEO())
+        else if (currentUser.IsCEO)
         {
             StatusSummaries =
             [
@@ -245,7 +245,7 @@ public partial class JobOrder_Index : ComponentBase
                 new(RequestStatus.Closed, TokenCons.Status__Closed, statusCounts.GetValueOrDefault(RequestStatus.Closed, 0), totalCount, utils.GetStatusIcon(RequestStatus.Closed)),
             ];
         }
-        else if (utils.IsSupervisor() && !utils.IsCEO())
+        else if (currentUser.IsSupervisor && !currentUser.IsCEO)
         {
             StatusSummaries =
             [
@@ -293,7 +293,7 @@ public partial class JobOrder_Index : ComponentBase
 
     public bool CheckNewBtnPermission()
     {
-        return !utils.IsAdmin() && !utils.IsCEO();
+        return !currentUser.IsAdmin && !currentUser.IsCEO;
     }
 
     private async Task ExportToExcel()

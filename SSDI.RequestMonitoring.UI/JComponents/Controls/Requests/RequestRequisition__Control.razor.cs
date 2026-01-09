@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
@@ -69,6 +68,13 @@ public partial class RequestRequisition__Control : ComponentBase
 
         try
         {
+            var slipattachments = Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id).ToList();
+            if (slip.AmountRequested != slipattachments.Sum(e => e.ReceiptAmount))
+            {
+                await ConfirmModal.ShowMessageBoxAsync("The total receipt amount does not match the amount requested. Please verify.");
+                return;
+            }
+
             var options = new ConfirmationModalOptions
             {
                 Message = $"Approve this <b>{GetSlipDisplayName(slip.RequisitionSlip_For)}</b> slip?",
@@ -89,9 +95,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
             if (response.Success)
             {
-                slip.Approval = ApprovalAction.Approve;
-                slip.SlipApproverName = currentUser.FullName;
-                slip.SlipApprovalDate = DateTime.Now;
+                await Refresh();
                 toastSvc.ShowSuccess("Slip approved successfully.");
             }
             else
@@ -132,9 +136,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
             if (response.Success)
             {
-                slip.Approval = ApprovalAction.Reject;
-                slip.SlipApproverName = currentUser.FullName;
-                slip.SlipApprovalDate = DateTime.Now;
+                await Refresh();
                 toastSvc.ShowSuccess("Slip rejected.");
             }
             else
@@ -380,6 +382,8 @@ public partial class RequestRequisition__Control : ComponentBase
             NumberRequired = true,
             NumberLabel = "Receipt Amount",
             NumberPlaceholder = "Please enter a valid amount...",
+            ShowRemarksField = true,
+            RemarksRequired = true,
         };
 
         var result = await ConfirmModal!.ShowAsync(options);
@@ -407,10 +411,11 @@ public partial class RequestRequisition__Control : ComponentBase
             ImgData = fileBytes,
             Size = file.Size,
             AttachType = RequestAttachType.Receipt,
-            ReceiptAmount = ConfirmModal.Number
+            ReceiptAmount = ConfirmModal.Number,
+            ReceiptRemarks = ConfirmModal.Remarks
         };
 
-        var res = await AttachSvc.UploadAsync(Request, [attach], RequestAttachType.Receipt, slip.Id, ConfirmModal.Number);
+        var res = await AttachSvc.UploadAsync(Request, [attach], RequestAttachType.Receipt, slip.Id, ConfirmModal.Number, ConfirmModal.Remarks);
         if (!res.Success)
         {
             toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -677,5 +682,6 @@ public partial class RequestRequisition__Control : ComponentBase
         public RequestAttachType AttachType { get; set; }
         public int RequisitionId { get; set; }
         public decimal ReceiptAmount { get; set; }
+        public string ReceiptRemarks { get; set; } = string.Empty;
     }
 }

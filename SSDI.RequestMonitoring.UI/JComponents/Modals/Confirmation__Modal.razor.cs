@@ -51,18 +51,21 @@ public partial class Confirmation__Modal : ComponentBase
 
     [Parameter] public bool RemarksRequired { get; set; }
     [Parameter] public string Remarks { get; set; } = string.Empty;
+
     //[Parameter] public EventCallback<string> RemarksChanged { get; set; }
     [Parameter] public string RemarksPlaceholder { get; set; } = "Enter your remarks here...";
+
     [Parameter] public string RemarksLabel { get; set; } = "Remarks";
-    
 
     // Number Field
     [Parameter] public bool ShowNumberField { get; set; }
 
     [Parameter] public bool NumberRequired { get; set; }
     [Parameter] public decimal Number { get; set; } = 0;
+
     //[Parameter] public EventCallback<string> NumberChanged { get; set; }
     [Parameter] public string NumberPlaceholder { get; set; } = "Enter amount here...";
+
     [Parameter] public string NumberLabel { get; set; } = "Amount";
 
     // Events
@@ -209,6 +212,7 @@ public partial class Confirmation__Modal : ComponentBase
 
     public async Task<bool> ShowRejectAsync(string reqId)
     {
+        ResetFields();
         Message = $"Are you sure you want to reject the request '#{reqId}'?";
         Title = "Reject Purchase Request";
         Variant = ConfirmationModalVariant.error;
@@ -230,13 +234,13 @@ public partial class Confirmation__Modal : ComponentBase
 
     public async Task<bool> ShowApproveAsync(string reqId)
     {
+        ResetFields();
         Message = $"Are you sure you want to approve the purchase request '#{reqId}'? Once approve, it will be forwarded for the next level of approval.";
         Title = "Approve Purchase Request";
         Variant = ConfirmationModalVariant.confirmation;
         ConfirmText = "Yes, Approve";
         CancelText = "No, Cancel";
         ConfirmIcon = "bi bi-check-lg";
-        ShowRemarksField = false;
 
         _tcs = new TaskCompletionSource<bool>();
         _isVisible = true;
@@ -248,13 +252,13 @@ public partial class Confirmation__Modal : ComponentBase
 
     public async Task<bool> ShowSubmitAsync(string reqId)
     {
+        ResetFields();
         Message = $"Are you sure you want to submit purchase request '#{reqId}'?<br>Once submitted, it will be forwarded for endorsement.";
         Title = "Submit Purchase Request";
         Variant = ConfirmationModalVariant.confirmation;
         ConfirmText = "Yes, Submit";
         CancelText = "No, Cancel";
         ConfirmIcon = "bi bi-send-check";
-        ShowRemarksField = false;
 
         _tcs = new TaskCompletionSource<bool>();
         _isVisible = true;
@@ -266,13 +270,32 @@ public partial class Confirmation__Modal : ComponentBase
 
     public async Task<bool> ShowSubmitJobOrderAsync(string reqId)
     {
+        ResetFields();
         Message = $"Are you sure you want to submit job order '#{reqId}'?<br>Once submitted, it will be forwarded for endorsement.";
         Title = "Submit Job Order";
         Variant = ConfirmationModalVariant.confirmation;
         ConfirmText = "Yes, Submit";
         CancelText = "No, Cancel";
         ConfirmIcon = "bi bi-send-check";
-        ShowRemarksField = false;
+
+        _tcs = new TaskCompletionSource<bool>();
+        _isVisible = true;
+        await IsVisibleChanged.InvokeAsync(true);
+        StateHasChanged();
+
+        return await _tcs.Task;
+    }
+
+    public async Task<bool> ShowMessageBoxAsync(string message, string title = "", ConfirmationModalVariant variant = ConfirmationModalVariant.info)
+    {
+        ResetFields();
+        Message = message;
+        Title = title;
+        Variant = variant;
+        ConfirmText = "OK";
+        ShowCancelButton = false;
+        ShowCloseButton = false;
+        ConfirmIcon = "";
 
         _tcs = new TaskCompletionSource<bool>();
         _isVisible = true;
@@ -292,6 +315,32 @@ public partial class Confirmation__Modal : ComponentBase
         IsLoading = loading;
         StateHasChanged();
         await Task.CompletedTask;
+    }
+
+    private void ResetFields()
+    {
+        Remarks = string.Empty;
+        Number = 0;
+        Message = "";
+        Title = "";
+        Variant = ConfirmationModalVariant.confirmation;
+        ConfirmText = "Confirm";
+        CancelText = "Cancel";
+        Icon = "";
+        ConfirmIcon = "";
+        Subtitle = "";
+        ShowCancelButton = true;
+        ShowIcon = true;
+        ShowRemarksField = false;
+        RemarksRequired = false;
+        RemarksPlaceholder = "Enter your remarks here...";
+        RemarksLabel = "Remarks";
+        ShowNumberField = false;
+        NumberRequired = false;
+        NumberPlaceholder = "Enter amount here...";
+        NumberLabel = "Amount";
+
+        SetDefaultIcons();
     }
 }
 

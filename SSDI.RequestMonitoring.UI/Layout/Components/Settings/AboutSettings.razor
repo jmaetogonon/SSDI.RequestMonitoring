@@ -1,0 +1,75 @@
+﻿@using SSDI.RequestMonitoring.UI.Services
+@inject IJSRuntime JSRuntime
+@inject IToastService ToastService
+
+<div class="about-settings">
+    <div class="settings-section">
+        <h4>About</h4>
+
+        <div class="about-info">
+            <div class="app-logo-large">
+                <img src="/images/logo/app-logo-square-trans.png" alt="Requests Monitoring System Logo" />
+                <div class="version-badge">v@(appVersion)</div>
+            </div>
+
+            <div class="app-details">
+                <h5>Requests Monitoring System</h5>
+                <p class="app-description">
+                    A comprehensive solution for monitoring and managing requests within your organization.
+                    Streamline workflows, track progress, and ensure timely responses.
+                </p>
+
+                <div class="app-meta">
+                    <div class="meta-item">
+                        <i class="bi bi-cpu"></i>
+                        <div class="meta-content">
+                            <span class="meta-label">Version</span>
+                            <span class="meta-value">@appVersion</span>
+                        </div>
+                    </div>
+
+                    <div class="meta-item">
+                        <i class="bi bi-calendar"></i>
+                        <div class="meta-content">
+                            <span class="meta-label">Release Date</span>
+                            <span class="meta-value">@releaseDate</span>
+                        </div>
+                    </div>
+
+                    <div class="meta-item">
+                        <i class="bi bi-building"></i>
+                        <div class="meta-content">
+                            <span class="meta-label">Organization</span>
+                            <span class="meta-value">SSDI Company</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="copyright">
+                    <p>© @copyrightYear SSDI Company. All rights reserved.</p>
+                </div>
+
+                <div class="about-links">
+                    <a href="/privacy" target="_blank" class="about-link">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Privacy Policy</span>
+                    </a>
+                    <a href="/terms" target="_blank" class="about-link">
+                        <i class="bi bi-file-text"></i>
+                        <span>Terms of Service</span>
+                    </a>
+                    <a href="mailto:support@company.com" class="about-link">
+                        <i class="bi bi-envelope"></i>
+                        <span>Contact Support</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string appVersion = "1.1.0";
+    private string releaseDate = "December 2024";
+    private string copyrightYear = "2024";
+}

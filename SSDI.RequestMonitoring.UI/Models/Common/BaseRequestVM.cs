@@ -42,6 +42,11 @@ public abstract class BaseRequestVM : IRequestDetailVM
 
     public int? PendingClosureRequestedById { get; set; }
 
+    public int? UserDepartmentHeadId { get; set; }
+    public int? UserDivisionHeadId { get; set; }
+
+    public bool IsNoUser { get; set; } = false;
+
     public abstract ICollection<IApprovalVM> ApprovalsBase { get; }
     public abstract ICollection<IAttachmentVM> AttachmentsBase { get; }
     public abstract ICollection<ISlipVM> SlipsBase { get; }

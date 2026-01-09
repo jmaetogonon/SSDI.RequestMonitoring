@@ -16,7 +16,7 @@ namespace SSDI.RequestMonitoring.UI.Services
             _authenticationStateProvider = authenticationStateProvider;
         }
 
-        public async Task<bool> AuthenticateAsync(string username, string password)
+        public async Task<string> AuthenticateAsync(string username, string password)
         {
             try
             {
@@ -28,13 +28,22 @@ namespace SSDI.RequestMonitoring.UI.Services
 
                     // Set claims in Blazor and login state
                     await((ApiAuthenticationStateProvider)_authenticationStateProvider).LoggedIn();
-                    return true;
+                    return "success";
                 }
-                return false;
+                return "error";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                if (ex.Message.Contains("No Access"))
+                {
+                    return "NoAccess";
+                }
+                if (ex.Message.Contains("Access Denied"))
+                {
+                    return "DeniedAccess";
+                }
+
+                return ex.Message;
             }
         }
 

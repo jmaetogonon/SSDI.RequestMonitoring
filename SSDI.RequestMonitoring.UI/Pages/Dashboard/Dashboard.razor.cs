@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
+using SSDI.RequestMonitoring.UI.Models.Common;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 using SSDI.RequestMonitoring.UI.Pages.Dashboard.Dto;
@@ -103,7 +104,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
                 .ToList();
 
             // Load team requests for supervisors
-            if (utils.IsSupervisor())
+            if (currentUser.IsSupervisor)
             {
                 await LoadTeamRequests();
                 await LoadApprovedRequests();
@@ -120,7 +121,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
     {
         try
         {
-            if (utils.IsUser())
+            if (currentUser.IsUser)
             {
                 purchaseRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByUser(currentUser.UserId);
             }
@@ -128,13 +129,13 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             {
                 purchaseRequests = await purchaseRequestSvc.GetAllPurchaseReqBySupervisor(currentUser.UserId, true, true);
 
-                if (utils.IsCEO())
+                if (currentUser.IsCEO)
                 {
                     var ceoRequests = await purchaseRequestSvc.GetAllPurchaseReqByCeo();
                     purchaseRequests = purchaseRequests.Concat(ceoRequests).DistinctBy(e => e.Id).ToList();
                 }
 
-                if (utils.IsAdmin())
+                if (currentUser.IsAdmin)
                 {
                     var adminRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByAdmin();
                     purchaseRequests = purchaseRequests.Concat(adminRequests).DistinctBy(r => r.Id).ToList();
@@ -154,7 +155,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
     {
         try
         {
-            if (utils.IsUser())
+            if (currentUser.IsUser)
             {
                 jobOrders = await jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
             }
@@ -162,13 +163,13 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             {
                 jobOrders = await jobOrderSvc.GetAllJobOrderBySupervisor(currentUser.UserId, true, true);
 
-                if (utils.IsCEO())
+                if (currentUser.IsCEO)
                 {
                     var ceoRequests = await jobOrderSvc.GetAllJobOrderByCeo();
                     jobOrders = jobOrders.Concat(ceoRequests).DistinctBy(e => e.Id).ToList();
                 }
 
-                if (utils.IsAdmin())
+                if (currentUser.IsAdmin)
                 {
                     var adminRequests = await jobOrderSvc.GetAllJobOrdersByAdmin();
                     jobOrders = jobOrders.Concat(adminRequests).DistinctBy(r => r.Id).ToList();
@@ -224,55 +225,38 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         try
         {
             await Task.Delay(100);
-            List<Purchase_RequestVM> purchaseTeamRequests = [];
-            List<Job_OrderVM> jobOrderTeamRequests = [];
+            var purchaseTeamRequests = GetTeamRequests<Purchase_RequestVM>(
+               purchaseRequests,
+               request => new TeamRequestItem
+               {
+                   Id = request.Id,
+                   RequestType = "purchase",
+                   Title = request.Nature_Of_Request,
+                   RequestedBy = request.Name,
+                   Status = request.Status,
+                   Date = request.DateModified ?? DateTime.Now,
+                   Priority = request.Priority,
+                   ReportType = request.ReportType,
+               }
+           );
 
-            if (purchaseRequests.Any(e => e.ReportType == "Department")) purchaseTeamRequests = [.. purchaseRequests.Where(e => e.Status == RequestStatus.Draft || e.Status == RequestStatus.Rejected)];
-            if (jobOrders.Any(e => e.ReportType == "Department")) jobOrderTeamRequests = [.. jobOrders.Where(e => e.Status == RequestStatus.Draft || e.Status == RequestStatus.Rejected)];
-
-            if (purchaseRequests.Any(e => e.ReportType == "Division")) purchaseTeamRequests = [.. purchaseRequests.Where(e => e.Status == RequestStatus.ForEndorsement)];
-            if (jobOrders.Any(e => e.ReportType == "Division")) jobOrderTeamRequests = [.. jobOrders.Where(e => e.Status == RequestStatus.ForEndorsement)];
-
-            if (utils.IsCEO())
-            {
-                var ceoPRequests = purchaseTeamRequests.Concat(purchaseRequests.Where(e => e.Status == RequestStatus.ForCeoApproval)).ToList();
-                var ceoJORequests = jobOrderTeamRequests.Concat(jobOrders.Where(e => e.Status == RequestStatus.ForCeoApproval)).ToList();
-                purchaseTeamRequests = ceoPRequests;
-                jobOrderTeamRequests = ceoJORequests;
-            }
-
-            if (utils.IsAdmin())
-            {
-                var adminPRequests = purchaseTeamRequests.Concat(purchaseRequests.Where(e => e.Status == RequestStatus.ForAdminVerification || e.Status == RequestStatus.ForRequisition)).ToList();
-                var adminJORequests = jobOrderTeamRequests.Concat(jobOrders.Where(e => e.Status == RequestStatus.ForAdminVerification || e.Status == RequestStatus.ForRequisition)).ToList();
-                purchaseTeamRequests = adminPRequests;
-                jobOrderTeamRequests = adminJORequests;
-            }
+            var jobOrderTeamRequests = GetTeamRequests<Job_OrderVM>(
+                jobOrders,
+                request => new TeamRequestItem
+                {
+                    Id = request.Id,
+                    RequestType = "joborder",
+                    Title = request.Nature_Of_Request,
+                    RequestedBy = request.Name,
+                    Status = request.Status,
+                    Date = request.DateModified ?? DateTime.Now,
+                    Priority = request.Priority,
+                    ReportType = request.ReportType,
+                }
+            );
 
             var allTeamRequests = purchaseTeamRequests
-                .Select(r => new TeamRequestItem
-                {
-                    Id = r.Id,
-                    RequestType = "purchase",
-                    Title = r.Nature_Of_Request,
-                    RequestedBy = r.Name,
-                    Status = r.Status,
-                    Date = r.DateModified ?? DateTime.Now,
-                    Priority = r.Priority,
-                    ReportType = r.ReportType,
-                })
-                .Concat(jobOrderTeamRequests
-                    .Select(r => new TeamRequestItem
-                    {
-                        Id = r.Id,
-                        RequestType = "joborder",
-                        Title = r.Nature_Of_Request,
-                        RequestedBy = r.Name,
-                        Status = r.Status,
-                        Date = r.DateModified ?? DateTime.Now,
-                        Priority = r.Priority,
-                        ReportType = r.ReportType,
-                    }))
+                .Concat(jobOrderTeamRequests)
                 .OrderByDescending(r => r.Date)
                 .Take(10)
                 .ToList();
@@ -286,38 +270,109 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         }
     }
 
+    private List<TeamRequestItem> GetTeamRequests<TRequest>(
+    IEnumerable<TRequest> requests,
+    Func<TRequest, TeamRequestItem> mapper) where TRequest : BaseRequestVM
+    {
+        var teamRequests = new List<TRequest>();
+
+        // Common filtering logic
+        var forSubmission = requests.Where(e =>
+            (e.ReportToDeptSupId == currentUser.UserId || e.UserDepartmentHeadId == currentUser.UserId || e.RequestedById == currentUser.UserId) &&
+            (e.Status == RequestStatus.Draft || e.Status == RequestStatus.Rejected || e.Status == RequestStatus.PendingRequesterClosure || e.Status == RequestStatus.ForRequisition));
+
+        var forEndorsement = requests.Where(e =>
+            (e.ReportToDivSupId == currentUser.UserId || e.UserDivisionHeadId == currentUser.UserId) &&
+            e.Status == RequestStatus.ForEndorsement);
+
+        teamRequests = forSubmission.Concat(forEndorsement).ToList();
+
+        if (currentUser.IsAdmin)
+        {
+            var forAdminApproval = requests.Where(e =>
+                e.Status == RequestStatus.ForAdminVerification ||
+                e.Status == RequestStatus.ForRequisition);
+            teamRequests = teamRequests.Concat(forAdminApproval).ToList();
+        }
+
+        if (currentUser.IsCEO)
+        {
+            var forCEOApproval = requests.Where(e =>
+                e.Status == RequestStatus.ForCeoApproval || e.Status == RequestStatus.ForRequisition);
+            teamRequests = teamRequests.Concat(forCEOApproval).ToList();
+        }
+
+        return teamRequests.Select(mapper).ToList();
+    }
+
     private async Task LoadApprovedRequests()
     {
         try
         {
             await Task.Delay(100);
 
-            var allRequests = purchaseRequests
-                .Select(r => new ApprovedRequestItem
+            // Local function to create ApprovedRequestItem
+            ApprovedRequestItem MapToApprovedItem<TRequest>(TRequest request, string requestType)
+                where TRequest : BaseRequestVM
+            {
+                return new ApprovedRequestItem
                 {
-                    Id = r.Id,
-                    RequestType = "purchase",
-                    Title = r.Nature_Of_Request,
-                    RequestedBy = r.Name,
-                    Status = r.Status,
-                    Date = r.DateModified ?? DateTime.Now,
-                    Priority = r.Priority,
-                    ReportType = r.ReportType,
-                    PendingSince = GetPendingSince(r.Id, "purchase")
-                })
-                .Concat(jobOrders
-                    .Select(r => new ApprovedRequestItem
-                    {
-                        Id = r.Id,
-                        RequestType = "joborder",
-                        Title = r.Nature_Of_Request,
-                        RequestedBy = r.Name,
-                        Status = r.Status,
-                        Date = r.DateModified ?? DateTime.Now,
-                        Priority = r.Priority,
-                        ReportType = r.ReportType,
-                        PendingSince = GetPendingSince(r.Id, "joboder")
-                    }))
+                    Id = request.Id,
+                    RequestType = requestType,
+                    Title = request.Nature_Of_Request,
+                    RequestedBy = request.Name,
+                    Status = request.Status,
+                    Date = request.DateModified ?? DateTime.Now,
+                    Priority = request.Priority,
+                    ReportType = request.ReportType,
+                    PendingSince = CalculatePendingSince(request)
+                };
+            }
+
+            // Local function to calculate pending date
+            DateTime? CalculatePendingSince<TRequest>(TRequest request) where TRequest : BaseRequestVM
+            {
+                if (request.Status == RequestStatus.Closed || request.Status == RequestStatus.Cancelled || request.Status == RequestStatus.Rejected)
+                    return null;
+
+                if (request.RequestedById == currentUser.UserId)
+                    return request.DateCreated;
+
+                var approvalStage = DetermineApprovalStage(request);
+                return request.ApprovalsBase?
+                    .Where(a => a.Stage == approvalStage && a.Action == ApprovalAction.Approve)
+                    .LastOrDefault()?
+                    .ActionDate;
+            }
+
+            // Local function to determine approval stage
+            ApprovalStage? DetermineApprovalStage<TRequest>(TRequest request) where TRequest : BaseRequestVM
+            {
+                ApprovalStage? stage = null;
+                if (request.ReportType == "Department")
+                    stage = ApprovalStage.DepartmentHead;
+
+                if (request.ReportType == "Division" ||
+                    (request.UserDivisionHeadId == currentUser.UserId &&
+                     request.Status > RequestStatus.ForEndorsement))
+                    stage = ApprovalStage.DivisionHead;
+
+                if (currentUser.IsCEO)
+                {
+                    if (request.Status > RequestStatus.ForCeoApproval)
+                        stage = ApprovalStage.CeoOrAvp;
+                }
+
+                if (currentUser.IsAdmin &&
+                    request.Status > RequestStatus.ForAdminVerification)
+                    stage = ApprovalStage.Admin;
+
+                return stage;
+            }
+
+            var allRequests =
+                purchaseRequests.Select(r => MapToApprovedItem(r, "purchase"))
+                .Concat(jobOrders.Select(r => MapToApprovedItem(r, "joborder")))
                 .OrderByDescending(r => r.PendingSince)
                 .ToList();
 
@@ -330,86 +385,6 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         }
     }
 
-    private DateTime? GetPendingSince(int id, string type)
-    {
-        if (type == "purchase")
-        {
-            var request = purchaseRequests.FirstOrDefault(r => r.Id == id);
-            var approvals = request?.Approvals.ToList();
-
-            if (request?.Status == RequestStatus.Closed || request?.Status == RequestStatus.Cancelled)
-            {
-                return null;
-            }
-
-            if (request?.RequestedById == currentUser.UserId)
-            {
-                return request?.DateCreated;
-            }
-
-            if (request?.ReportType == "Department")
-            {
-                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DepartmentHead && a.Action == ApprovalAction.Approve);
-                if (currentIndex != null) return currentIndex?.ActionDate;
-            }
-
-            if (request?.ReportType == "Division")
-            {
-                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead && a.Action == ApprovalAction.Approve);
-                if (currentIndex != null) return currentIndex?.ActionDate;
-            }
-
-            if (utils.IsCEO())
-            {
-                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp && a.Action == ApprovalAction.Approve);
-                if (currentIndex != null) return currentIndex?.ActionDate;
-            }
-
-            if (utils.IsAdmin())
-            {
-                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.Admin && a.Action == ApprovalAction.Approve);
-                if (currentIndex != null) return currentIndex?.ActionDate;
-            }
-        }
-        else
-        {
-            var request = jobOrders.FirstOrDefault(r => r.Id == id);
-            var approvals = request?.Approvals.ToList();
-
-            if (request?.RequestedById == currentUser.UserId)
-            {
-                return request?.DateCreated;
-            }
-
-            if (request?.ReportType == "Department")
-            {
-                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DepartmentHead && a.Action == ApprovalAction.Approve);
-                if (currentIndex != null) return currentIndex?.ActionDate;
-            }
-
-            if (request?.ReportType == "Division")
-            {
-                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.DivisionHead && a.Action == ApprovalAction.Approve);
-                if (currentIndex != null) return currentIndex?.ActionDate;
-            }
-
-            if (utils.IsCEO())
-            {
-                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.CeoOrAvp && a.Action == ApprovalAction.Approve);
-                if (currentIndex != null) return currentIndex?.ActionDate;
-            }
-
-            if (utils.IsAdmin())
-            {
-                var currentIndex = approvals?.LastOrDefault(a => a.Stage == ApprovalStage.Admin && a.Action == ApprovalAction.Approve);
-                if (currentIndex != null) return currentIndex?.ActionDate;
-            }
-        }
-
-        return null;
-    }
-
-    // Navigation Methods
     private void ViewAllRequests() => navigationManager.NavigateTo($"{GetRequestLink()}");
 
     private void FilterByStatus(RequestStatus status)
@@ -613,15 +588,15 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         {
             var count = 1; // Total Requests
 
-            if (utils.IsUser()) count += 2; // My Drafts + Pending For Close
+            if (currentUser.IsUser) count += 2; // My Drafts + Pending For Close
 
             if (purchaseRequests.Any(e => e.ReportType == "Department")) count += 2; // For Submission + Rejected
 
             if (purchaseRequests.Any(e => e.ReportType == "Division")) count += 1; // For Endorsement
 
-            if (utils.IsAdmin()) count += 2; // For Approval + For Requisition
+            if (currentUser.IsAdmin) count += 2; // For Approval + For Requisition
 
-            if (utils.IsCEO()) count += 1; // For Approval
+            if (currentUser.IsCEO) count += 1; // For Approval
 
             count += 1; // Completed
 
@@ -631,15 +606,15 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         {
             var count = 1; // Total
 
-            if (utils.IsUser()) count += 2; // My Drafts + Pending For Close
+            if (currentUser.IsUser) count += 2; // My Drafts + Pending For Close
 
             if (purchaseRequests.Any(e => e.ReportType == "Department")) count += 2; // For Submission + Rejected
 
             if (purchaseRequests.Any(e => e.ReportType == "Division")) count += 1; // For Endorsement
 
-            if (utils.IsAdmin()) count += 2; // For Approval + For Requisition
+            if (currentUser.IsAdmin) count += 2; // For Approval + For Requisition
 
-            if (utils.IsCEO()) count += 1; // For Approval
+            if (currentUser.IsCEO) count += 1; // For Approval
 
             count += 1; // Closed
 

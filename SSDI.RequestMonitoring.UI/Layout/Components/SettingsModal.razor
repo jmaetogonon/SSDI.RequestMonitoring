@@ -1,0 +1,110 @@
+﻿@using SSDI.RequestMonitoring.UI.Layout.Components.Settings
+@implements IDisposable
+
+<div class="settings-modal-overlay @(Visible ? "visible" : "")" @onclick="CloseModal">
+    <div class="settings-modal @(Visible ? "visible" : "")" @onclick:stopPropagation>
+        <div class="settings-modal__header">
+            <div class="settings-title">
+                <i class="bi bi-gear"></i>
+                <h3>Settings</h3>
+            </div>
+            <button class="settings-close" @onclick="CloseModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="settings-modal__body">
+            <div class="settings-sidebar">
+                <div class="settings-tabs">
+                    @foreach (var tab in tabs)
+                    {
+                        <button class="settings-tab @(activeTab == tab.Id ? "active" : "")"
+                                @onclick="@(() => SetActiveTab(tab.Id))">
+                            <i class="@tab.Icon"></i>
+                            <span>@tab.Name</span>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="settings-content">
+                @if (activeTab == "general")
+                {
+                    <GeneralSettings />
+                }
+                else if (activeTab == "esignature")
+                {
+                    <ESignatureSettings />
+                }
+                else if (activeTab == "privacy")
+                {
+                    <PrivacySettings />
+                }
+                else if (activeTab == "about")
+                {
+                    <AboutSettings />
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+
+    private string activeTab = "general";
+    private readonly List<SettingsTab> tabs = new()
+    {
+        new SettingsTab("general", "General", "bi-gear"),
+        new SettingsTab("esignature", "E-Signature", "bi-pen"),
+        new SettingsTab("privacy", "Privacy", "bi-shield-check"),
+        new SettingsTab("about", "About", "bi-info-circle")
+    };
+
+    private async Task CloseModal()
+    {
+        await VisibleChanged.InvokeAsync(false);
+    }
+
+    private void SetActiveTab(string tabId)
+    {
+        activeTab = tabId;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadSettings();
+        }
+    }
+
+    private async Task LoadSettings()
+    {
+        // Load all settings
+        // This will trigger each settings component to load its own settings
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+
+    private class SettingsTab
+    {
+        public string Id { get; }
+        public string Name { get; }
+        public string Icon { get; }
+
+        public SettingsTab(string id, string name, string icon)
+        {
+            Id = id;
+            Name = name;
+            Icon = icon;
+        }
+    }
+}

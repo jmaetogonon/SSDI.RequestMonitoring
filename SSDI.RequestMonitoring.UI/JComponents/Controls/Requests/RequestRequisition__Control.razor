@@ -34,7 +34,7 @@
                 }
             </div>
             <div class="slips-actions">
-                @if (utils.IsAdmin() && Request.Status == RequestStatus.ForRequisition)
+                @if (currentUser.IsAdmin && Request.Status == RequestStatus.ForRequisition)
                 {
                     <button class="btn btn--primary btn--sm" @onclick="AddNewSlip" title="Add new requisition slip">
                         <i class="bi bi-plus-lg"></i>
@@ -121,7 +121,7 @@
                                     }
                                 </button>
 
-                                @if (utils.IsAdmin() && Request?.Status == RequestStatus.ForRequisition && slip.Approval is ApprovalAction.Pending)
+                                @if (currentUser.IsAdmin && Request?.Status == RequestStatus.ForRequisition && slip.Approval is ApprovalAction.Pending)
                                 {
                                     <button class="slip-card__btn"
                                             disabled="@editLoading.GetValueOrDefault(slip.Id)"
@@ -150,7 +150,7 @@
                             <div class="slip-card__actions-attach-count">
                                 <!-- Approval Section in Header -->
                                 <div class="slip-card__approval-header">
-                                    @if (utils.IsCEO() && Request?.Status == RequestStatus.ForRequisition)
+                                    @if (currentUser.IsCEO && Request?.Status == RequestStatus.ForRequisition)
                                     {
                                         @if (slip.Approval == ApprovalAction.Pending)
                                         {
@@ -367,7 +367,7 @@
 
 
 
-                                    @if ((utils.IsAdmin() || utils.IsCEO()) && Request.Status == RequestStatus.ForRequisition)
+                                    @if ((currentUser.IsAdmin || currentUser.IsCEO) && Request.Status == RequestStatus.ForRequisition)
                                     {
                                         <div class="attachments-upload">
                                             @if (activeAttachmentTab == "requisition")
@@ -459,6 +459,8 @@
                                                                 <span>@FormatFileSize(receipt.Size)</span>
                                                                 <span>•</span>
                                                                 <span>@receipt.DateCreated?.ToString("MMM dd, yyyy")</span>
+                                                                <span>•</span>
+                                                                <span>@receipt.ReceiptRemarks</span>
                                                             </div>
                                                         </div>
                                                         <div class="attachment-amount">₱@receipt.ReceiptAmount.ToString("N2")</div>
@@ -505,7 +507,7 @@
                 <h3>No Requisition Slips</h3>
                 <p>No requisition slips have been added to this request yet.</p>
 
-                @if (utils.IsAdmin() && Request.Status == RequestStatus.ForRequisition)
+                @if (currentUser.IsAdmin && Request.Status == RequestStatus.ForRequisition)
                 {
                     <button class="btn btn--primary" @onclick="AddNewSlip">
                         <i class="bi bi-plus-lg"></i>
