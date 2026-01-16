@@ -32,12 +32,11 @@
         // ============================
         if (Request.Status == RequestStatus.Closed && Request.DateCompleted.HasValue)
         {
-            var completedDate = Request.DateCompleted.Value;
-            var daysToComplete = (completedDate.Date - Request.DateCreated)!.Value.Days;
+            var duration = Request.DateCompleted.Value - Request.DateCreated;
 
-            Message = daysToComplete <= 0
-              ? $"Completed today on {completedDate:MMM d}."
-              : $"Completed in {FormatDaysSimple(daysToComplete)} on {completedDate:MMM d}.";
+            Message =
+                $"This request was completed in {FormatDuration(duration)} " +
+                $"on {Request.DateCompleted.Value:MMM dd, yyyy}.";
 
             CssClass = "success";
             Icon = "bi-check-circle";
@@ -57,12 +56,11 @@
 
             if (action?.ActionDate != null)
             {
-                var cancelledDate = action.ActionDate.Value;
-                var daysToCancel = (cancelledDate.Date - Request.DateCreated)!.Value.Days;
+                var duration = action.ActionDate.Value - Request.DateCreated;
 
-                Message = daysToCancel <= 0
-                    ? $"Cancelled today on {cancelledDate:MMM d}."
-                    : $"Cancelled in {FormatDaysSimple(daysToCancel)} on {cancelledDate:MMM d}.";
+                Message =
+                    $"This request was cancelled in {FormatDuration(duration)} " +
+                    $"on {action.ActionDate.Value:MMM dd, yyyy}.";
             }
             else
             {
@@ -80,18 +78,11 @@
         // ============================
         if (AwaitingApprovalDate.HasValue)
         {
-            var daysAgo = (DateTime.Now.Date - AwaitingApprovalDate.Value.Date).Days;
+            var duration = DateTime.Now - AwaitingApprovalDate.Value;
 
-            if (Request.Status == RequestStatus.Rejected)
-            {
-                Message = $"Rejected {FormatDaysAgo(daysAgo)}.";
-            }
-            else
-            {
-                Message = $"Awaiting your approval for {FormatDaysAgo(daysAgo)}.";
-            }
-
-            CssClass = GetSeverity(DateTime.Now.Date - AwaitingApprovalDate.Value.Date);
+            Message = $"{FormatDuration(duration)} pending since you were required to approve this request.";
+            if (Request.Status == RequestStatus.Rejected) Message = $"Rejected {FormatDuration(duration)} ago.";
+            CssClass = GetSeverity(duration);
             Icon = "bi-hourglass-split";
             return;
         }
@@ -103,46 +94,36 @@
 
         if (pendingSince.HasValue)
         {
-            var daysAgo = (DateTime.Now.Date - pendingSince.Value.Date).Days;
+            var duration = DateTime.Now - pendingSince.Value;
 
             if (currentUser.IsUser || Request?.RequestedById == currentUser.UserId)
             {
-                Message = $"Submitted {FormatDaysAgo(daysAgo)}.";
+                Message = $"In progress for {FormatDuration(duration)} since your submission.";
             }
             else
             {
-                Message = $"In progress for {FormatDaysAgo(daysAgo)} since your approval.";
+                Message = $"In progress for {FormatDuration(duration)} since your approval.";
             }
-
-            CssClass = GetSeverity(DateTime.Now.Date - pendingSince.Value.Date);
+            CssClass = GetSeverity(duration);
             Icon = "bi-hourglass-split";
+
             return;
-        }
+        } 
     }
 
     // ============================
     // HELPERS
     // ============================
-
-    private static string FormatDaysAgo(int days)
+    private static string FormatDaysAgo(DateTime date)
     {
+        var days = (DateTime.Now.Date - date.Date).Days;
+
         if (days <= 0) return "today";
         if (days == 1) return "yesterday";
         if (days <= 7) return $"{days} days ago";
         if (days <= 30) return $"{days / 7} weeks ago";
         if (days <= 365) return $"{days / 30} months ago";
         return $"{days / 365} years ago";
-    }
-
-    // Simple format for completed/cancelled requests (shows duration, not "ago")
-    private static string FormatDaysSimple(int days)
-    {
-        if (days <= 0) return "today";
-        if (days == 1) return "1 day";
-        if (days <= 7) return $"{days} days";
-        if (days <= 30) return $"{days / 7} weeks";
-        if (days <= 365) return $"{days / 30} months";
-        return $"{days / 365} years";
     }
 
     private static string FormatDuration(TimeSpan? span)

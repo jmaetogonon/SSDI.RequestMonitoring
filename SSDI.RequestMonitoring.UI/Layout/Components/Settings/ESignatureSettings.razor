@@ -102,7 +102,7 @@
                     </div>
                     <div class="guideline-content">
                         <h6>Secure Storage</h6>
-                        <p>Your signature is encrypted and stored securely</p>
+                        <p>Your signature is stored securely</p>
                     </div>
                 </div>
                 <div class="guideline-item">
@@ -111,7 +111,7 @@
                     </div>
                     <div class="guideline-content">
                         <h6>Easy Updates</h6>
-                        <p>Update your signature at any time from this page</p>
+                        <p>Update your signature at any time from the settings</p>
                     </div>
                 </div>
                 <div class="guideline-item">
@@ -181,7 +181,6 @@
                     <div class="tool-preset">
                         <div class="tool-indicator">
                             <div class="current-tool">
-                                @* <div class="tool-color" style="background-color: @penColor; width: @(penWidth * 2)px; height: @(penWidth * 2)px;"></div> *@
                                 <span>@(penColor == "#000000" ? "Black" : "Blue") Pen - @(penWidth == 2 ? "Thin" : penWidth == 4 ? "Medium" : "Thick")</span>
                             </div>
                         </div>
@@ -431,6 +430,7 @@
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             toastSvc?.ShowError("An error occurred while saving the signature.");
         }
     }
@@ -475,6 +475,7 @@
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             toastSvc?.ShowError("An error occurred while uploading the signature.");
         }
     }

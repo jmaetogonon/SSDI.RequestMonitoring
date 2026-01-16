@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\fonts\RequestStatusInsight__Control.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="wwwroot\css\pages\sysconfigpage.css" />
+    <None Include="wwwroot\fonts\RequestStatusInsight__Control.razor.css" />
   </ItemGroup>
 
   <ItemGroup>

@@ -28,9 +28,6 @@ public interface ISlipVM
     string Mat_RefNo { get; set; }
     string Mat_PaymentTerms { get; set; }
 
-    string Others_IntentedFor { get; set; }
-    string Others_References { get; set; }
-
     DateTime DateCreated { get; set; }
     DateTime? DateModified { get; set; }
     ApprovalAction Approval { get; set; }

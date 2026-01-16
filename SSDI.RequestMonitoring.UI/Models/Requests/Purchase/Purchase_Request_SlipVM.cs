@@ -41,10 +41,6 @@ public class Purchase_Request_SlipVM : ISlipVM
     public string Mat_RefNo { get; set; } = string.Empty;
     public string Mat_PaymentTerms { get; set; } = string.Empty;
 
-    //OTHERS
-    public string Others_IntentedFor { get; set; } = string.Empty;
-
-    public string Others_References { get; set; } = string.Empty;
     public DateTime DateCreated { get; set; }
     public DateTime? DateModified { get; set; }
     public ApprovalAction Approval { get; set; } = ApprovalAction.Pending;

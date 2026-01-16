@@ -62,12 +62,12 @@ public class CurrentUser : IDisposable
 
             IsUser = Role == TokenCons.Role__User;
             IsAdmin = Role == TokenCons.Role__Admin;
-            IsCEO = Username == "b.palang";
-            IsSupervisor = RoleDesc.Contains("Supervisor", StringComparison.OrdinalIgnoreCase) ||
+            IsCEO = Username == "b.palang" || Username == "c.gagui";
+            IsSupervisor = (RoleDesc.Contains("Supervisor", StringComparison.OrdinalIgnoreCase) ||
                        RoleDesc.Contains("Admin", StringComparison.OrdinalIgnoreCase) ||
                        RoleDesc.Contains("Lead", StringComparison.OrdinalIgnoreCase) ||
                        RoleDesc.Contains("Head", StringComparison.OrdinalIgnoreCase) ||
-                       RoleDesc.Contains("Manager", StringComparison.OrdinalIgnoreCase);
+                       RoleDesc.Contains("Manager", StringComparison.OrdinalIgnoreCase)) && RoleDesc != "System Administrator";
         }
         else
         {

@@ -104,7 +104,6 @@
                         }
                         else if (ActiveTab == "slips")
                         {
-                            @* <RequestRequisitionSlips__Control Request="Request" AttachSvc="prAttachAdapter" ConfirmModal="confirmModal" /> *@
                             <RequestRequisition__Control Request="Request" AttachSvc="prAttachAdapter" SlipSvc="prRequisitionSvcAdapter" OnRequestChanged="Reload" ConfirmModal="confirmModal" />
                         }
                         else if (ActiveTab == "approval")
@@ -214,11 +213,14 @@
                                 {
                                     <strong>Requisition slip required</strong>
                                     <div class="muted">Please add at least one requisition slip before closing.</div>
-                                }
-                                @if (Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending))
+                                } else if (Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending))
                                 {
                                     <strong>Approval pending</strong>
                                     <div class="muted">All requisition slips must be approved before closing.</div>
+                                }else if (!isMatchRequsitionAmt)
+                                {
+                                    <strong>Receipt amount discrepancy</strong>
+                                    <div class="muted">Receipt totals don't match requested amounts. Please review.</div>
                                 }
                                 <div class="action-link">
                                     <label style="color: #023b8f;cursor: pointer;margin-top: 4px;" @onclick="@(() => SetActiveTab("slips"))">

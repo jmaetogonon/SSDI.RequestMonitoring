@@ -7019,12 +7019,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("mat_PaymentTerms")]
         public string Mat_PaymentTerms { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("others_IntentedFor")]
-        public string Others_IntentedFor { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("others_References")]
-        public string Others_References { get; set; }
-
         [System.Text.Json.Serialization.JsonPropertyName("approval")]
         public ApprovalAction Approval { get; set; }
 
@@ -7144,12 +7138,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("mat_PaymentTerms")]
         public string Mat_PaymentTerms { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("others_IntentedFor")]
-        public string Others_IntentedFor { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("others_References")]
-        public string Others_References { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("approval")]
         public ApprovalAction Approval { get; set; }
@@ -8417,12 +8405,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("mat_PaymentTerms")]
         public string Mat_PaymentTerms { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("others_IntentedFor")]
-        public string Others_IntentedFor { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("others_References")]
-        public string Others_References { get; set; }
-
         [System.Text.Json.Serialization.JsonPropertyName("approval")]
         public ApprovalAction Approval { get; set; }
 
@@ -9448,12 +9430,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("mat_PaymentTerms")]
         public string Mat_PaymentTerms { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("others_IntentedFor")]
-        public string Others_IntentedFor { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("others_References")]
-        public string Others_References { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("approval")]
         public ApprovalAction Approval { get; set; }

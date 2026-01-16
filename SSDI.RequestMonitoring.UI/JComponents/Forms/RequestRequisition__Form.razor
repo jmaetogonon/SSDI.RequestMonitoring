@@ -43,35 +43,9 @@
             </div>
 
             <!-- Dynamic fields based on slip type -->
-            @if (FormModel.RequisitionSlip_For == RequisitionSlip_For.CashPayment || FormModel.RequisitionSlip_For == RequisitionSlip_For.CheckPayment)
+            @if (FormModel.RequisitionSlip_For == RequisitionSlip_For.Advances)
             {
-                <div class="form-section">
-                    <div class="form-section-title">PAYMENT</div>
-
-                    <div class="form-group full-width">
-                        <label for="paymentPayee">Payee</label>
-                        <InputText id="paymentPayee" class="form-control" @bind-Value="FormModel.Payment_Payee" />
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="paymentDetails">Payment Details</label>
-                        <InputText id="paymentDetails" class="form-control" @bind-Value="FormModel.Payment_PaymentDetails" />
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="paymentReferences">References</label>
-                        <InputText id="paymentReferences" class="form-control" @bind-Value="FormModel.Payment_References" />
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="paymentTerms">Payment terms</label>
-                        <InputText id="paymentTerms" class="form-control" @bind-Value="FormModel.Payment_PaymentTerms" />
-                    </div>
-                </div>
-            }
-            else if (FormModel.RequisitionSlip_For == RequisitionSlip_For.Advances)
-            {
-                <div class="form-section">
+                <div class="form-section full-width">
                     <div class="form-section-title"> CASH ADVANCES</div>
 
                     <div class="form-group full-width">
@@ -95,46 +69,61 @@
             }
             else if (FormModel.RequisitionSlip_For == RequisitionSlip_For.Others)
             {
-                <div class="form-section">
+                <div class="form-section full-width">
                     <div class="form-section-title">OTHERS (please specify below)</div>
                     <div class="form-group full-width">
                         <label for="othersSpecify">Please specify</label>
-                        <InputText id="othersSpecify" class="form-control" @bind-Value="FormModel.OthersRequisitionSlip_For" />
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="othersIntendedFor">Intended For</label>
-                        <InputText id="othersIntendedFor" class="form-control" @bind-Value="FormModel.Others_IntentedFor" />
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="othersReferences">References</label>
-                        <InputText id="othersReferences" class="form-control" @bind-Value="FormModel.Others_References" />
+                        <InputText id="othersSpecify" class="form-control" @bind-Value="FormModel.OthersRequisitionSlip_For" placeholder="e.g., Online Payment" />
                     </div>
                 </div>
             }
 
+            <div class="form-section">
+                <div class="form-section-title">PAYMENT</div>
 
-            <div class="form-section-title">MATERIALS & SUPPLIES/REPAIRS & MAINTENANCE</div>
+                <div class="form-group full-width">
+                    <label for="paymentPayee">Payee</label>
+                    <InputText id="paymentPayee" class="form-control" @bind-Value="FormModel.Payment_Payee" />
+                </div>
 
-            <div class="form-group full-width">
-                <label for="othersMatIntendedFor">Intended For</label>
-                <InputText id="othersMatIntendedFor" class="form-control" @bind-Value="FormModel.Mat_IntendedFor" />
+                <div class="form-group full-width">
+                    <label for="paymentDetails">Payment Details</label>
+                    <InputText id="paymentDetails" class="form-control" @bind-Value="FormModel.Payment_PaymentDetails" />
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="paymentReferences">References</label>
+                    <InputText id="paymentReferences" class="form-control" @bind-Value="FormModel.Payment_References" />
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="paymentTerms">Payment terms</label>
+                    <InputText id="paymentTerms" class="form-control" @bind-Value="FormModel.Payment_PaymentTerms" />
+                </div>
             </div>
 
-            <div class="form-group full-width">
-                <label for="matPrefSupp">Preferred Supplier</label>
-                <InputText id="matPrefSupp" class="form-control" @bind-Value="FormModel.Mat_PreferredSupplier" />
-            </div>
+            <div class="form-section-no-bg">
+                <div class="form-section-title full-width" style="font-size: 0.80rem;">MATERIALS & SUPPLIES/REPAIRS & MAINTENANCE</div>
 
-            <div class="form-group full-width">
-                <label for="matRefNo">Ref.# (JO/CI/Quotation)</label>
-                <InputText id="matRefNo" class="form-control" @bind-Value="FormModel.Mat_RefNo" />
-            </div>
+                <div class="form-group full-width">
+                    <label for="othersMatIntendedFor">Intended For</label>
+                    <InputText id="othersMatIntendedFor" class="form-control" @bind-Value="FormModel.Mat_IntendedFor" />
+                </div>
 
-            <div class="form-group full-width">
-                <label for="matPayTerms">Payment Terms</label>
-                <InputText id="matPayTerms" class="form-control" @bind-Value="FormModel.Mat_PaymentTerms" />
+                <div class="form-group full-width">
+                    <label for="matPrefSupp">Preferred Supplier</label>
+                    <InputText id="matPrefSupp" class="form-control" @bind-Value="FormModel.Mat_PreferredSupplier" />
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="matRefNo">Ref.# (JO/CI/Quotation)</label>
+                    <InputText id="matRefNo" class="form-control" @bind-Value="FormModel.Mat_RefNo" />
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="matPayTerms">Payment Terms</label>
+                    <InputText id="matPayTerms" class="form-control" @bind-Value="FormModel.Mat_PaymentTerms" />
+                </div>
             </div>
 
 

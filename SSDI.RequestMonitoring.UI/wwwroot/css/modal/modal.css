@@ -288,7 +288,6 @@
     }
 
 .form-section {
-    grid-column: 1 / -1;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.7rem;
@@ -313,9 +312,39 @@
         border-radius: 0 0 0 80px;
     }
 
+    .form-section.full-width {
+        grid-column: 1 / -1;
+    }
+
+.form-section-no-bg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+    margin: 0.5rem 0;
+    padding: 1rem;
+    border-radius: 12px;
+     box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+    .form-section-no-bg::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, rgba(0, 51, 102, 0.05) 0%, transparent 70%);
+        border-radius: 0 0 0 80px;
+    }
+
+    .form-section-no-bg.full-width {
+        grid-column: 1 / -1;
+    }
+
 .form-section-title {
-    grid-column: 1 / -1;
-    background: #636363;
+     background: #636363;
     color: white;
     padding: 0.75rem 1rem;
     border-radius: 8px;
@@ -335,6 +364,11 @@
         height: 16px;
         background: rgba(255, 255, 255, 0.8);
         border-radius: 2px;
+    }
+
+
+    .form-section-title.full-width {
+        grid-column: 1 / -1;
     }
 
 /* bounce animation */

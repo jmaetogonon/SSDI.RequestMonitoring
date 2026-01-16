@@ -274,45 +274,7 @@
                             <div class="slip-details-section">
                                 <h4>Slip Details</h4>
                                 <div class="slip-details-grid">
-                                    @if (slip.RequisitionSlip_For == RequisitionSlip_For.CashPayment)
-                                    {
-                                        <div class="detail-item">
-                                            <label>Payee:</label>
-                                            <span>@slip.Payment_Payee</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>Payment Details:</label>
-                                            <span>@slip.Payment_PaymentDetails</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>References:</label>
-                                            <span>@slip.Payment_References</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>Payment Terms:</label>
-                                            <span>@slip.Payment_PaymentTerms</span>
-                                        </div>
-                                    }
-                                    else if (slip.RequisitionSlip_For == RequisitionSlip_For.CheckPayment)
-                                    {
-                                        <div class="detail-item">
-                                            <label>Payee:</label>
-                                            <span>@slip.Payment_Payee</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>Payment Details:</label>
-                                            <span>@slip.Payment_PaymentDetails</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>References:</label>
-                                            <span>@slip.Payment_References</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>Payment Terms:</label>
-                                            <span>@slip.Payment_PaymentTerms</span>
-                                        </div>
-                                    }
-                                    else if (slip.RequisitionSlip_For == RequisitionSlip_For.Advances)
+                                    @if (slip.RequisitionSlip_For == RequisitionSlip_For.Advances)
                                     {
                                         <div class="detail-item">
                                             <label>Activity:</label>
@@ -331,19 +293,23 @@
                                             <span>@(slip.CA_LiquidationDueDate is null ? "-" : slip.CA_LiquidationDueDate?.ToString("MMM dd, yyyy"))</span>
                                         </div>
                                     }
-                                    else if (slip.RequisitionSlip_For == RequisitionSlip_For.Others)
+                                    else
                                     {
                                         <div class="detail-item">
-                                            <label>Specify:</label>
-                                            <span>@slip.OthersRequisitionSlip_For</span>
+                                            <label>Payee:</label>
+                                            <span>@slip.Payment_Payee</span>
                                         </div>
                                         <div class="detail-item">
-                                            <label>Intended For:</label>
-                                            <span>@slip.Others_IntentedFor</span>
+                                            <label>Payment Details:</label>
+                                            <span>@slip.Payment_PaymentDetails</span>
                                         </div>
                                         <div class="detail-item">
                                             <label>References:</label>
-                                            <span>@slip.Others_References</span>
+                                            <span>@slip.Payment_References</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <label>Payment Terms:</label>
+                                            <span>@slip.Payment_PaymentTerms</span>
                                         </div>
                                     }
                                 </div>

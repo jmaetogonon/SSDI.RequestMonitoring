@@ -68,13 +68,6 @@ public partial class RequestRequisition__Control : ComponentBase
 
         try
         {
-            var slipattachments = Request!.AttachmentsBase.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id).ToList();
-            if (slip.AmountRequested != slipattachments.Sum(e => e.ReceiptAmount))
-            {
-                await ConfirmModal.ShowMessageBoxAsync("The total receipt amount does not match the amount requested. Please verify.");
-                return;
-            }
-
             var options = new ConfirmationModalOptions
             {
                 Message = $"Approve this <b>{GetSlipDisplayName(slip.RequisitionSlip_For)}</b> slip?",
