@@ -1,0 +1,694 @@
+﻿/* Requisition Slips Styles */
+.slips-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1rem;
+}
+
+.slips-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+    .slips-stats i {
+        color: var(--color-darkmidnightblue);
+    }
+
+.slips-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Slips List - Full Width Cards */
+.slips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    grid-column: 1 / -1;
+}
+
+.slip-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+    .slip-card:hover {
+        border-color: var(--color-darkmidnightblue);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+.slip-card--expanded {
+    border-color: var(--color-darkmidnightblue);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Slip Header */
+.slip-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.1rem 1.5rem;
+    cursor: pointer;
+    background: #fafbfc;
+    transition: background-color 0.2s ease;
+}
+
+    .slip-card__header:hover {
+        background: #f3f4f6;
+    }
+
+.slip-card__main-info {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex: 1;
+}
+
+.slip-card__type {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 200px;
+}
+
+    .slip-card__type i {
+        font-size: 1.5rem;
+        color: var(--color-darkmidnightblue);
+    }
+
+.slip-card__summary {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex: 1;
+}
+
+.slip-card__amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-green);
+    min-width: 120px;
+}
+
+.slip-card__date {
+    font-size: 0.875rem;
+    color: #6b7280;
+    min-width: 100px;
+}
+
+.slip-card__department {
+    min-width: 120px;
+}
+
+.slip-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    background: var(--color-paleaqua);
+    color: var(--color-darkmidnightblue);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Department Badge Colors */
+.slip-badge--acctg {
+    background: var(--color-paleaqua);
+    color: var(--color-darkmidnightblue);
+}
+
+.slip-badge--sales {
+    background: #f0f9ff;
+    color: #0369a1;
+}
+
+.slip-badge--warehouse {
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.slip-badge--satellite {
+    background: #fefce8;
+    color: #854d0e;
+}
+
+/* Slip Header Actions */
+.slip-card__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.slip-card__actions-attach-count {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Approval Section in Header */
+.slip-card__approval-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Compact Approval Status for Header */
+.slip-approval__status {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-align: center;
+    min-width: 120px;
+}
+
+/* Approved State */
+.slip-approval__status--approved {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+    .slip-approval__status--approved i {
+        color: #10b981;
+        font-size: 1rem;
+    }
+
+/* Rejected State */
+.slip-approval__status--rejected {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+    .slip-approval__status--rejected i {
+        color: #ef4444;
+        font-size: 1rem;
+    }
+
+/* Pending State */
+.slip-approval__status--pending {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+    .slip-approval__status--pending i {
+        color: #f59e0b;
+        font-size: 1rem;
+    }
+
+/* Approval Actions in Header */
+.slip-approval__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.slip-approval__btn {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 80px;
+    justify-content: center;
+}
+
+.slip-approval__btn--approve {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+    .slip-approval__btn--approve:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-1px);
+    }
+
+.slip-approval__btn--reject {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+    .slip-approval__btn--reject:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-1px);
+    }
+
+.slip-approval__timestamp {
+    font-size: 0.65rem;
+    color: #9ca3af;
+}
+
+/* Action Buttons */
+.slip-card__actions {
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.slip-card:hover .slip-card__actions {
+    opacity: 1;
+}
+
+.slip-card__btn {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .slip-card__btn:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+.slip-card__btn--danger:hover {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.slip-card__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+    .slip-card__btn:disabled:hover {
+        background: none;
+        color: #6b7280;
+    }
+
+.attachments-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: #e5e7eb;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.slip-card__expand {
+    color: #6b7280;
+    transition: transform 0.3s ease;
+}
+
+.slip-card--expanded .slip-card__expand {
+    transform: rotate(180deg);
+}
+
+/* Expanded Content */
+.slip-card__expanded-content {
+    padding: 1rem 2rem;
+    border-top: 1px solid #e5e7eb;
+    background: white;
+}
+
+/* Slip Details Section */
+.slip-details-section {
+    margin-bottom: 1rem;
+}
+
+    .slip-details-section h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+.slip-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+    .detail-item label {
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.875rem;
+    }
+
+    .detail-item span {
+        color: #6b7280;
+        font-size: 0.875rem;
+        word-break: break-word;
+    }
+
+/* Attachments Section */
+.attachments-section {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.attachments-tabs {
+    display: flex;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.attachments-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+}
+
+    .attachments-tab:hover {
+        background: #f1f5f9;
+        color: #374151;
+    }
+
+.attachments-tab--active {
+    background: white;
+    color: var(--color-darkmidnightblue);
+    border-bottom-color: var(--color-darkmidnightblue);
+}
+
+.tab-badge {
+    background: #e5e7eb;
+    color: #6b7280;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.attachments-tab--active .tab-badge {
+    background: var(--color-darkmidnightblue);
+    color: white;
+}
+
+.attachments-content {
+    padding: 1rem 1.5rem;
+    background: white;
+}
+
+.attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 175px;
+    overflow-y: auto;
+}
+
+.attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+    .attachment-item:hover {
+        border-color: var(--color-darkmidnightblue);
+        background: #f1f5f9;
+    }
+
+.attachment-icon {
+    font-size: 1.5rem;
+    color: var(--color-darkmidnightblue);
+}
+
+.attachment-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.attachment-amount {
+    font-weight: 600;
+    color: #0f172a;
+    margin-top: 2px;
+    margin-right: 0.75rem;
+}
+
+
+.attachment-name {
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+    word-break: break-word;
+}
+
+.attachment-meta {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.attachment-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.empty-attachments {
+    text-align: center;
+    padding: 1rem 2rem;
+    color: #9ca3af;
+}
+
+    .empty-attachments i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.5;
+    }
+
+.attachments-upload {
+    align-self: center;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    padding: 0.25rem 1.5rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #6b7280;
+}
+
+    .empty-state i {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state .btn i {
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .slip-card__main-info {
+        gap: 1rem;
+    }
+
+    .slip-card__summary {
+        gap: 1rem;
+    }
+
+    .slip-card__header-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-end;
+    }
+
+    .slip-card__approval-header {
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .slips-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .slips-actions {
+        justify-content: center;
+    }
+
+    .slip-card__header {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+        padding: 1rem;
+    }
+
+    .slip-card__main-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .slip-card__summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .slip-card__amount,
+    .slip-card__date,
+    .slip-card__department {
+        min-width: auto;
+    }
+
+    .slip-card__department {
+        display: none;
+    }
+
+    .slip-card__header-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .slip-approval__status {
+        width: 100%;
+    }
+
+    .slip-card__actions-attach-count {
+        flex: 1;
+        justify-content: end;
+        gap: 0.5rem;
+    }
+
+    .slip-card__approval-header {
+        order: -1;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .slip-approval__actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .slip-approval__btn {
+        flex: 1;
+    }
+
+    .slip-card__actions {
+        opacity: 1;
+    }
+
+    .slip-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .attachments-tabs {
+        flex-direction: column;
+    }
+
+    .attachments-tab {
+        justify-content: center;
+    }
+
+    .attachments-content {
+        padding: 1rem;
+    }
+
+    .attachment-meta {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .slip-card__expanded-content {
+        padding: 1rem;
+    }
+
+    .attachment-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+
+    .attachment-actions {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+/* Scrollbar Styling */
+.attachments-list::-webkit-scrollbar {
+    width: 10px;
+}
+
+.attachments-list::-webkit-scrollbar-track {
+    background: #f5f5f5; /* perfectly blends with your page */
+}
+
+.attachments-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.20); /* soft gray */
+    border-radius: 10px;
+    border: 2px solid #f5f5f5; /* creates a clean inset look */
+    transition: background 0.2s ease;
+}
+
+    .attachments-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.35); /* subtle hover effect */
+    }

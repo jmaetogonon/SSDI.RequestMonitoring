@@ -1,33 +1,27 @@
-﻿@using System.Globalization
-@using SSDI.RequestMonitoring.UI.Contracts.Requests
-@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
-@using SSDI.RequestMonitoring.UI.JComponents.Cards
+﻿@using SSDI.RequestMonitoring.UI.JComponents.Cards
 @using SSDI.RequestMonitoring.UI.JComponents.Controls.Requests.Modals
-@using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
-@using SSDI.RequestMonitoring.UI.Models.Requests
-@using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
-@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
-@implements IAsyncDisposable
+@using System.Globalization
 
-<NewRequisition__Modal RequestHeader="@Request" RequestType="RequestType" AttachSvc="AttachSvc" RSSlipSvc="RSSlipSvc" IsModalVisible="@showNewSlipModal" OnSave="@SaveNewSlip" OnClose="CloseSlipModal" />
 
-<EditRequisition__Modal RequestHeader="@Request" RequestType="RequestType" AttachSvc="AttachSvc" RSSlipSvc="RSSlipSvc" Model="@(EditModel ?? new())" IsModalVisible="@showEditSlipModal" OnSave="@SaveEditSlip" OnClose="CloseSlipModal" />
+<NewPO__Modal RequestHeader="@Request" RequestType="@RequestType" AttachSvc="AttachSvc" POSlipSvc="POSlipSvc" IsModalVisible="@showNewSlipModal" OnSave="@SaveNewSlip" OnClose="CloseSlipModal" />
+
+<EditPO__Modal RequestHeader="@Request" RequestType="@RequestType" AttachSvc="AttachSvc" POSlipSvc="POSlipSvc" Model="@(EditModel ?? new())" IsModalVisible="@showEditSlipModal" OnSave="@SaveEditSlip" OnClose="CloseSlipModal" />
 
 <!-- PDF Viewer Modal -->
 <PdfViewer__Modal IsVisible="@showPdfModal"
                   PdfBase64="@currentPdfBase64"
-                  FileName="@($"R{Request.SeriesNumber}_Reqslip_{selectedSlip?.Id}.pdf")"
+                  FileName="@($"R{Request.SeriesNumber}_POslip_{selectedSlip?.Id}.pdf")"
                   OnClose="@ClosePdfModal" />
 
 <AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment)" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />
 
 <Details__Card NoMargin="true">
-    <DetailsRow__Card Label="Requisition Slips" FullRow="true">
+    <DetailsRow__Card Label="Purchase Order Slips" FullRow="true">
         <div class="slips-header">
             <div class="slips-stats">
                 <i class="bi bi-file-earmark-text"></i>
-                <span>@Request.RequisitionSlips.Count forms attached</span>
+                <span>@Request.POSlips.Count forms attached</span>
                 @if (isDownloadingAll)
                 {
                     <span class="download-progress">(@currentDownloadIndex/@Request.RequisitionSlips.Count)</span>
@@ -42,7 +36,7 @@
                     </button>
                 }
 
-                <button class="btn btn--outline btn--sm" @onclick="DownloadAllAsPdf" title="Download all as PDF" disabled="@(isDownloadingAll || !Request.RequisitionSlips.Any())">
+                <button class="btn btn--outline btn--sm" @onclick="DownloadAllAsPdf" title="Download all as PDF" disabled="@(isDownloadingAll || !Request.POSlips.Any())">
                     @if (isDownloadingAll)
                     {
                         <i class="bi bi-arrow-repeat spinning"></i>
@@ -58,10 +52,10 @@
         </div>
     </DetailsRow__Card>
 
-    @if (Request.RequisitionSlips?.Any() == true)
+    @if (Request.POSlips?.Any() == true)
     {
         <div class="slips-list">
-            @foreach (var slip in Request.RequisitionSlips.OrderByDescending(s => s.DateOfRequest))
+            @foreach (var slip in Request.POSlips.OrderByDescending(s => s.Date_Issued))
             {
                 var isExpanded = expandedSlips.Contains(slip.Id);
 
@@ -70,20 +64,15 @@
                     <div class="slip-card__header" @onclick="() => ToggleSlip(slip.Id)">
                         <div class="slip-card__main-info">
                             <div class="slip-card__type">
-                                <i class="bi @GetSlipIcon(slip.RequisitionSlip_For)"></i>
-                                <span>@GetSlipDisplayName(slip.RequisitionSlip_For)</span>
+                                <i class="bi bi-receipt"></i>
+                                <span>@slip.PO_Number | @slip.Supplier</span>
                             </div>
                             <div class="slip-card__summary">
                                 <div class="slip-card__amount">
-                                    @slip.AmountRequested.ToString("C", CultureInfo.GetCultureInfo("en-PH"))
+                                    @slip.Total_Amount.ToString("C", CultureInfo.GetCultureInfo("en-PH"))
                                 </div>
                                 <div class="slip-card__date">
-                                    @slip.DateOfRequest?.ToString("MMM dd, yyyy")
-                                </div>
-                                <div class="slip-card__department">
-                                    <span class="slip-badge slip-badge--@slip.RequisitionSlip_Dept.ToString().ToLower()">
-                                        @GetDeptDisplayName(slip.RequisitionSlip_Dept)
-                                    </span>
+                                    @slip.Date_Issued.ToString("MMM dd, yyyy")
                                 </div>
                             </div>
                         </div>
@@ -192,12 +181,6 @@
                                             <div class="slip-approval__status slip-approval__status--approved">
                                                 <i class="bi bi-check-circle-fill"></i>
                                                 <span>Approved by @slip.SlipApproverName</span>
-                                                @* @if (slip.SlipApprovalDate.HasValue)
-                                            {
-                                                <div class="slip-approval__timestamp">
-                                                    @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
-                                                </div>
-                                            } *@
                                             </div>
                                         }
                                         else if (slip.Approval == ApprovalAction.Reject)
@@ -205,12 +188,6 @@
                                             <div class="slip-approval__status slip-approval__status--rejected">
                                                 <i class="bi bi-x-octagon-fill"></i>
                                                 <span>Rejected by @slip.SlipApproverName</span>
-                                                @*   @if (slip.SlipApprovalDate.HasValue)
-                                            {
-                                                <div class="slip-approval__timestamp">
-                                                    @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
-                                                </div>
-                                            } *@
                                             </div>
                                         }
                                     }
@@ -221,12 +198,6 @@
                                             <div class="slip-approval__status slip-approval__status--approved">
                                                 <i class="bi bi-check-circle-fill"></i>
                                                 <span>Approved by @slip.SlipApproverName</span>
-                                                @* @if (slip.SlipApprovalDate.HasValue)
-                                            {
-                                                <div class="slip-approval__timestamp">
-                                                    @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
-                                                </div>
-                                            } *@
                                             </div>
                                         }
                                         else if (slip.Approval == ApprovalAction.Reject)
@@ -234,12 +205,6 @@
                                             <div class="slip-approval__status slip-approval__status--rejected">
                                                 <i class="bi bi-x-octagon-fill"></i>
                                                 <span>Rejected by @slip.SlipApproverName</span>
-                                                @*  @if (slip.SlipApprovalDate.HasValue)
-                                            {
-                                                <div class="slip-approval__timestamp">
-                                                    @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
-                                                </div>
-                                            } *@
                                             </div>
                                         }
                                         else
@@ -255,7 +220,7 @@
                                 <div class="slip-card__attachments-count">
                                     <span class="attachments-badge">
                                         <i class="bi bi-paperclip"></i>
-                                        @((Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Count() ?? 0) + (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Count() ?? 0))
+                                        @((Request!.Attachments.Where(e => e.AttachType == RequestAttachType.PurchaseOrder && e.POId == slip.Id)?.Count() ?? 0) + (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.POId == slip.Id)?.Count() ?? 0))
                                     </span>
                                 </div>
                             </div>
@@ -272,44 +237,33 @@
                         <div class="slip-card__expanded-content">
                             <!-- Slip Details -->
                             <div class="slip-details-section">
-                                <h4>Slip Details</h4>
+                                <h4>Items</h4>
                                 <div class="slip-details-grid">
-                                    @if (slip.RequisitionSlip_For == RequisitionSlip_For.Advances)
+                                    <div class="detail-item">
+                                        <label>Quantity:</label>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Description:</label>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Unit Price:</label>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Liquidation Due:</label>
+                                    </div>
+                                    @foreach (var item in slip.Details)
                                     {
                                         <div class="detail-item">
-                                            <label>Activity:</label>
-                                            <span>@slip.CA_Activity</span>
+                                            <span>@item.Quantity @item.Unit</span>
                                         </div>
                                         <div class="detail-item">
-                                            <label>TDP/Circular No:</label>
-                                            <span>@slip.CA_TDPorCircularNo</span>
+                                            <span>@item.Description</span>
                                         </div>
                                         <div class="detail-item">
-                                            <label>AWP No:</label>
-                                            <span>@slip.CA_AWPNo</span>
+                                            <span>@item.Unit_Price</span>
                                         </div>
                                         <div class="detail-item">
-                                            <label>Liquidation Due:</label>
-                                            <span>@(slip.CA_LiquidationDueDate is null ? "-" : slip.CA_LiquidationDueDate?.ToString("MMM dd, yyyy"))</span>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="detail-item">
-                                            <label>Payee:</label>
-                                            <span>@slip.Payment_Payee</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>Payment Details:</label>
-                                            <span>@slip.Payment_PaymentDetails</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>References:</label>
-                                            <span>@slip.Payment_References</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label>Payment Terms:</label>
-                                            <span>@slip.Payment_PaymentTerms</span>
+                                            <span>@item.Total_Price.ToString("C", CultureInfo.GetCultureInfo("en-PH")) </span>
                                         </div>
                                     }
                                 </div>
@@ -321,14 +275,14 @@
                                     <button class="attachments-tab @(activeAttachmentTab == "requisition" ? "attachments-tab--active" : "")"
                                             @onclick="@(() => SwitchAttachmentTab("requisition"))">
                                         <i class="bi bi-file-earmark"></i>
-                                        Requisition Attachments
-                                        <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
+                                        Attachments
+                                        <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.PurchaseOrder && e.POId == slip.Id)?.Count() ?? 0)</span>
                                     </button>
                                     <button class="attachments-tab @(activeAttachmentTab == "receipts" ? "attachments-tab--active" : "")"
                                             @onclick="@(() => SwitchAttachmentTab("receipts"))">
                                         <i class="bi bi-receipt"></i>
                                         Receipts
-                                        <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
+                                        <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.POId == slip.Id)?.Count() ?? 0)</span>
                                     </button>
 
 
@@ -338,9 +292,9 @@
                                         <div class="attachments-upload">
                                             @if (activeAttachmentTab == "requisition")
                                             {
-                                                <label for="@($"file-upload-add{slip.Id}")" class="btn btn--outline btn--sm" title="Add Requisition Attachment">
+                                                <label for="@($"file-upload-add{slip.Id}")" class="btn btn--outline btn--sm" title="Add Attachment">
                                                     <i class="bi bi-plus-lg"></i>
-                                                    <span>Add Requisition Attachment</span>
+                                                    <span>Add Attachment</span>
                                                 </label>
                                                 <InputFile id="@($"file-upload-add{slip.Id}")"
                                                            multiple
@@ -362,9 +316,9 @@
                                     @if (activeAttachmentTab == "requisition")
                                     {
                                         <div class="attachments-list">
-                                            @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Any() == true)
+                                            @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.PurchaseOrder && e.POId == slip.Id)?.Any() == true)
                                             {
-                                                @foreach (var attachment in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id))
+                                                @foreach (var attachment in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.PurchaseOrder && e.POId == slip.Id))
                                                 {
                                                     var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
 
@@ -410,9 +364,9 @@
                                     else
                                     {
                                         <div class="attachments-list">
-                                            @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Any() == true)
+                                            @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.POId == slip.Id)?.Any() == true)
                                             {
-                                                @foreach (var receipt in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id))
+                                                @foreach (var receipt in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.POId == slip.Id))
                                                 {
                                                     var isDownloadingThis = (downloadingAttachments.Contains(receipt.Id.ToString()));
                                                     <div class="attachment-item">
@@ -470,8 +424,8 @@
         <DetailsRow__Card FullRow="true">
             <div class="empty-state">
                 <i class="bi bi-file-earmark-x"></i>
-                <h3>No Requisition Slips</h3>
-                <p>No requisition slips have been added to this request yet.</p>
+                <h3>No Purchase Order Slips</h3>
+                <p>No purchase order slips have been added to this request yet.</p>
 
                 @if (currentUser.IsAdmin && Request.Status == RequestStatus.ForRequisition)
                 {

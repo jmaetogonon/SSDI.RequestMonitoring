@@ -1,17 +1,17 @@
 ﻿@page "/requests/purchase-requests/{paramId:int}/{reportType?}"
 @using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Common
 @using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
 @using SSDI.RequestMonitoring.UI.JComponents.Controls.Requests
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest.Modals
-@using SSDI.RequestMonitoring.UI.Services.Adapters.Requests
-@using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip
 @inject IPurchaseRequestSvc purchaseRequestSvc
-@inject PRAttachSvcAdapter prAttachAdapter
-@inject PRRequisitionSvcAdapter prRequisitionSvcAdapter
+@inject IRSSlipSvc rsSlipSvc
 @inject IDivisionSvc divisionSvc
 @inject IDepartmentSvc departmentSvc
+@inject IPOSlipSvc poSlipSvc
+@inject IAttachSvc attachSvc
 
 <PageTitle>Purchase Request #@Request?.Id</PageTitle>
 
@@ -21,7 +21,7 @@
 </BreadcrumbNav>
 
 <Confirmation__Modal @ref="confirmModal" />
-<EditRequest__Modal IsModalVisible="@isEditRequestModalVisible" Departments="departments" Divisions="divisions" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
+<EditRequest__Modal IsModalVisible="@isEditRequestModalVisible" RequestType="RequestType.Purchase" Departments="departments" Divisions="divisions" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
 <PdfViewer__Modal IsVisible="@isPdfModalVisible"
                   PdfBase64="@pdfBase64"
                   FileName="@($"{Request?.Name}_PR.pdf")"
@@ -75,20 +75,16 @@
                         <button class="tabs__button @(ActiveTab == "slips" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("slips"))">
                             <i class="bi bi-file-earmark-text"></i>
-                            Requisition Slip
-                            @if (Request.RequisitionSlips?.Any() == true)
+                            Requisition/PO Slip
+                            @if (Request.RequisitionSlips?.Any() == true || Request.POSlips?.Any() == true)
                             {
-                                <span class="tabs__badge">@Request.RequisitionSlips.Count</span>
+                                <span class="tabs__badge">@(Request.RequisitionSlips?.Count + Request.POSlips.Count)</span>
                             }
                         </button>
                         <button class="tabs__button @(ActiveTab == "approval" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("approval"))">
                             <i class="bi bi-clipboard-check"></i>
                             Approval Process
-                            @* @if (Request.Approvals?.Any() == true)
-                            {
-                                <span class="tabs__badge">@Request.Approvals.Count</span>
-                            } *@
                         </button>
                         <button class="tabs__button @(ActiveTab == "timeline" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("timeline"))">
@@ -104,7 +100,7 @@
                         }
                         else if (ActiveTab == "slips")
                         {
-                            <RequestRequisition__Control Request="Request" AttachSvc="prAttachAdapter" SlipSvc="prRequisitionSvcAdapter" OnRequestChanged="Reload" ConfirmModal="confirmModal" />
+                            <SlipTabs__Control Request="Request" RequestType="RequestType.Purchase" AttachSvc="attachSvc" RSSlipSvc="rsSlipSvc" POSlipSvc="poSlipSvc" OnRequestChanged="Reload" ConfirmModal="confirmModal" />
                         }
                         else if (ActiveTab == "approval")
                         {
@@ -112,7 +108,7 @@
                         }
                         else if (ActiveTab == "attachments")
                         {
-                            <RequestAttachments__Control Request="Request" AttachSvc="prAttachAdapter" OnRequestChanged="Reload" AttachType="RequestAttachType.Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
+                            <RequestAttachments__Control Request="Request" RequestType="RequestType.Purchase" AttachSvc="attachSvc" OnRequestChanged="Reload" AttachType="RequestAttachType.Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
                         }
                         else if (ActiveTab == "timeline")
                         {
@@ -131,13 +127,13 @@
 
             @if (CanApproveDeptHead)
             {
-
                 if (!(Request?.Status == RequestStatus.Rejected))
                 {
                     <button class="btn btn--success" @onclick="SubmitRequestByDept" title="Submit request">
                         <i class="bi bi-check-lg"></i> Submit
                     </button>
                 }
+
                 <button class="btn btn--danger" @onclick="CancelRequestByDept" title="Cancel request">
                     <i class="bi bi-x-lg"></i> Cancel
                 </button>
@@ -209,22 +205,38 @@
                     <div class="pending-close-banner">
                         <div class="pending-close-banner__info">
                             <div>
-                                @if (Request.RequisitionSlips?.Count == 0)
+                                @{
+                                    var hasRequisitionSlips = Request.RequisitionSlips?.Count > 0;
+                                    var hasPOSlips = Request.POSlips?.Count > 0;
+                                    var pendingRequisition = Request.RequisitionSlips?.Any(e => e.Approval == ApprovalAction.Pending) ?? false;
+                                    var pendingPO = Request.POSlips?.Any(e => e.Approval == ApprovalAction.Pending) ?? false;
+                                    var anySlips = hasRequisitionSlips || hasPOSlips;
+                                    var anyPending = pendingRequisition || pendingPO;
+                                    var (hasDiscrepancy, descripnMess) = ApprovalMessageHelper.GetAdminAmountDiscrepancyMessage(Request);
+                                }
+                                @if (!anySlips)
                                 {
-                                    <strong>Requisition slip required</strong>
-                                    <div class="muted">Please add at least one requisition slip before closing.</div>
-                                } else if (Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending))
+                                    Console.WriteLine(1);
+                                    <strong>Slips required</strong>
+                                    <div class="muted">Please add at least one requisition or purchase order slip before closing.</div>
+                                }
+                                else if (anyPending)
                                 {
                                     <strong>Approval pending</strong>
-                                    <div class="muted">All requisition slips must be approved before closing.</div>
-                                }else if (!isMatchRequsitionAmt)
+                                    <div class="muted">
+                                        @ApprovalMessageHelper.GetAdminPendingMessage(pendingRequisition, pendingPO)
+                                    </div>
+                                }
+                                else if (hasDiscrepancy)
                                 {
                                     <strong>Receipt amount discrepancy</strong>
-                                    <div class="muted">Receipt totals don't match requested amounts. Please review.</div>
+                                    <div class="muted">
+                                        @descripnMess
+                                    </div>
                                 }
                                 <div class="action-link">
                                     <label style="color: #023b8f;cursor: pointer;margin-top: 4px;" @onclick="@(() => SetActiveTab("slips"))">
-                                        Review Requisition Slips
+                                        Review Slips
                                     </label>
                                 </div>
                             </div>
@@ -261,19 +273,18 @@
                 <div class="pending-close-banner">
                     <div class="pending-close-banner__info">
                         <div>
-                            @if (Request!.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending))
+                            @if (CheckSlipsPending())
                             {
                                 <strong>Approval Required</strong>
                                 <div class="muted">
                                     @{
-                                        var pendingCount = Request.RequisitionSlips!.Count(e => e.Approval == ApprovalAction.Pending);
-                                        var slipText = pendingCount == 1 ? "slip" : "slips";
+                                        var (reqPending, poPending) = ApprovalMessageHelper.GetSlipPendingCounts(Request!.RequisitionSlips!, Request.POSlips!);
                                     }
-                                    You have @pendingCount requisition @slipText awaiting your approval.
+                                    @ApprovalMessageHelper.GetCEOPendingApprovalMessage(reqPending, poPending)
                                 </div>
                                 <div class="action-link">
                                     <label style="color: #023b8f;cursor: pointer;margin-top: 4px;" @onclick="@(() => SetActiveTab("slips"))">
-                                        Review Requisition Slips
+                                        Review Slips
                                     </label>
                                 </div>
                             }

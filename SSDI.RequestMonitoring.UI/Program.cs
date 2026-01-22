@@ -10,6 +10,7 @@ using Microsoft.FluentUI.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI;
 using SSDI.RequestMonitoring.UI.Contracts;
 using SSDI.RequestMonitoring.UI.Contracts.MasterData;
+using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
 using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase;
 using SSDI.RequestMonitoring.UI.Contracts.Users;
@@ -18,10 +19,9 @@ using SSDI.RequestMonitoring.UI.Helpers.Export;
 using SSDI.RequestMonitoring.UI.Helpers.States;
 using SSDI.RequestMonitoring.UI.Providers;
 using SSDI.RequestMonitoring.UI.Services;
-using SSDI.RequestMonitoring.UI.Services.Adapters.Requests;
-using SSDI.RequestMonitoring.UI.Services.Adapters.Requests.RequisitionSlip;
 using SSDI.RequestMonitoring.UI.Services.Base;
 using SSDI.RequestMonitoring.UI.Services.MasterData;
+using SSDI.RequestMonitoring.UI.Services.Requests;
 using SSDI.RequestMonitoring.UI.Services.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Services.Requests.Purchase;
 using SSDI.RequestMonitoring.UI.Services.Users;
@@ -55,16 +55,12 @@ builder.Services.AddScoped<Utils>();
 builder.Services.AddTransient<ExportRequest>();
 
 builder.Services.AddScoped<IPurchaseRequestSvc, PurchaseRequestSvc>();
-builder.Services.AddScoped<IPRAttachSvc, PRAttachSvc>();
-builder.Services.AddScoped<IPRRequisitionSvc, PRRequisitionSvc>();
-builder.Services.AddScoped<PRAttachSvcAdapter>();
-builder.Services.AddScoped<PRRequisitionSvcAdapter>();
+
+builder.Services.AddScoped<IRSSlipSvc, RSSlipSvc>();
+builder.Services.AddScoped<IPOSlipSvc, POSlipSvc>();
+builder.Services.AddScoped<IAttachSvc, AttachSvc>();
 
 builder.Services.AddScoped<IJobOrderSvc, JobOrderSvc>();
-builder.Services.AddScoped<IJOAttachSvc, JOAttachSvc>();
-builder.Services.AddScoped<IJORequisitionSvc, JORequisitionSvc>();
-builder.Services.AddScoped<JOAttachSvcAdapter>();
-builder.Services.AddScoped<JORequisitionSvcAdapter>();
 
 builder.Services.AddScoped<ISystemConfigSvc, SystemConfigSvc>();
 builder.Services.AddScoped<IDivisionSvc, DivisionSvc>();

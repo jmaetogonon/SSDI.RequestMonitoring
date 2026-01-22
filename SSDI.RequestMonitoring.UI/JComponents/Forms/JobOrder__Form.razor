@@ -1,6 +1,7 @@
 ﻿@using SSDI.RequestMonitoring.UI.Contracts.Users
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.Models.MasterData
+@using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.Models.Users
 @inject IUserSvc userSvc
@@ -219,7 +220,7 @@
                 fileBytes = ms.ToArray();
             }
 
-            var attachVM = new Job_Order_AttachVM
+            var attachVM = new Request_AttachVM
             {
                 UniqId = utils.GenerateUniqId(),
                 JobOrderId = FormModel.Id,
@@ -234,7 +235,7 @@
         }
     }
 
-    private void RemoveFile(Job_Order_AttachVM file)
+    private void RemoveFile(Request_AttachVM file)
     {
         // uploadedFiles.Remove(file);
 

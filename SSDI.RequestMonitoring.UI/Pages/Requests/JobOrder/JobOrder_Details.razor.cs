@@ -52,6 +52,7 @@ public partial class JobOrder_Details : ComponentBase
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             toastSvc.ShowError("Error: " + ex.Message);
         }
         finally
@@ -355,14 +356,83 @@ public partial class JobOrder_Details : ComponentBase
     private bool CheckClosePermission()
     {
         if (Request == null) return false;
-        return (Request.RequisitionSlips?.Count != 0 && !(Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending)));
+
+        // Check if we have any slips at all
+        var hasRequisitionSlips = Request.RequisitionSlips?.Count > 0;
+        var hasPOSlips = Request.POSlips?.Count > 0;
+
+        if (!hasRequisitionSlips && !hasPOSlips)
+            return false;
+
+        // Pre-calculate receipt amounts per requisition
+        var receiptAmountsByRequisitionId = Request.Attachments?
+            .Where(e => e.AttachType == RequestAttachType.Receipt)
+            .GroupBy(e => e.RequisitionId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Sum(e => e.ReceiptAmount)
+            ) ?? [];
+
+        // Pre-calculate receipt amounts per PO
+        var receiptAmountsByPOId = Request.Attachments?
+            .Where(e => e.AttachType == RequestAttachType.Receipt)
+            .GroupBy(e => e.POId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Sum(e => e.ReceiptAmount)
+            ) ?? [];
+
+        // Check requisition slips
+        if (hasRequisitionSlips)
+        {
+            foreach (var slip in Request.RequisitionSlips!)
+            {
+                // Check for pending approvals
+                if (slip.Approval == ApprovalAction.Pending)
+                    return false;
+
+                // Check amount match
+                var totalReceiptAmount = receiptAmountsByRequisitionId
+                    .GetValueOrDefault(slip.Id, 0m);
+
+                if (slip.AmountRequested != totalReceiptAmount)
+                    return false;
+            }
+        }
+
+        // Check PO slips
+        if (hasPOSlips)
+        {
+            foreach (var slip in Request.POSlips!)
+            {
+                // Check for pending approvals
+                if (slip.Approval == ApprovalAction.Pending)
+                    return false;
+
+                // Check amount match
+                var totalReceiptAmount = receiptAmountsByPOId
+                    .GetValueOrDefault(slip.Id, 0m);
+
+                if (slip.Total_Amount != totalReceiptAmount)
+                    return false;
+            }
+        }
+
+        return true;
     }
 
     private bool CheckCEOApproveSlipPermission()
     {
         if (Request == null) return false;
-        return (currentUser.IsCEO && Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending));
+        return (currentUser.IsCEO && CheckSlipsPending());
     }
+
+    private bool CheckSlipsPending()
+    {
+        if (Request == null) return false;
+        return (Request.RequisitionSlips.Any(e => e.Approval == ApprovalAction.Pending) || Request.POSlips.Any(e => e.Approval == ApprovalAction.Pending));
+    }
+
 
     private DateTime? GetAwaitingApprovalDate()
     {

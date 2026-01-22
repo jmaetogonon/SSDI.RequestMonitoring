@@ -1,0 +1,51 @@
+﻿.total-control-section {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.total-input-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.amount-control {
+    display: flex;
+    flex-direction: column;
+}
+
+.badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.text-warning {
+    color: #856404;
+}
+
+.text-info {
+    color: #0c5460;
+}
+
+.hr.full-width, .full-width {
+    grid-column: 1 / -1;
+}

@@ -1,4 +1,5 @@
 ﻿using SSDI.RequestMonitoring.UI.Models.Common;
+using SSDI.RequestMonitoring.UI.Models.Requests;
 
 public interface IRequestDetailVM
 {
@@ -44,12 +45,12 @@ public interface IRequestDetailVM
 
     public bool IsNoUser { get; }
 
+    public ICollection<Request_RS_SlipVM> RequisitionSlips { get; }
+    public ICollection<Request_PO_SlipVM> POSlips { get; }
+    public ICollection<Request_AttachVM> Attachments { get; }
+
     // Polymorphic collections
     ICollection<IApprovalVM> ApprovalsBase { get; }
 
-    ICollection<IAttachmentVM> AttachmentsBase { get; }
-    ICollection<ISlipVM> SlipsBase { get; }
-
-    // Computed stage (shared logic in BaseRequestVM)
     ApprovalStage? CurrentStage { get; }
 }

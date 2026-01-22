@@ -7,21 +7,21 @@ using SSDI.RequestMonitoring.UI.Models.Requests;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Requests;
 
-public partial class RequestRequisition__Control : ComponentBase
+public partial class RequestPO__Control : ComponentBase
 {
     [Parameter] public IRequestDetailVM Request { get; set; } = default!;
     [Parameter] public IAttachSvc AttachSvc { get; set; } = default!;
-    [Parameter] public IRSSlipSvc RSSlipSvc { get; set; } = default!;
+    [Parameter] public IPOSlipSvc POSlipSvc { get; set; } = default!;
     [Parameter] public EventCallback OnRequestChanged { get; set; }
     [Parameter] public RequestType RequestType { get; set; }
     [Parameter] public Confirmation__Modal ConfirmModal { get; set; } = default!;
 
-    private bool isPR => RequestType == RequestType.Purchase;
     private bool showNewSlipModal, showEditSlipModal = false;
     private bool showPdfModal = false;
     private bool isDownloadingAll = false;
-    private Request_RS_SlipVM? EditModel = default!;
-    private Request_RS_SlipVM? selectedSlip = null;
+    private bool isPR => RequestType == RequestType.Purchase;
+    private Request_PO_SlipVM? EditModel = default!;
+    private Request_PO_SlipVM? selectedSlip = null;
     private string? currentPdfBase64 = null;
     private HashSet<int> expandedSlips = [];
     private string activeAttachmentTab = "requisition";
@@ -62,7 +62,7 @@ public partial class RequestRequisition__Control : ComponentBase
         StateHasChanged();
     }
 
-    private async Task ApproveSlip(Request_RS_SlipVM slip)
+    private async Task ApproveSlip(Request_PO_SlipVM slip)
     {
         approveLoading[slip.Id] = true;
         StateHasChanged();
@@ -71,7 +71,7 @@ public partial class RequestRequisition__Control : ComponentBase
         {
             var options = new ConfirmationModalOptions
             {
-                Message = $"Approve this <b>{GetSlipDisplayName(slip.RequisitionSlip_For)}</b> slip?",
+                Message = $"Approve purchase order <b>#{slip.PO_Number}</b> slip?",
                 Title = "Approve Slip",
                 Variant = ConfirmationModalVariant.confirmation,
                 ConfirmText = "Yes, Approve",
@@ -83,7 +83,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
             await ConfirmModal.SetLoadingAsync(true);
 
-            var response = await RSSlipSvc.ApproveRequisition(slip, ApprovalAction.Approve, currentUser.UserId);
+            var response = await POSlipSvc.ApprovePO(slip, ApprovalAction.Approve, currentUser.UserId);
             await ConfirmModal.SetLoadingAsync(false);
             await ConfirmModal.HideAsync();
 
@@ -104,7 +104,7 @@ public partial class RequestRequisition__Control : ComponentBase
         }
     }
 
-    private async Task RejectSlip(Request_RS_SlipVM slip)
+    private async Task RejectSlip(Request_PO_SlipVM slip)
     {
         rejectLoading[slip.Id] = true;
         StateHasChanged();
@@ -112,7 +112,7 @@ public partial class RequestRequisition__Control : ComponentBase
         {
             var options = new ConfirmationModalOptions
             {
-                Message = $"Reject this <b>{GetSlipDisplayName(slip.RequisitionSlip_For)}</b> slip?",
+                Message = $"Reject purchase order <b>#{slip.PO_Number}</b> slip?",
                 Title = "Reject Slip",
                 Variant = ConfirmationModalVariant.confirmation,
                 ConfirmText = "Yes, Reject",
@@ -124,7 +124,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
             await ConfirmModal.SetLoadingAsync(true);
 
-            var response = await RSSlipSvc.ApproveRequisition(slip, ApprovalAction.Reject, currentUser.UserId);
+            var response = await POSlipSvc.ApprovePO(slip, ApprovalAction.Reject, currentUser.UserId);
             await ConfirmModal.SetLoadingAsync(false);
             await ConfirmModal.HideAsync();
 
@@ -147,7 +147,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
     private void AddNewSlip() => showNewSlipModal = true;
 
-    private void EditSlip(Request_RS_SlipVM slip)
+    private void EditSlip(Request_PO_SlipVM slip)
     {
         EditModel = slip;
         showEditSlipModal = true;
@@ -157,7 +157,7 @@ public partial class RequestRequisition__Control : ComponentBase
     {
         await Refresh();
         showNewSlipModal = false;
-        toastSvc.ShowSuccess("Requisition slip successfully added.");
+        toastSvc.ShowSuccess("Purchase order slip successfully added.");
         StateHasChanged();
     }
 
@@ -165,13 +165,13 @@ public partial class RequestRequisition__Control : ComponentBase
     {
         await Refresh();
         showEditSlipModal = false;
-        toastSvc.ShowSuccess("Requisition slip successfully updated.");
+        toastSvc.ShowSuccess("Purchase order slip successfully updated.");
         StateHasChanged();
     }
 
     private void CloseSlipModal() => showNewSlipModal = showEditSlipModal = false;
 
-    private async Task ViewSlip(Request_RS_SlipVM slip)
+    private async Task ViewSlip(Request_PO_SlipVM slip)
     {
         try
         {
@@ -180,11 +180,12 @@ public partial class RequestRequisition__Control : ComponentBase
                 toastSvc.ShowError("No request details to export.");
                 return;
             }
+            selectedSlip = slip;
             viewLoading[slip.Id] = true;
             StateHasChanged();
 
-            // Generate the PDF bytes
-            var pdfBytes = await RSSlipSvc.GenerateRequisitionPdf(slip.Id);
+            //Generate the PDF bytes
+            var pdfBytes = await POSlipSvc.GeneratePOPdf(slip.Id);
             if (pdfBytes == null || pdfBytes.Length == 0)
             {
                 toastSvc.ShowError("Failed to generate PDF.");
@@ -206,7 +207,7 @@ public partial class RequestRequisition__Control : ComponentBase
         }
     }
 
-    private async Task DownloadSlipPdf(Request_RS_SlipVM slip)
+    private async Task DownloadSlipPdf(Request_PO_SlipVM slip)
     {
         try
         {
@@ -214,9 +215,9 @@ public partial class RequestRequisition__Control : ComponentBase
             StateHasChanged();
 
             // Generate and download PDF
-            var pdfBytes = await RSSlipSvc.GenerateRequisitionPdf(slip.Id);
+            var pdfBytes = await POSlipSvc.GeneratePOPdf(slip.Id);
             var pdfBase64 = Convert.ToBase64String(pdfBytes);
-            await jsRuntime.InvokeVoidAsync("downloadBase64File", "application/pdf", pdfBase64, $"R{Request.SeriesNumber}_Reqslip_{slip.Id}.pdf");
+            await jsRuntime.InvokeVoidAsync("downloadBase64File", "application/pdf", pdfBase64, $"R{Request.SeriesNumber}_POslip_{slip.Id}.pdf");
         }
         catch (Exception ex)
         {
@@ -231,7 +232,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
     private async Task DownloadAllAsPdf()
     {
-        if (Request.RequisitionSlips.Count == 0) return;
+        if (Request.POSlips.Count == 0) return;
 
         isDownloadingAll = true;
         currentDownloadIndex = 0;
@@ -239,21 +240,13 @@ public partial class RequestRequisition__Control : ComponentBase
 
         try
         {
-            var fileBytes = await AttachSvc.DownloadAllRSZipAsync(Request.Id, isPR);
-            var fileName = $"{(isPR ? "PR" : "JO")}#{Request.Id}_{Request.Name.Replace(" ", "")}_RequisitionSlips.zip";
+            var fileBytes = await AttachSvc.DownloadAllPOZipAsync(Request.Id, isPR);
+            var fileName = $"{(isPR ? "PR" : "JO")}#{Request.Id}_{Request.Name.Replace(" ", "")}_POSlips.zip";
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
                 await jsRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
-            //foreach (var attachment in Request.SlipsBase)
-            //{
-            //    currentDownloadIndex++;
-            //    StateHasChanged();
-
-            //    await DownloadSlipPdf(attachment);
-            //    await Task.Delay(200);
-            //}
         }
         catch (Exception ex)
         {
@@ -267,12 +260,12 @@ public partial class RequestRequisition__Control : ComponentBase
         }
     }
 
-    private async Task DeleteSlip(Request_RS_SlipVM slip)
+    private async Task DeleteSlip(Request_PO_SlipVM slip)
     {
         var options = new ConfirmationModalOptions
         {
-            Message = $"Are you sure you want to delete this <b>{GetSlipDisplayName(slip.RequisitionSlip_For)}</b> requisition slip?",
-            Title = "Delete Requisition Slip",
+            Message = $"Are you sure you want to delete purchase order <b>#{slip.PO_Number}</b> slip?",
+            Title = "Delete Purchase Order Slip",
             Variant = ConfirmationModalVariant.delete,
             ConfirmText = "Yes, Delete",
             CancelText = "No, Cancel",
@@ -284,10 +277,10 @@ public partial class RequestRequisition__Control : ComponentBase
         {
             await ConfirmModal!.SetLoadingAsync(true);
 
-            var response = await RSSlipSvc.DeleteRequisition(slip.Id);
+            var response = await POSlipSvc.DeletePO(slip.Id);
             if (response.Success)
             {
-                foreach (var attach in Request.Attachments.Where(a => a.RequisitionId == slip.Id).ToList())
+                foreach (var attach in Request.Attachments.Where(a => a.POId == slip.Id).ToList())
                 {
                     await AttachSvc.DeleteAsync(attach.Id);
                 }
@@ -295,7 +288,7 @@ public partial class RequestRequisition__Control : ComponentBase
                 await ConfirmModal!.SetLoadingAsync(false);
                 await ConfirmModal!.HideAsync();
                 await Refresh();
-                toastSvc.ShowSuccess("The requisition slip has been deleted successfully.");
+                toastSvc.ShowSuccess("The purchase order slip has been deleted successfully.");
             }
             else
             {
@@ -306,7 +299,7 @@ public partial class RequestRequisition__Control : ComponentBase
         }
     }
 
-    private async Task AddRequisitionAttach(Request_RS_SlipVM slip, InputFileChangeEventArgs e)
+    private async Task AddRequisitionAttach(Request_PO_SlipVM slip, InputFileChangeEventArgs e)
     {
         var dummies = new List<Request_AttachVM>();
 
@@ -342,13 +335,13 @@ public partial class RequestRequisition__Control : ComponentBase
                 ContentType = file.ContentType,
                 ImgData = fileBytes,
                 Size = file.Size,
-                AttachType = RequestAttachType.Requisition,
+                AttachType = RequestAttachType.PurchaseOrder,
             };
 
             dummies.Add(attach);
         }
 
-        var res = await AttachSvc.UploadAsync(Request.Id, isPR, dummies, RequestAttachType.Requisition, slip.Id);
+        var res = await AttachSvc.UploadAsync(Request.Id, isPR, dummies, RequestAttachType.PurchaseOrder, poID: slip.Id);
         if (!res.Success)
         {
             toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -358,7 +351,7 @@ public partial class RequestRequisition__Control : ComponentBase
         StateHasChanged();
     }
 
-    private async Task AddReceiptAttach(Request_RS_SlipVM slip, InputFileChangeEventArgs e)
+    private async Task AddReceiptAttach(Request_PO_SlipVM slip, InputFileChangeEventArgs e)
     {
         var file = e.File; // direct single file
 
@@ -409,7 +402,7 @@ public partial class RequestRequisition__Control : ComponentBase
             ReceiptRemarks = ConfirmModal.Remarks
         };
 
-        var res = await AttachSvc.UploadAsync(Request.Id, isPR, [attach], RequestAttachType.Receipt, slip.Id, ConfirmModal.Number, ConfirmModal.Remarks);
+        var res = await AttachSvc.UploadAsync(Request.Id, isPR, [attach], RequestAttachType.Receipt, 0, ConfirmModal.Number, ConfirmModal.Remarks, poID: slip.Id);
         if (!res.Success)
         {
             toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -580,42 +573,6 @@ public partial class RequestRequisition__Control : ComponentBase
         return Path.GetExtension(fileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
     }
 
-    private string GetSlipIcon(RequisitionSlip_For slipFor)
-    {
-        return slipFor switch
-        {
-            RequisitionSlip_For.CashPayment => "bi-cash",
-            RequisitionSlip_For.CheckPayment => "bi-credit-card",
-            RequisitionSlip_For.Advances => "bi-cash-coin",
-            RequisitionSlip_For.Others => "bi-file-earmark",
-            _ => "bi-file-earmark"
-        };
-    }
-
-    private string GetSlipDisplayName(RequisitionSlip_For slipFor)
-    {
-        return slipFor switch
-        {
-            RequisitionSlip_For.CashPayment => "Cash Payment",
-            RequisitionSlip_For.CheckPayment => "Check Payment",
-            RequisitionSlip_For.Advances => "Cash Advances",
-            RequisitionSlip_For.Others => "Others",
-            _ => slipFor.ToString()
-        };
-    }
-
-    private string GetDeptDisplayName(RequisitionSlip_Dept dept)
-    {
-        return dept switch
-        {
-            RequisitionSlip_Dept.Acctg => "Acctg. Dept.",
-            RequisitionSlip_Dept.Sales => "Sales Dept.",
-            RequisitionSlip_Dept.Warehouse => "Warehouse Dept.",
-            RequisitionSlip_Dept.Satellite => "Satellite",
-            _ => dept.ToString()
-        };
-    }
-
     private async Task CloseAttachmentPreview()
     {
         showPreview = false;
@@ -662,4 +619,5 @@ public partial class RequestRequisition__Control : ComponentBase
         }
         blobUrls.Clear();
     }
+
 }

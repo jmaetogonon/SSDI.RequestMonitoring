@@ -1,0 +1,25 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.JComponents.Forms
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+
+<Confirmation__Modal @ref="confirmModal" />
+<div class="modal__overlay" id="@(IsModalVisible ? "show__edit__purchase-order-modal" : "hide__edit__purchase-order-modal")">
+    <div class="modal">
+        <div class="modal__header">
+            <h5 class="modal__header-title">UPDATE PURCHASE ORDER</h5>
+            <div class="modal__header-date">
+                <i class="bi bi-clock-history"></i>
+                <span title="@Model?.DateModified?.ToString("MMMM dd, yyyy 'at' h:mm tt")">
+                    @utils.GetLastModifiedDisplay(Model?.DateModified)
+                </span>
+            </div>
+        </div>
+
+        <div class="modal__alert">
+            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+        </div>
+
+        <PurchaseOrder__Form FormModel="@Model" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="@_isDisabledBtns" IsForUpdate="true" />
+    </div>
+</div>

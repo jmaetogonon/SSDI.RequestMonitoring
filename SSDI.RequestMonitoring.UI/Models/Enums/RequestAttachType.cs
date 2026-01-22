@@ -5,5 +5,6 @@ public enum RequestAttachType
     Request,
     Requisition,
     Receipt,
-    ESignature
+    ESignature,
+    PurchaseOrder,
 }

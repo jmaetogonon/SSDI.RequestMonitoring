@@ -1,0 +1,70 @@
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests.Common
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.Common
+@using SSDI.RequestMonitoring.UI.Models.Enums
+
+<div class="slip-tabs-control">
+    <div class="slip-tabs-header">
+        <div class="slip-tabs-nav">
+            <button class="slip-tab @(activeTab == "requisition" ? "active" : "")"
+                    @onclick="@(() => SetActiveTab("requisition"))">
+                <i class="bi bi-file-text"></i>
+                <span>Requisition Slips</span>
+                @if (requisitionSlipsCount > 0)
+                {
+                    <span class="tab-badge">@requisitionSlipsCount</span>
+                }
+            </button>
+
+            <button class="slip-tab @(activeTab == "purchaseorder" ? "active" : "")"
+                    @onclick="@(() => SetActiveTab("purchaseorder"))">
+                <i class="bi bi-receipt"></i>
+                <span>Purchase Order Slips</span>
+                @if (purchaseOrderSlipsCount > 0)
+                {
+                    <span class="tab-badge">@purchaseOrderSlipsCount</span>
+                }
+            </button>
+        </div>
+
+    </div>
+
+    <div class="slip-tabs-content">
+        @if (activeTab == "requisition")
+        {
+            <RequestRequisition__Control Request="Request" RequestType="RequestType" AttachSvc="AttachSvc" RSSlipSvc="RSSlipSvc" OnRequestChanged="OnRequestChanged" ConfirmModal="ConfirmModal" />
+        }
+        else
+        {
+            <RequestPO__Control Request="Request" RequestType="RequestType" AttachSvc="AttachSvc" POSlipSvc="POSlipSvc" OnRequestChanged="OnRequestChanged" ConfirmModal="ConfirmModal" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public IRequestDetailVM Request { get; set; } = default!;
+    [Parameter] public IAttachSvc AttachSvc { get; set; } = default!;
+    [Parameter] public IRSSlipSvc RSSlipSvc { get; set; } = default!;
+    [Parameter] public IPOSlipSvc POSlipSvc { get; set; } = default!;
+    [Parameter] public EventCallback OnRequestChanged { get; set; }
+    [Parameter] public RequestType RequestType { get; set; }
+    [Parameter] public Confirmation__Modal ConfirmModal { get; set; } = default!;
+
+    private string activeTab = "requisition";
+    private int requisitionSlipsCount => Request.RequisitionSlips?.Count ?? 0;
+    private int purchaseOrderSlipsCount => Request.POSlips?.Count ?? 0;
+
+    protected override void OnParametersSet()
+    {
+        if (Request != null)
+        {
+        }
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
+        StateHasChanged();
+    }
+
+}

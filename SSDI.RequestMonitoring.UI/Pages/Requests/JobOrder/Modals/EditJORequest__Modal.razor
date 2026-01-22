@@ -1,11 +1,10 @@
-﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests.Common
 @using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 
 @inject IJobOrderSvc jobOrderSvc
-@inject IJOAttachSvc attachSvc
-
+@inject IAttachSvc attachSvc
 
 <Confirmation__Modal @ref="confirmModal" />
 <div class="modal__overlay" id="@(IsModalVisible ? "show__new__edit-purchase-request-modal" : "hide__new__edit-purchase-request-modal")">

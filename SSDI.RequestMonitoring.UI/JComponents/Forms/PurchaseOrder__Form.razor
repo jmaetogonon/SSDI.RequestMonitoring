@@ -1,0 +1,333 @@
+﻿@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.Models.Common
+@using SSDI.RequestMonitoring.UI.Models.Requests
+@using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+
+<EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="modal__body">
+        <div class="modal__form-group position-relative">
+
+            <div class="form-group full-width">
+                <label for="poTerms">Supplier</label>
+                <InputText id="poTerms" class="form-control" @bind-Value="FormModel.Supplier" />
+            </div>
+
+            <div class="form-group">
+                <label for="dateIssued">Date</label>
+                <InputDate id="dateIssued" class="form-control" @bind-Value="FormModel.Date_Issued" />
+            </div>
+
+            <div class="form-group">
+                <label for="poTerms">Terms</label>
+                <InputText id="poTerms" class="form-control" @bind-Value="FormModel.Terms" />
+            </div>
+
+            <!-- Total Amount Section with Toggle -->
+            <div class="form-group full-width">
+                <div class="total-control-section">
+                    <label>
+                        <strong>Total Amount: </strong>
+                        @if (FormModel.IsManualTotal)
+                        {
+                            <span class="badge badge-warning">Manual Override</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-success">Auto-Calculated</span>
+                        }
+                    </label>
+
+                    <div class="total-input-section">
+                        <InputNumber class="form-control" @bind-Value="FormModel.Total_Amount" />
+
+                        @if (FormModel.IsManualTotal)
+                        {
+                            <button type="button" class="btn btn--sm btn--outline"
+                                    @onclick="ResetToAutoCalculate">
+                                Reset to Auto
+                            </button>
+                        }
+                        else
+                        {
+                            <small class="text-muted">Auto-calculated from items</small>
+                        }
+                    </div>
+
+                    @if (FormModel.IsManualTotal)
+                    {
+                        <small class="text-info">
+                            Auto-calculated total would be: @FormModel.AutoCalculatedTotal.ToString("N2")
+                        </small>
+                    }
+                </div>
+            </div>
+
+
+            <div class="form-section full-width">
+                <label class="form-section-title">Items</label>
+
+                <div class="grid-two-col">
+                    <button type="button" class="btn btn--outline btn--small" @onclick="RemoveItem">-</button>
+                    <button type="button" class="btn btn--outline btn--small" @onclick="AddItem">+</button>
+                </div>
+                @foreach (var item in FormModel.Details)
+                {
+                        <!-- Item Header with Reset Button -->
+                        <div class="item-header full-width">
+                            <span>Item @(FormModel.Details.ToList().IndexOf(item) + 1)</span>
+                            @if (item.IsManualTotal)
+                            {
+                            <button type="button" class="btn btn--sm btn--outline"
+                                    @onclick="() => ResetItemToAuto(item)">
+                                    Reset to Auto
+                                </button>
+                            }
+                        </div>
+
+                    <div class="grid-two-col">
+                        <div class="form-group">
+                            <label for="@($"poQty-{item.Id}")">Quantity</label>
+                            <InputNumber id="@($"poQty-{item.Id}")" class="form-control"
+                                         @bind-Value="item.Quantity"
+                                         @oninput="() => HandleDetailChange(item)"
+                                         min="1" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="@($"poUnit-{item.Id}")">Unit</label>
+                            <InputText id="@($"poUnit-{item.Id}")" class="form-control" @bind-Value="item.Unit" placeholder="e.g rolls" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="@($"poUnitPrc-{item.Id}")">Unit Price</label>
+                        <InputNumber id="@($"poUnitPrc-{item.Id}")" class="form-control"
+                                     @bind-Value="item.Unit_Price"
+                                     @oninput="() => HandleDetailChange(item)"
+                                     min="0.01"
+                                     step="0.01" />
+                    </div>
+
+                        <div class="form-group">
+                            <label for="@($"poDescription-{item.Id}")">Description</label>
+                            <InputText id="@($"poDescription-{item.Id}")" class="form-control" @bind-Value="item.Description" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="@($"poAmt-{item.Id}")">Amount</label>
+                            <div class="amount-control">
+                                <InputNumber id="@($"poAmt-{item.Id}")" class="form-control"
+                                             @bind-Value="item.Total_Price"
+                                             min="0" />
+                                @if (item.IsManualTotal)
+                                {
+                                    <small class="text-warning">Manual override</small>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">Auto: @item.Quantity × @item.Unit_Price.ToString("N2")</small>
+                                }
+                            </div>
+                        </div>
+                        <hr class="hr full-width" />
+                }
+            </div>
+
+            <!-- File Upload -->
+            @if (!IsForUpdate)
+            {
+                <div class="form-group full-width">
+                    <label for="file-upload">
+                        @(!IsForUpdate ? "Supporting Documents" : "Add More Supporting Documents")
+                        @if (SelectedFiles.Any())
+                        {
+                            <span> (@SelectedFiles.Count())</span>
+                        }
+                    </label>
+
+                    <div class="file-upload-area"
+                         @ondragover="OnDragOver"
+                         @ondrop="OnDrop">
+                        <InputFile id="file-upload"
+                                   multiple
+                                   OnChange="OnFilesSelected"
+                                   class="file-input" />
+
+                        <div class="file-upload-placeholder">
+                            <i class="bi bi-cloud-arrow-up-fill upload-icon"></i>
+                            <p>Drag & drop files here, or <span class="browse-text">browse</span></p>
+                            <small>Supported: PDF, DOCX, JPG, PNG, XLSX (max 10MB each)</small>
+                        </div>
+                    </div>
+
+                    @if (SelectedFiles.Any())
+                    {
+                        <ul class="file-list">
+                            @foreach (var file in SelectedFiles)
+                            {
+                                <li class="file-item">
+                                    <i class="bi bi-file-earmark"></i>
+                                    <span>@file.FileName</span>
+                                    <span class="file-size">
+                                        (@((file.Size / 1024.0 / 1024.0).ToString("F2")) MB)
+                                    </span>
+                                    <button type="button" class="remove-btn" @onclick="() => RemoveFile(file)">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+
+            <LoadingOverlay IsVisible="@IsDisabledBtns" Message="Saving, please wait..." />
+        </div>
+    </div>
+    <div class="modal__footer">
+        <button type="button" class="modal__footer-btn modal__footer-btn-cancel" disabled="@IsDisabledBtns" @onclick="OnCloseModal">Cancel</button>
+        <button type="submit" class="modal__footer-btn modal__footer-btn-save" disabled="@IsDisabledBtns"> @(IsDisabledBtns ? "Saving..." : "Save") </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public Request_PO_SlipVM FormModel { get; set; } = default!;
+    [Parameter] public ICollection<Request_AttachVM> SelectedFiles { get; set; } = new List<Request_AttachVM>();
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsDisabledBtns { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCloseModal { get; set; }
+    [Parameter] public bool IsForUpdate { get; set; }
+
+    override protected void OnParametersSet()
+    {
+        if (!FormModel.Details.Any())
+            FormModel.Details.Add(new());
+    }
+
+    private List<IBrowserFile> uploadedFiles = [];
+
+    private void AddItem()
+    {
+        FormModel.Details.Add(new Request_PO_Slip_DetailVM()
+        {
+            Id = 0
+        });
+    }
+
+    private void RemoveItem()
+    {
+        if (FormModel.Details.Count <= 1)
+            return;
+
+        var lastItem = FormModel.Details.Last();
+        FormModel.Details.Remove(lastItem);
+    }
+
+    private string GetSlipIcon(RequisitionSlip_For slipFor)
+    {
+        return slipFor switch
+        {
+            RequisitionSlip_For.CashPayment => "bi-cash",
+            RequisitionSlip_For.CheckPayment => "bi-credit-card",
+            RequisitionSlip_For.Advances => "bi-cash-coin",
+            RequisitionSlip_For.Others => "bi-file-earmark",
+            _ => "bi-file-earmark"
+        };
+    }
+
+    private string GetSlipDisplayName(RequisitionSlip_For slipFor)
+    {
+        return slipFor switch
+        {
+            RequisitionSlip_For.CashPayment => "Cash Payment",
+            RequisitionSlip_For.CheckPayment => "Check Payment",
+            RequisitionSlip_For.Advances => "Cash Advances",
+            RequisitionSlip_For.Others => "Others (please specify)",
+            _ => slipFor.ToString()
+        };
+    }
+
+    private string GetDeptDisplayName(RequisitionSlip_Dept dept)
+    {
+        return dept switch
+        {
+            RequisitionSlip_Dept.Acctg => "Acctg. Dept.",
+            RequisitionSlip_Dept.Sales => "Sales Dept.",
+            RequisitionSlip_Dept.Warehouse => "Warehouse Dept.",
+            RequisitionSlip_Dept.Satellite => "Satellite",
+            _ => dept.ToString()
+        };
+    }
+    private void OnDragOver(DragEventArgs e)
+    {
+        // Prevent default only for visual effect (won’t handle files here)
+        e.DataTransfer.DropEffect = "copy";
+    }
+
+    private void OnDrop(DragEventArgs e)
+    {
+        // Just stop the browser from navigating away
+        // You cannot get IBrowserFile here.
+        // Use InputFile’s OnChange to actually capture files.
+    }
+
+    private async Task OnFilesSelected(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            if (file.Size > 10 * 1024 * 1024)
+                continue; // skip >10MB
+
+            uploadedFiles.Add(file);
+
+            byte[] fileBytes;
+            using (var stream = file.OpenReadStream(10 * 1024 * 1024)) // 10MB limit
+            using (var ms = new MemoryStream())
+            {
+                await stream.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
+
+            var attachVM = new Request_AttachVM
+            {
+                FileName = file.Name,
+                ContentType = file.ContentType,
+                ImgData = fileBytes,
+                Size = file.Size,
+                UniqId = utils.GenerateUniqId(),
+                AttachType = RequestAttachType.PurchaseOrder,
+            };
+
+            SelectedFiles.Add(attachVM);
+        }
+    }
+
+    private void RemoveFile(Request_AttachVM file)
+    {
+        var uniqIdProp = file.GetType().GetProperty("UniqId")?.GetValue(file);
+        var toRemove = SelectedFiles.FirstOrDefault(f =>
+            f.GetType().GetProperty("UniqId")?.GetValue(f)?.Equals(uniqIdProp) == true
+        );
+
+        if (toRemove != null)
+            SelectedFiles.Remove(toRemove);
+    }
+
+    private void ResetToAutoCalculate()
+    {
+        FormModel.ResetToAutoCalculate();
+    }
+
+    private void ResetItemToAuto(Request_PO_Slip_DetailVM item)
+    {
+        item.ResetToAutoCalculate();
+    }
+
+    private void HandleDetailChange(Request_PO_Slip_DetailVM item)
+    {
+        // This will trigger the getter which recalculates if not manual
+        // No need to do anything else - the INotifyPropertyChanged will handle UI updates
+    }
+}

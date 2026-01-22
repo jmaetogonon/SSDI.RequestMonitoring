@@ -1,27 +1,27 @@
 ﻿using AutoMapper;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
-using SSDI.RequestMonitoring.UI.Contracts.Requests.JobOrder;
-using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
+using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
+using SSDI.RequestMonitoring.UI.Models.Requests;
 using SSDI.RequestMonitoring.UI.Services.Base;
 
-namespace SSDI.RequestMonitoring.UI.Services.Requests.JobOrder;
+namespace SSDI.RequestMonitoring.UI.Services.Requests;
 
-public class JORequisitionSvc : BaseHttpService, IJORequisitionSvc
+public class RSSlipSvc : BaseHttpService, IRSSlipSvc
 {
     private readonly IMapper _mapper;
 
-    public JORequisitionSvc(IClient client, ILocalStorageService localStorage, NavigationManager navigationManager, IMapper mapper) : base(client, localStorage, navigationManager)
+    public RSSlipSvc(IClient client, ILocalStorageService localStorage, NavigationManager navigationManager, IMapper mapper) : base(client, localStorage, navigationManager)
     {
         _mapper = mapper;
     }
 
-    public async Task<Response<int>> CreateJORequisition(Job_Order_SlipVM slip)
+    public async Task<Response<int>> CreateRequisition(Request_RS_SlipVM slip)
     {
         try
         {
-            var createCommand = _mapper.Map<CreateJO_RequisitionCommand>(slip);
-            var newId = await _client.CreateJORequisitionAsync(createCommand);
+            var createCommand = _mapper.Map<Create_RSSlipCommand>(slip);
+            var newId = await _client.CreateRSSlipAsync(createCommand);
             return new Response<int>()
             {
                 Data = newId,
@@ -34,12 +34,12 @@ public class JORequisitionSvc : BaseHttpService, IJORequisitionSvc
         }
     }
 
-    public async Task<Response<Guid>> EditJORequisition(Job_Order_SlipVM request)
+    public async Task<Response<Guid>> EditRequisition(Request_RS_SlipVM request)
     {
         try
         {
-            var updateRequestCommand = _mapper.Map<EditJO_RequisitionCommand>(request);
-            await _client.EditJORequisitionAsync(updateRequestCommand);
+            var updateRequestCommand = _mapper.Map<Edit_RSSlipCommand>(request);
+            await _client.EditRSSlipAsync(updateRequestCommand);
             return new Response<Guid>()
             {
                 Success = true,
@@ -51,19 +51,18 @@ public class JORequisitionSvc : BaseHttpService, IJORequisitionSvc
         }
     }
 
-    public async Task<Response<Guid>> ApproveJORequisition(Job_Order_SlipVM slip, Models.Enums.ApprovalAction action, int approverId)
+    public async Task<Response<Guid>> ApproveRequisition(Request_RS_SlipVM slip, Models.Enums.ApprovalAction action, int approverId)
     {
         try
         {
-            var request = new ApproveJO_RequisitionCommand
+            var request = new Approve_RSSlipCommand
             {
                 SlipId = slip.Id,
                 ApproverId = approverId,
                 Action = (Base.ApprovalAction)action
             };
 
-            var updateRequestCommand = _mapper.Map<ApproveJO_RequisitionCommand>(request);
-            await _client.ApproveJORequisitionAsync(updateRequestCommand);
+            await _client.ApproveRSSlipAsync(request);
             return new Response<Guid>()
             {
                 Success = true,
@@ -75,11 +74,11 @@ public class JORequisitionSvc : BaseHttpService, IJORequisitionSvc
         }
     }
 
-    public async Task<Response<Guid>> DeleteJORequisition(int id)
+    public async Task<Response<Guid>> DeleteRequisition(int id)
     {
         try
         {
-            await _client.DeleteJORequisitionAsync(id);
+            await _client.DeleteRSSlipAsync(id);
             return new Response<Guid>() { Success = true };
         }
         catch (ApiException ex)
@@ -88,11 +87,11 @@ public class JORequisitionSvc : BaseHttpService, IJORequisitionSvc
         }
     }
 
-    public async Task<byte[]> GenerateJORequisitionPdf(int id)
+    public async Task<byte[]> GenerateRequisitionPdf(int id)
     {
         try
         {
-            var requests = await _client.GeneratePdfJORequisitionAsync(id);
+            var requests = await _client.GeneratePdfRSSlipAsync(id);
             return requests;
         }
         catch (ApiException ex)

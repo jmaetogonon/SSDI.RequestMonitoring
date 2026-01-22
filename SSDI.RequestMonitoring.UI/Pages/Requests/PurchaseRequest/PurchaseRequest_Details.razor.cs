@@ -18,7 +18,8 @@ public partial class PurchaseRequest_Details : ComponentBase
     private bool CanEdit => CheckEditPermissions();
     private bool CanClose => CheckClosePermission();
     private bool CanCEOApproveSlips => CheckCEOApproveSlipPermission();
-    private bool isMatchRequsitionAmt = true;
+    private bool IsSlipHasPending => CheckSlipsPending();
+
     private bool isEditRequestModalVisible = false;
     private string EditBtnText => SetEditBtnText();
 
@@ -53,6 +54,7 @@ public partial class PurchaseRequest_Details : ComponentBase
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             toastSvc.ShowError("Error: " + ex.Message);
         }
         finally
@@ -325,7 +327,7 @@ public partial class PurchaseRequest_Details : ComponentBase
     private bool CheckDeptApprovalPermissions()
     {
         if (Request == null) return false;
-        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && ReportType == "Department" && !currentUser.IsUser;
+        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && utils.IsUserDepartmentHead(Request) && !currentUser.IsUser;
     }
 
     private bool CheckDivApprovalPermissions()
@@ -335,9 +337,9 @@ public partial class PurchaseRequest_Details : ComponentBase
         var isSameSupervisor = Request.ReportToDeptSupId == Request.ReportToDivSupId || (!Request.IsNoUser && Request.UserDepartmentHeadId == Request.UserDivisionHeadId);
         if (isSameSupervisor)
         {
-            return Request.Status == RequestStatus.ForEndorsement && (Request.UserDivisionHeadId == currentUser.UserId || Request.ReportToDivSupId == currentUser.UserId) && !currentUser.IsUser;
+            return Request.Status == RequestStatus.ForEndorsement && utils.IsUserDivisionHead(Request);
         }
-        return Request.Status == RequestStatus.ForEndorsement && ReportType == "Division" && !currentUser.IsUser;
+        return Request.Status == RequestStatus.ForEndorsement && utils.IsUserDivisionHead(Request);
     }
 
     private bool CheckAdminApprovalPermissions()
@@ -350,12 +352,18 @@ public partial class PurchaseRequest_Details : ComponentBase
     {
         if (Request == null) return false;
 
-        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && (ReportType == "Department" || (Request.RequestedById == currentUser.UserId && currentUser.IsSupervisor));
+        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && (utils.IsUserDepartmentHead(Request));
     }
 
     private bool CheckClosePermission()
     {
-        if (Request?.RequisitionSlips == null || !Request.RequisitionSlips.Any())
+        if (Request == null) return false;
+
+        // Check if we have any slips at all
+        var hasRequisitionSlips = Request.RequisitionSlips?.Count > 0;
+        var hasPOSlips = Request.POSlips?.Count > 0;
+
+        if (!hasRequisitionSlips && !hasPOSlips)
             return false;
 
         // Pre-calculate receipt amounts per requisition
@@ -365,23 +373,50 @@ public partial class PurchaseRequest_Details : ComponentBase
             .ToDictionary(
                 g => g.Key,
                 g => g.Sum(e => e.ReceiptAmount)
-            );
+            ) ?? [];
 
-        // Check each slip
-        foreach (var slip in Request.RequisitionSlips)
+        // Pre-calculate receipt amounts per PO
+        var receiptAmountsByPOId = Request.Attachments?
+            .Where(e => e.AttachType == RequestAttachType.Receipt)
+            .GroupBy(e => e.POId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Sum(e => e.ReceiptAmount)
+            ) ?? [];
+
+        // Check requisition slips
+        if (hasRequisitionSlips)
         {
-            // Check for pending approvals
-            if (slip.Approval == ApprovalAction.Pending)
-                return false;
-
-            // Check amount match
-            var totalReceiptAmount = receiptAmountsByRequisitionId
-                ?.GetValueOrDefault(slip.Id, 0m);
-
-            if (slip.AmountRequested != totalReceiptAmount)
+            foreach (var slip in Request.RequisitionSlips!)
             {
-                isMatchRequsitionAmt = false;
-                return false;
+                // Check for pending approvals
+                if (slip.Approval == ApprovalAction.Pending)
+                    return false;
+
+                // Check amount match
+                var totalReceiptAmount = receiptAmountsByRequisitionId
+                    .GetValueOrDefault(slip.Id, 0m);
+
+                if (slip.AmountRequested != totalReceiptAmount)
+                    return false;
+            }
+        }
+
+        // Check PO slips
+        if (hasPOSlips)
+        {
+            foreach (var slip in Request.POSlips!)
+            {
+                // Check for pending approvals
+                if (slip.Approval == ApprovalAction.Pending)
+                    return false;
+
+                // Check amount match
+                var totalReceiptAmount = receiptAmountsByPOId
+                    .GetValueOrDefault(slip.Id, 0m);
+
+                if (slip.Total_Amount != totalReceiptAmount)
+                    return false;
             }
         }
 
@@ -391,7 +426,13 @@ public partial class PurchaseRequest_Details : ComponentBase
     private bool CheckCEOApproveSlipPermission()
     {
         if (Request == null) return false;
-        return (currentUser.IsCEO && Request.RequisitionSlips!.Any(e => e.Approval == ApprovalAction.Pending));
+        return (currentUser.IsCEO && CheckSlipsPending());
+    }
+
+    private bool CheckSlipsPending()
+    {
+        if (Request == null) return false;
+        return (Request.RequisitionSlips.Any(e => e.Approval == ApprovalAction.Pending) || Request.POSlips.Any(e => e.Approval == ApprovalAction.Pending));
     }
 
     private DateTime? GetAwaitingApprovalDate()

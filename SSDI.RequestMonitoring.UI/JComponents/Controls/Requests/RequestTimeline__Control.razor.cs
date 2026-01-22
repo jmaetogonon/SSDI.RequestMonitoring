@@ -65,9 +65,9 @@ public partial class RequestTimeline__Control : ComponentBase
         }
 
         // REQUISITION SLIP EVENTS
-        if (Request.SlipsBase?.Any() == true)
+        if (Request.RequisitionSlips?.Any() == true)
         {
-            foreach (var slip in Request.SlipsBase)
+            foreach (var slip in Request.RequisitionSlips)
             {
                 list.Add(new TimelineEvent
                 {
@@ -79,7 +79,7 @@ public partial class RequestTimeline__Control : ComponentBase
                 });
             }
 
-            foreach (var slip in Request.SlipsBase)
+            foreach (var slip in Request.RequisitionSlips)
             {
                 if (slip.SlipApprovalDate == null)
                     continue;

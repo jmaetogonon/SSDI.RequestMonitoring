@@ -6,6 +6,10 @@
     margin-top: 1rem;
 }
 
+    .details__card-body.nomargin {
+        margin-top: 0;
+    }
+
 .details__card-body-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -23,6 +27,7 @@
     .details__card-body {
         padding: 1rem;
     }
+
     .details__card-body-content {
         grid-template-columns: 1fr;
     }

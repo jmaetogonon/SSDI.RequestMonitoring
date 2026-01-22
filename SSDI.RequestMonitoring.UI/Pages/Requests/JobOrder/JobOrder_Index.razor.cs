@@ -8,7 +8,6 @@ using SSDI.RequestMonitoring.UI.Models.DTO;
 using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
 using SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
-using SSDI.RequestMonitoring.UI.Services.Requests.Purchase;
 using System.Web;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder;
@@ -60,6 +59,7 @@ public partial class JobOrder_Index : ComponentBase
         isLoading = true;
         try
         {
+            HashSet<RequestStatus> preset = [];
             if (currentUser.IsUser)
             {
                 var requests = await jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
@@ -79,26 +79,29 @@ public partial class JobOrder_Index : ComponentBase
                 if (requests.Any(e => e.ReportType == "Division"))
                 {
                     AllItems = requests.Where(e => e.Status == RequestStatus.ForEndorsement).AsQueryable();
-                    OnStatusFilterChanged([RequestStatus.ForEndorsement]);
-                    statusFilter?.SetSelectedStatus(selectedStatuses);
+                    preset.Add(RequestStatus.ForEndorsement);
                 }
 
                 if (currentUser.IsCEO)
                 {
                     var ceoRequests = await jobOrderSvc.GetAllJobOrderByCeo();
                     AllItems = AllItems.Concat(ceoRequests).DistinctBy(r => r.Id).AsQueryable();
-                    OnStatusFilterChanged([RequestStatus.ForEndorsement, RequestStatus.ForCeoApproval]);
-                    statusFilter?.SetSelectedStatus(selectedStatuses);
+                    preset.Add(RequestStatus.ForCeoApproval);
+                    preset.Add(RequestStatus.ForRequisition);
                 }
 
                 if (currentUser.IsAdmin)
                 {
                     var adminRequests = await jobOrderSvc.GetAllJobOrdersByAdmin();
                     AllItems = AllItems.Concat(adminRequests).DistinctBy(r => r.Id).AsQueryable();
+                    preset.Add(RequestStatus.ForAdminVerification);
+                    preset.Add(RequestStatus.ForRequisition);
                 }
+                OnStatusFilterChanged(preset);
+                statusFilter?.SetSelectedStatus(selectedStatuses);
             }
 
-            PreLoadFilter();
+            PreLoadFilterFromDB();
             ApplyFilters();
             BuildStatusSummaries();
         }
@@ -110,7 +113,7 @@ public partial class JobOrder_Index : ComponentBase
 
     private void Refresh() => InvokeAsync(StateHasChanged);
 
-    private void PreLoadFilter()
+    private void PreLoadFilterFromDB()
     {
         var uri = new Uri(navigationManager.Uri);
         var queryParams = HttpUtility.ParseQueryString(uri.Query);

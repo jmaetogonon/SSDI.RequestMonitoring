@@ -1,27 +1,28 @@
 ﻿using AutoMapper;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
-using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase;
+using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
+using SSDI.RequestMonitoring.UI.Models.Requests;
 using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 using SSDI.RequestMonitoring.UI.Services.Base;
 
-namespace SSDI.RequestMonitoring.UI.Services.Requests.Purchase;
+namespace SSDI.RequestMonitoring.UI.Services.Requests;
 
-public class PRRequisitionSvc : BaseHttpService, IPRRequisitionSvc
+public class POSlipSvc : BaseHttpService, IPOSlipSvc
 {
     private readonly IMapper _mapper;
 
-    public PRRequisitionSvc(IClient client, ILocalStorageService localStorage, NavigationManager navigationManager, IMapper mapper) : base(client, localStorage, navigationManager)
+    public POSlipSvc(IClient client, ILocalStorageService localStorage, NavigationManager navigationManager, IMapper mapper) : base(client, localStorage, navigationManager)
     {
         _mapper = mapper;
     }
 
-    public async Task<Response<int>> CreatePRRequisition(Purchase_Request_SlipVM slip)
+    public async Task<Response<int>> CreatePOSlip(Request_PO_SlipVM slip)
     {
         try
         {
-            var createCommand = _mapper.Map<CreatePR_RequisitionCommand>(slip);
-            var newId = await _client.CreatePRRequisitionAsync(createCommand);
+            var createCommand = _mapper.Map<Create_POSlipCommand>(slip);
+            var newId = await _client.CreatePOSlipAsync(createCommand);
             return new Response<int>()
             {
                 Data = newId,
@@ -34,12 +35,13 @@ public class PRRequisitionSvc : BaseHttpService, IPRRequisitionSvc
         }
     }
 
-    public async Task<Response<Guid>> EditPRRequisition(Purchase_Request_SlipVM request)
+
+    public async Task<Response<Guid>> EditPO(Request_PO_SlipVM request)
     {
         try
         {
-            var updateRequestCommand = _mapper.Map<EditPR_RequisitionCommand>(request);
-            await _client.EditPRRequisitionAsync(updateRequestCommand);
+            var updateRequestCommand = _mapper.Map<Edit_POSlipCommand>(request);
+            await _client.EditPOSlipAsync(updateRequestCommand);
             return new Response<Guid>()
             {
                 Success = true,
@@ -51,19 +53,18 @@ public class PRRequisitionSvc : BaseHttpService, IPRRequisitionSvc
         }
     }
 
-    public async Task<Response<Guid>> ApprovePRRequisition(Purchase_Request_SlipVM slip, Models.Enums.ApprovalAction action, int approverId)
+    public async Task<Response<Guid>> ApprovePO(Request_PO_SlipVM slip, Models.Enums.ApprovalAction action, int approverId)
     {
         try
         {
-            var request = new ApprovePR_RequisitionCommand
+            var request = new Approve_POSlipCommand
             {
                 SlipId = slip.Id,
                 ApproverId = approverId,
                 Action = (Base.ApprovalAction)action
             };
 
-            var updateRequestCommand = _mapper.Map<ApprovePR_RequisitionCommand>(request);
-            await _client.ApprovePRRequisitionAsync(updateRequestCommand);
+            await _client.ApprovePOSlipAsync(request);
             return new Response<Guid>()
             {
                 Success = true,
@@ -75,11 +76,11 @@ public class PRRequisitionSvc : BaseHttpService, IPRRequisitionSvc
         }
     }
 
-    public async Task<Response<Guid>> DeletePRRequisition(int id)
+    public async Task<Response<Guid>> DeletePO(int id)
     {
         try
         {
-            await _client.DeletePRRequisitionAsync(id);
+            await _client.DeletePOSlipAsync(id);
             return new Response<Guid>() { Success = true };
         }
         catch (ApiException ex)
@@ -88,11 +89,11 @@ public class PRRequisitionSvc : BaseHttpService, IPRRequisitionSvc
         }
     }
 
-    public async Task<byte[]> GeneratePRRequisitionPdf(int id)
+    public async Task<byte[]> GeneratePOPdf(int id)
     {
         try
         {
-            var requests = await _client.GeneratePdfPRRequisitionAsync(id);
+            var requests = await _client.GeneratePdfPOSlipAsync(id);
             return requests;
         }
         catch (ApiException ex)

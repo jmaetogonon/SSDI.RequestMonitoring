@@ -1,4 +1,6 @@
-﻿namespace SSDI.RequestMonitoring.UI.Models.Common;
+﻿using SSDI.RequestMonitoring.UI.Models.Requests;
+
+namespace SSDI.RequestMonitoring.UI.Models.Common;
 
 public abstract class BaseRequestVM : IRequestDetailVM
 {
@@ -47,9 +49,11 @@ public abstract class BaseRequestVM : IRequestDetailVM
 
     public bool IsNoUser { get; set; } = false;
 
+    public ICollection<Request_AttachVM> Attachments { get; set; } = [];
+    public ICollection<Request_PO_SlipVM> POSlips { get; set; } = [];
+    public ICollection<Request_RS_SlipVM> RequisitionSlips { get; set; } = [];
+
     public abstract ICollection<IApprovalVM> ApprovalsBase { get; }
-    public abstract ICollection<IAttachmentVM> AttachmentsBase { get; }
-    public abstract ICollection<ISlipVM> SlipsBase { get; }
 
     // Shared Stage Computation Logic
     public ApprovalStage? CurrentStage

@@ -1,9 +1,9 @@
-﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
-@using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests.Common
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.Models.Common
+@using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
-@inject IPRAttachSvc attachSvc
+@inject IAttachSvc attachSvc
 
 @if (SelectedAttachment != null)
 {
@@ -139,7 +139,7 @@
 @code {
     [Parameter] public bool ShowPreview { get; set; }
     [Parameter] public bool IsLoadingPreview { get; set; }
-    [Parameter] public IAttachmentVM? SelectedAttachment { get; set; }
+    [Parameter] public Request_AttachVM? SelectedAttachment { get; set; }
     [Parameter] public string? PreviewUrl { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
@@ -273,7 +273,7 @@
         StateHasChanged();
     }
 
-    private async Task DownloadAttachment(IAttachmentVM attachment, MouseEventArgs? e = null)
+    private async Task DownloadAttachment(Request_AttachVM attachment, MouseEventArgs? e = null)
     {
         try
         {

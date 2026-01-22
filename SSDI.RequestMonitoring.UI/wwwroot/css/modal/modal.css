@@ -371,6 +371,12 @@
         grid-column: 1 / -1;
     }
 
+.grid-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
 /* bounce animation */
 @keyframes bounce {
     0%, 100% {
@@ -591,12 +597,13 @@
     .modal {
         width: 96%;
     }
+
     .modal__body {
         max-height: 60vh !important;
     }
 
 
-    .modal__form-group {
+    .modal__form-group, .grid-two-col  {
         grid-template-columns: 1fr; /* stack all */
     }
 }

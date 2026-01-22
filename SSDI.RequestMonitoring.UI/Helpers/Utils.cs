@@ -17,8 +17,12 @@ public class Utils
 
     public string GenerateUniqId() => DateTime.Now.ToString("yyyyMMddhhmmssfff");
 
+    public bool IsUserDepartmentHead(IRequestDetailVM request) => (request.UserDepartmentHeadId == _currentUser.UserId || request.ReportToDeptSupId == _currentUser.UserId || request.RequestedByDeptHeadId == _currentUser.UserId) && _currentUser.IsSupervisor;
+
+    public bool IsUserDivisionHead(IRequestDetailVM request) => (request.UserDivisionHeadId == _currentUser.UserId || request.ReportToDivSupId == _currentUser.UserId) && _currentUser.IsSupervisor;
+
     public string FormatDate(DateTime date) => date.ToString("yyyy-MM-dd");
-    
+
     public string GetLastModifiedDisplay(DateTime? dateModified)
     {
         if (dateModified is null) return "Never modified";

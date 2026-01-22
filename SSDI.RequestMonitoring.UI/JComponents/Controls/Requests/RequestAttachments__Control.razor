@@ -11,10 +11,10 @@
         <div class="attachments-header">
             <div class="attachments-stats">
                 <i class="bi bi-paperclip"></i>
-                <span>@Request.AttachmentsBase.Where(x => x.AttachType == AttachType).Count() files attached</span>
+                <span>@Request.Attachments.Where(x => x.AttachType == AttachType).Count() files attached</span>
                 @if (isDownloadingAll)
                 {
-                    <span class="download-progress">(@currentDownloadIndex/@Request.AttachmentsBase.Where(x => x.AttachType == AttachType).Count())</span>
+                    <span class="download-progress">(@currentDownloadIndex/@Request.Attachments.Where(x => x.AttachType == AttachType).Count())</span>
                 }
             </div>
 
@@ -52,10 +52,10 @@
         </div>
     </DetailsRow__Card>
 
-    @if (Request.AttachmentsBase.Where(x => x.AttachType == AttachType)?.Any() == true)
+    @if (Request.Attachments.Where(x => x.AttachType == AttachType)?.Any() == true)
     {
         <div class="attachments-grid">
-            @foreach (var attachment in Request.AttachmentsBase.Where(x => x.AttachType == AttachType))
+            @foreach (var attachment in Request.Attachments.Where(x => x.AttachType == AttachType))
             {
                 var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
                 var isLoadingPreview = (loadingPreviewId == attachment.Id.ToString());

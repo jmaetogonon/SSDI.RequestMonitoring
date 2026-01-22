@@ -5,22 +5,16 @@ using SSDI.RequestMonitoring.UI.Models.Requests;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Requests.Modals;
 
-public partial class EditRequisition__Modal : ComponentBase
+public partial class EditPO__Modal : ComponentBase
 {
     [Parameter] public IRequestDetailVM? RequestHeader { get; set; }
-    [Parameter] public Request_RS_SlipVM Model { get; set; } = default!;
+    [Parameter] public Request_PO_SlipVM Model { get; set; } = default!;
     [Parameter] public IAttachSvc AttachSvc { get; set; } = default!;
-    [Parameter] public IRSSlipSvc RSSlipSvc { get; set; } = default!;
+    [Parameter] public IPOSlipSvc POSlipSvc { get; set; } = default!;
     [Parameter] public RequestType RequestType { get; set; }
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
-
-    protected override void OnParametersSet()
-    {
-        Model.RequisitionerId = currentUser.UserId;
-        Model.RequisitionerName = currentUser.FullName;
-    }
 
     private Confirmation__Modal? confirmModal;
 
@@ -32,8 +26,8 @@ public partial class EditRequisition__Modal : ComponentBase
     {
         var options = new ConfirmationModalOptions
         {
-            Message = "Are you sure you want to save the updated requisition slip?",
-            Title = "Update Requisition Slip",
+            Message = "Are you sure you want to save the updated purchase order slip?",
+            Title = "Update Purchase Order Slip",
             Variant = ConfirmationModalVariant.confirmation,
             ConfirmText = "Yes, Update",
             CancelText = "No, Cancel",
@@ -47,7 +41,7 @@ public partial class EditRequisition__Modal : ComponentBase
             _isDisabledBtns = true;
             IsShowAlert = false;
 
-            var response = await RSSlipSvc.EditRequisition(Model);
+            var response = await POSlipSvc.EditPO(Model);
             if (response.Success)
             {
                 ResetForm();

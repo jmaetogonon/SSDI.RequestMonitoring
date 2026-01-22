@@ -1,10 +1,10 @@
-﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests
+﻿@using SSDI.RequestMonitoring.UI.Contracts.Requests.Common
 @using SSDI.RequestMonitoring.UI.Contracts.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 
 @inject IPurchaseRequestSvc purchaseRequestSvc
-@inject IPRAttachSvc attachSvc
+@inject IAttachSvc attachSvc
 
 
 <Confirmation__Modal @ref="confirmModal" />

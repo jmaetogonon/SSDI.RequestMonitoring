@@ -1,5 +1,6 @@
 ﻿@using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.Models.Common
+@using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 
 <EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
@@ -185,8 +186,8 @@
 </EditForm>
 
 @code {
-    [Parameter] public ISlipVM FormModel { get; set; } = default!;
-    [Parameter] public ICollection<IAttachmentVM> SelectedFiles { get; set; } = new List<IAttachmentVM>();
+    [Parameter] public Request_RS_SlipVM FormModel { get; set; } = default!;
+    [Parameter] public ICollection<Request_AttachVM> SelectedFiles { get; set; } = new List<Request_AttachVM>();
     [Parameter] public bool Disabled { get; set; } = false;
     [Parameter] public bool IsDisabledBtns { get; set; }
     [Parameter] public EventCallback OnValidSubmit { get; set; }
@@ -260,7 +261,7 @@
                 fileBytes = ms.ToArray();
             }
 
-            var attachVM = new TempAttachmentForUpload
+            var attachVM = new Request_AttachVM
             {
                 FileName = file.Name,
                 ContentType = file.ContentType,
@@ -274,7 +275,7 @@
         }
     }
 
-    private void RemoveFile(IAttachmentVM file)
+    private void RemoveFile(Request_AttachVM file)
     {
         var uniqIdProp = file.GetType().GetProperty("UniqId")?.GetValue(file);
         var toRemove = SelectedFiles.FirstOrDefault(f =>
@@ -285,19 +286,4 @@
             SelectedFiles.Remove(toRemove);
     }
 
-    private class TempAttachmentForUpload : IAttachmentVM
-    {
-        public int Id { get; set; }
-        public string UniqId { get; set; } = Guid.NewGuid().ToString();
-        public string FileName { get; set; } = string.Empty;
-        public string URL { get; set; } = string.Empty;
-        public long Size { get; set; }
-        public string ContentType { get; set; } = string.Empty;
-        public DateTime? DateCreated { get; set; } = DateTime.Now;
-        public byte[]? ImgData { get; set; }
-        public RequestAttachType AttachType { get; set; }
-        public int RequisitionId { get; set; }
-        public decimal ReceiptAmount { get; set; }
-        public string ReceiptRemarks { get; set; } = string.Empty;
-    }
 }

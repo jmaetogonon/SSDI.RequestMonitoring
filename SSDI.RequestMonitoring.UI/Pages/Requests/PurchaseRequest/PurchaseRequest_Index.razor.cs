@@ -71,6 +71,7 @@ public partial class PurchaseRequest_Index : ComponentBase
         isLoading = true;
         try
         {
+            HashSet<RequestStatus> preset = [];
             if (currentUser.IsUser)
             {
                 var requests = await purchaseRequestSvc.GetAllPurchaseRequestsByUser(currentUser.UserId);
@@ -83,24 +84,29 @@ public partial class PurchaseRequest_Index : ComponentBase
                 if (requests.Any(e => e.ReportType == "Division"))
                 {
                     AllItems = requests.Where(e => e.Status == RequestStatus.ForEndorsement).AsQueryable();
-                    OnStatusFilterChanged([RequestStatus.ForEndorsement]);
-                    statusFilter?.SetSelectedStatus(selectedStatuses);
+                    preset.Add(RequestStatus.ForEndorsement);
                 }
 
                 if (currentUser.IsCEO)
                 {
                     var ceoRequests = await purchaseRequestSvc.GetAllPurchaseReqByCeo();
                     AllItems = AllItems.Concat(ceoRequests).DistinctBy(r => r.Id).AsQueryable();
+                    preset.Add(RequestStatus.ForCeoApproval);
+                    preset.Add(RequestStatus.ForRequisition);
                 }
 
                 if (currentUser.IsAdmin)
                 {
                     var adminRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByAdmin();
                     AllItems = AllItems.Concat(adminRequests).DistinctBy(r => r.Id).AsQueryable();
+                    preset.Add(RequestStatus.ForAdminVerification);
+                    preset.Add(RequestStatus.ForRequisition);
                 }
+                OnStatusFilterChanged(preset);
+                statusFilter?.SetSelectedStatus(selectedStatuses);
             }
 
-            PreLoadFilter();
+            PreLoadFilterFromDB();
             ApplyFilters();
             BuildStatusSummaries();
         }
@@ -112,7 +118,7 @@ public partial class PurchaseRequest_Index : ComponentBase
 
     private void Refresh() => InvokeAsync(StateHasChanged);
 
-    private void PreLoadFilter()
+    private void PreLoadFilterFromDB()
     {
         var uri = new Uri(navigationManager.Uri);
         var queryParams = HttpUtility.ParseQueryString(uri.Query);

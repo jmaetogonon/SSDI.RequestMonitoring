@@ -1,24 +1,23 @@
 ﻿using Microsoft.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
-using SSDI.RequestMonitoring.UI.Models.Common;
-using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
-using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
+using SSDI.RequestMonitoring.UI.Models.Requests;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Requests.Modals;
 
 public partial class NewRequisition__Modal : ComponentBase
 {
     [Parameter] public IRequestDetailVM? RequestHeader { get; set; }
-    [Parameter] public IAttachmentSvc AttachSvc { get; set; } = default!;
-    [Parameter] public IRequisitionSlipSvc SlipSvc { get; set; } = default!;
+    [Parameter] public IAttachSvc AttachSvc { get; set; } = default!;
+    [Parameter] public IRSSlipSvc RSSlipSvc { get; set; } = default!;
     [Parameter] public RequestType RequestType { get; set; }
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
 
-    private ISlipVM Model { get; set; } = default!;
-    private ICollection<IAttachmentVM> Attachments { get; set; } = [];
+    private Request_RS_SlipVM Model { get; set; } = default!;
+    private bool isPR => RequestType is RequestType.Purchase;
+    private ICollection<Request_AttachVM> Attachments { get; set; } = [];
     private Confirmation__Modal? confirmModal;
 
     private bool _isDisabledBtns = false;
@@ -27,7 +26,7 @@ public partial class NewRequisition__Modal : ComponentBase
 
     protected override void OnParametersSet()
     {
-        Model = RequestType is RequestType.JobOrder ? new Job_Order_SlipVM() : new Purchase_Request_SlipVM();
+        Model = new();
 
         Model.RequisitionerId = currentUser.UserId;
         Model.RequisitionerName = currentUser.FullName;
@@ -59,12 +58,15 @@ public partial class NewRequisition__Modal : ComponentBase
             _isDisabledBtns = true;
             IsShowAlert = false;
 
-            var response = await SlipSvc.CreateRequisition(Model, RequestHeader!.Id);
+            Model.Purchase_RequestId = RequestType is RequestType.JobOrder ? null : RequestHeader!.Id;
+            Model.Job_OrderId = RequestType is RequestType.JobOrder ? RequestHeader!.Id : null;
+
+            var response = await RSSlipSvc.CreateRequisition(Model);
             if (response.Success)
             {
                 if (Attachments.Count != 0)
                 {
-                    var res = await AttachSvc.UploadAsync(RequestHeader, Attachments, RequestAttachType.Requisition, response.Data);
+                    var res = await AttachSvc.UploadAsync(RequestHeader!.Id, isPR, Attachments, RequestAttachType.Requisition, response.Data);
                     if (!res.Success)
                     {
                         toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -88,7 +90,7 @@ public partial class NewRequisition__Modal : ComponentBase
 
     private void ResetForm()
     {
-        Model = RequestType is RequestType.JobOrder ? new Job_Order_SlipVM() : new Purchase_Request_SlipVM();
+        Model = new();
         Attachments.Clear();
         IsShowAlert = false;
         _isDisabledBtns = false;

@@ -12,9 +12,11 @@ public partial class EditRequest__Modal : ComponentBase
     [Parameter] public List<DepartmentVM> Departments { get; set; } = [];
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public bool IsResubmit { get; set; }
+    [Parameter] public RequestType RequestType { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
 
+    private bool isPR => RequestType == RequestType.Purchase;
     private bool _isDisabledBtns = false;
     private bool IsShowAlert { get; set; }
     private string AlertMessage { get; set; } = string.Empty;
@@ -48,7 +50,7 @@ public partial class EditRequest__Modal : ComponentBase
                     Files = RequestModel.Attachments
                 };
 
-                var res = await attachSvc.UploadAttachPurchase(command);
+                var res = await attachSvc.UploadAsync(RequestModel.Id, isPR, RequestModel.Attachments, RequestAttachType.Request);
                 if (!res.Success)
                 {
                     if (RequestModel.Attachments.Count != 0)
@@ -92,7 +94,7 @@ public partial class EditRequest__Modal : ComponentBase
                     Files = RequestModel.Attachments
                 };
 
-                var res = await attachSvc.UploadAttachPurchase(attachCommand);
+                var res = await attachSvc.UploadAsync(RequestModel.Id, isPR, RequestModel.Attachments, RequestAttachType.Request);
                 if (!res.Success)
                 {
                     toastSvc.ShowError("Error uploading attachments. Please try again.");

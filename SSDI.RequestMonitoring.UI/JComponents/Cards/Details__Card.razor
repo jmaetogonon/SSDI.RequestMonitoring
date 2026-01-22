@@ -1,4 +1,4 @@
-﻿<div class="details__card-body">
+﻿<div class="details__card-body @(NoMargin ? "nomargin" : "")">
     @if (!string.IsNullOrEmpty(Title))
     {
         <div class="details__card-body-header">
@@ -17,4 +17,5 @@
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public bool NoMargin { get; set; } = false;
 }
