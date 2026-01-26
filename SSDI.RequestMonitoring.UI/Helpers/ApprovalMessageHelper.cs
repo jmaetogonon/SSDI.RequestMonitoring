@@ -90,7 +90,7 @@ public static class ApprovalMessageHelper
     {
         var discrepancies = new List<string>();
 
-        var requisitionSlips = request.RequisitionSlips?.ToList() ?? [];
+        var requisitionSlips = request.RequisitionSlips?.Where(e => e.Approval == ApprovalAction.Approve).ToList() ?? [];
         var receiptAmounts = request.Attachments?
             .Where(a => a.AttachType == RequestAttachType.Receipt)
             .GroupBy(a => a.RequisitionId)
@@ -112,7 +112,7 @@ public static class ApprovalMessageHelper
     {
         var discrepancies = new List<string>();
 
-        var poSlips = request.POSlips?.ToList() ?? new List<Request_PO_SlipVM>();
+        var poSlips = request.POSlips?.Where(e => e.Approval == ApprovalAction.Approve).ToList() ?? [];
 
         foreach (var po in poSlips)
         {

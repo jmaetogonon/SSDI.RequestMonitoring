@@ -180,6 +180,8 @@ public partial class RequestRequisition__Control : ComponentBase
                 toastSvc.ShowError("No request details to export.");
                 return;
             }
+
+            selectedSlip = slip;
             viewLoading[slip.Id] = true;
             StateHasChanged();
 
@@ -240,7 +242,7 @@ public partial class RequestRequisition__Control : ComponentBase
         try
         {
             var fileBytes = await AttachSvc.DownloadAllRSZipAsync(Request.Id, isPR);
-            var fileName = $"{(isPR ? "PR" : "JO")}#{Request.Id}_{Request.Name.Replace(" ", "")}_RequisitionSlips.zip";
+            var fileName = $"{(isPR ? "PR" : "JO")}{Request.SeriesNumber} Requisition Slips.zip";
 
             if (fileBytes != null && fileBytes.Length > 0)
             {

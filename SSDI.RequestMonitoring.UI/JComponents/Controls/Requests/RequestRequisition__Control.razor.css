@@ -87,6 +87,15 @@
         color: var(--color-darkmidnightblue);
     }
 
+
+.slip-card__type-id {
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    line-height: normal;
+}
+
 .slip-card__summary {
     display: flex;
     align-items: center;

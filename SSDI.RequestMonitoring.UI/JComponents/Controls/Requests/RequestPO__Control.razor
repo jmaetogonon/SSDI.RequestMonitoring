@@ -11,7 +11,7 @@
 <!-- PDF Viewer Modal -->
 <PdfViewer__Modal IsVisible="@showPdfModal"
                   PdfBase64="@currentPdfBase64"
-                  FileName="@($"R{Request.SeriesNumber}_POslip_{selectedSlip?.Id}.pdf")"
+                  FileName="@($"{(RequestType == RequestType.Purchase ? "PR" : "JO")}{Request.SeriesNumber} PO Slip #{selectedSlip?.Id}.pdf")"
                   OnClose="@ClosePdfModal" />
 
 <AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment)" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />

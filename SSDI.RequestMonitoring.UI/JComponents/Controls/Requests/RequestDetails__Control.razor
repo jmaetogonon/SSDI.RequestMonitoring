@@ -10,7 +10,7 @@
     <DetailsRow__Card Label="Name" Value="@Request.Name" FullRow="true" />
     <DetailsRow__Card Label="Division / Department" Value="@Request.Division_Department" />
     <DetailsRow__Card Label="Nature of Request" Value="@Request.Nature_Of_Request" />
-    <DetailsRow__Card Label="Justification" Value="@Request.Justification" FullRow="true" />
+    <DetailsRow__Card Label="Justification" Value="@Request.Justification" FullRow="true" IsValueBreak="true" />
 </Details__Card>
 
 <!-- Status & Priority -->
@@ -127,7 +127,7 @@
                         <span>@Request.DateCompleted?.ToString("MMM dd, yyyy • hh:mm tt")</span>
                     </div>
                 </div>
-            } 
+            }
             else
             {
                 <div class="approval__pending">Awaiting Acknowledgment</div>

@@ -24,7 +24,7 @@
 <EditJORequest__Modal IsModalVisible="@isEditRequestModalVisible" RequestType="RequestType.JobOrder" Departments="departments" Divisions="divisions" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
 <PdfViewer__Modal IsVisible="@isPdfModalVisible"
                   PdfBase64="@pdfBase64"
-                  FileName="@($"{Request?.Name}_PR.pdf")"
+                  FileName="@($"JO{Request?.SeriesNumber}.pdf")"
                   OnClose="@ClosePdfModal" />
 
 <div class="page__container">

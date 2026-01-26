@@ -2,6 +2,7 @@
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
+using SSDI.RequestMonitoring.UI.Services.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder;
 
@@ -293,8 +294,22 @@ public partial class JobOrder_Details : ComponentBase
                 return;
             }
 
-            // Generate the PDF bytes
-            var pdfBytes = await jobOrderSvc.GenerateJobOrderPdf(Request.Id);
+            byte[] pdfBytes;
+
+            var result = await confirmModal!.ShowPdfExportOptionsAsync($"JO{Request.SeriesNumber}.pdf");
+            await confirmModal!.SetLoadingAsync(true);
+
+            if (result)
+            {
+                // Generate the PDF bytes
+                pdfBytes = await jobOrderSvc.GenerateJobOrderPdf(Request.Id, true);
+            }
+            else
+            {
+                pdfBytes = await jobOrderSvc.GenerateJobOrderPdf(Request.Id, false);
+            }
+
+            await CloseModalWithLoading();
             if (pdfBytes == null || pdfBytes.Length == 0)
             {
                 toastSvc.ShowError("Failed to generate PDF.");
@@ -385,7 +400,7 @@ public partial class JobOrder_Details : ComponentBase
         // Check requisition slips
         if (hasRequisitionSlips)
         {
-            foreach (var slip in Request.RequisitionSlips!)
+            foreach (var slip in Request.RequisitionSlips!.Where(e => e.Approval != ApprovalAction.Reject))
             {
                 // Check for pending approvals
                 if (slip.Approval == ApprovalAction.Pending)
@@ -403,7 +418,7 @@ public partial class JobOrder_Details : ComponentBase
         // Check PO slips
         if (hasPOSlips)
         {
-            foreach (var slip in Request.POSlips!)
+            foreach (var slip in Request.POSlips!.Where(e => e.Approval != ApprovalAction.Reject))
             {
                 // Check for pending approvals
                 if (slip.Approval == ApprovalAction.Pending)
@@ -432,7 +447,6 @@ public partial class JobOrder_Details : ComponentBase
         if (Request == null) return false;
         return (Request.RequisitionSlips.Any(e => e.Approval == ApprovalAction.Pending) || Request.POSlips.Any(e => e.Approval == ApprovalAction.Pending));
     }
-
 
     private DateTime? GetAwaitingApprovalDate()
     {

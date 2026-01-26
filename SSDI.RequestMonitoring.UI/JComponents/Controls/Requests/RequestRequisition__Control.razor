@@ -17,7 +17,7 @@
 <!-- PDF Viewer Modal -->
 <PdfViewer__Modal IsVisible="@showPdfModal"
                   PdfBase64="@currentPdfBase64"
-                  FileName="@($"R{Request.SeriesNumber}_Reqslip_{selectedSlip?.Id}.pdf")"
+                  FileName="@($"{(RequestType == RequestType.Purchase ? "PR" : "JO")}{Request.SeriesNumber} Req Slip #{selectedSlip?.Id}.pdf")"
                   OnClose="@ClosePdfModal" />
 
 <AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment)" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />
@@ -71,7 +71,8 @@
                         <div class="slip-card__main-info">
                             <div class="slip-card__type">
                                 <i class="bi @GetSlipIcon(slip.RequisitionSlip_For)"></i>
-                                <span>@GetSlipDisplayName(slip.RequisitionSlip_For)</span>
+                                <span>@GetSlipDisplayName(slip.RequisitionSlip_For)</span>          
+                                <small class="slip-card__type-id">#@slip.Id</small>
                             </div>
                             <div class="slip-card__summary">
                                 <div class="slip-card__amount">

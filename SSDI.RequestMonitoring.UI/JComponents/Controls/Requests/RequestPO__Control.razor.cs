@@ -241,7 +241,8 @@ public partial class RequestPO__Control : ComponentBase
         try
         {
             var fileBytes = await AttachSvc.DownloadAllPOZipAsync(Request.Id, isPR);
-            var fileName = $"{(isPR ? "PR" : "JO")}#{Request.Id}_{Request.Name.Replace(" ", "")}_POSlips.zip";
+            var fileName = $"{(isPR ? "PR" : "JO")}{Request.SeriesNumber} Purchase Order Slips.zip";
+
 
             if (fileBytes != null && fileBytes.Length > 0)
             {

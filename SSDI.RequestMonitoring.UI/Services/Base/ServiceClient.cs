@@ -227,12 +227,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<byte[]> GeneratePdfJobOrderAsync(int? id);
+        System.Threading.Tasks.Task<byte[]> GeneratePdfJobOrderAsync(int? id, bool? isWithAttachment);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<byte[]> GeneratePdfJobOrderAsync(int? id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<byte[]> GeneratePdfJobOrderAsync(int? id, bool? isWithAttachment, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -407,12 +407,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<byte[]> GeneratePdfAsync(int? id);
+        System.Threading.Tasks.Task<byte[]> GeneratePdfAsync(int? id, bool? isWithAttachment);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<byte[]> GeneratePdfAsync(int? id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<byte[]> GeneratePdfAsync(int? id, bool? isWithAttachment, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>No Content</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -2559,15 +2559,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<byte[]> GeneratePdfJobOrderAsync(int? id)
+        public virtual System.Threading.Tasks.Task<byte[]> GeneratePdfJobOrderAsync(int? id, bool? isWithAttachment)
         {
-            return GeneratePdfJobOrderAsync(id, System.Threading.CancellationToken.None);
+            return GeneratePdfJobOrderAsync(id, isWithAttachment, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<byte[]> GeneratePdfJobOrderAsync(int? id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<byte[]> GeneratePdfJobOrderAsync(int? id, bool? isWithAttachment, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2586,6 +2586,10 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
                     if (id != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (isWithAttachment != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("isWithAttachment")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(isWithAttachment, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -4375,15 +4379,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<byte[]> GeneratePdfAsync(int? id)
+        public virtual System.Threading.Tasks.Task<byte[]> GeneratePdfAsync(int? id, bool? isWithAttachment)
         {
-            return GeneratePdfAsync(id, System.Threading.CancellationToken.None);
+            return GeneratePdfAsync(id, isWithAttachment, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<byte[]> GeneratePdfAsync(int? id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<byte[]> GeneratePdfAsync(int? id, bool? isWithAttachment, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -4402,6 +4406,10 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
                     if (id != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (isWithAttachment != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("isWithAttachment")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(isWithAttachment, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 

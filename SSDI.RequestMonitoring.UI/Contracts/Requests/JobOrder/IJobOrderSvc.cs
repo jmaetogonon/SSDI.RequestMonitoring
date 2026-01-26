@@ -25,7 +25,7 @@ public interface IJobOrderSvc
 
     Task<Response<Guid>> ApproveJobOrder(ApproveJobOrderCommandVM command);
 
-    Task<byte[]> GenerateJobOrderPdf(int id);
+    Task<byte[]> GenerateJobOrderPdf(int id, bool isWithAttach);
 
     Task<Response<Guid>> InitiateCloseJobOrder(int id, int initiatorId);
 

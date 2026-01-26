@@ -56,10 +56,10 @@
     [Parameter]
     public EventCallback<bool> VisibleChanged { get; set; }
 
-    private string activeTab = "general";
+    private string activeTab = "esignature";
     private readonly List<SettingsTab> tabs = new()
     {
-        new SettingsTab("general", "General", "bi-gear"),
+        // new SettingsTab("general", "General", "bi-gear"),
         new SettingsTab("esignature", "E-Signature", "bi-pen"),
         new SettingsTab("privacy", "Privacy", "bi-shield-check"),
         new SettingsTab("about", "About", "bi-info-circle")

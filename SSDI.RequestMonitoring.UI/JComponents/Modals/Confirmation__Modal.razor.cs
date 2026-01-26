@@ -305,6 +305,26 @@ public partial class Confirmation__Modal : ComponentBase
         return await _tcs.Task;
     }
 
+    public async Task<bool> ShowPdfExportOptionsAsync(string filename)
+    {
+        ResetFields();
+        Message = $"How would you like to view '{filename}'?";
+        Title = "View Options";
+        Variant = ConfirmationModalVariant.info;
+        ConfirmText = "With Attachments";
+        CancelText = "PDF Only";
+        ConfirmIcon = "bi bi-paperclip";
+        CancelIcon = "bi bi-file-pdf";
+
+        _tcs = new TaskCompletionSource<bool>();
+        _isVisible = true;
+        await IsVisibleChanged.InvokeAsync(true);
+        StateHasChanged();
+
+        return await _tcs.Task;
+    }
+
+
     public async Task HideAsync()
     {
         await Close();

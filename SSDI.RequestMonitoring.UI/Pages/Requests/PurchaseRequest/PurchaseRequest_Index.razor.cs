@@ -344,48 +344,46 @@ public partial class PurchaseRequest_Index : ComponentBase
         if (FilteredItems == null || !FilteredItems.Any())
             return;
 
-        var itemCount = FilteredItems.Count();
-
-        // Warn for large exports
-        if (itemCount > 1000)
+        var options = new ConfirmationModalOptions
         {
-            var options = new ConfirmationModalOptions
-            {
-                Message = $"You are about to export {itemCount:n0} records. This may take a moment. Continue?",
-                Title = "Confirm Export",
-                Variant = ConfirmationModalVariant.warning,
-                ConfirmText = "Export",
-                CancelText = "Cancel",
-            };
+            Message = $"This will export the purchase requests based on your recent filter selected. Do you wish to proceed?",
+            Title = "Export Requests",
+            Variant = ConfirmationModalVariant.info,
+            ConfirmText = "Proceed",
+            CancelText = "Cancel",
+            Icon= "bi bi-download",
+        };
 
-            var result = await confirmModal!.ShowAsync(options);
-            if (!result) return;
-        }
+        var result = await confirmModal!.ShowAsync(options);
+        if (!result) return;
 
         var progress = new Progress<int>(value =>
         {
             InvokeAsync(StateHasChanged);
         });
 
-
         var rows = FilteredItems.Select(r => new RequestExportRow
         {
-            RequestNo = r.RequestNumber,
+            SeriesNo = r.SeriesNumber,
             RequestedBy = r.Name,
             NatureOfRequest = r.Nature_Of_Request,
             DivisionDepartment = r.Division_Department,
             Priority = utils.GetPriorityDisplay(r.Priority, r.OtherPriority, false),
             Status = utils.GetStatusDisplay(r.Status),
-            DateRequested = $"{r.DateRequested:MM.dd.yy}"
+            DateRequested = $"{r.DateRequested:MM/dd/yy}"
         }).ToList();
+
+        var banner = await Http.GetByteArrayAsync("images/logo/banner.png");
 
         var fileBytes = await export.Export(
             rows,
             statusFilter: selectedStatuses.Count == 0 ? "All" : string.Join(",", selectedStatuses),
             priorityFilter: selectedPriorities.Count == 0 ? "All" : string.Join(",", selectedPriorities),
-            type: "Purchase"
+            type: "Purchase",
+            bannerBytes: banner
         );
-        string fileName = $"PurchaseRequests_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+        string fileName = $"Purchase Request List {DateTime.Now:MMM dd, yyyy}.xlsx";
         await jsRuntime.InvokeAsync<object>("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
         toastSvc.ShowSuccess("Exported Successfully.");
     }

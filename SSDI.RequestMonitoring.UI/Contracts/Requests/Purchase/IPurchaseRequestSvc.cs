@@ -25,7 +25,7 @@ public interface IPurchaseRequestSvc
 
     Task<Response<Guid>> ApprovePurchaseRequest(ApprovePurchaseRequestCommandVM command);
 
-    Task<byte[]> GeneratePurchaseRequestPdf(int id);
+    Task<byte[]> GeneratePurchaseRequestPdf(int id, bool isWithAttach);
 
     Task<Response<Guid>> InitiateClosePurchaseRequest(int id, int initiatorId);
 

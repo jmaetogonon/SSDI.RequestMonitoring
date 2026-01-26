@@ -24,7 +24,7 @@
 <EditRequest__Modal IsModalVisible="@isEditRequestModalVisible" RequestType="RequestType.Purchase" Departments="departments" Divisions="divisions" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
 <PdfViewer__Modal IsVisible="@isPdfModalVisible"
                   PdfBase64="@pdfBase64"
-                  FileName="@($"{Request?.Name}_PR.pdf")"
+                  FileName="@($"PR{Request?.SeriesNumber}.pdf")"
                   OnClose="@ClosePdfModal" />
 
 <div class="page__container">

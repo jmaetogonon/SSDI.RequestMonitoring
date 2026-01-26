@@ -135,11 +135,11 @@ public class PurchaseRequestSvc : BaseHttpService, IPurchaseRequestSvc
         }
     }
 
-    public async Task<byte[]> GeneratePurchaseRequestPdf(int id)
+    public async Task<byte[]> GeneratePurchaseRequestPdf(int id, bool isWithAttach)
     {
         try
         {
-            var requests = await _client.GeneratePdfAsync(id);
+            var requests = await _client.GeneratePdfAsync(id, isWithAttach);
             return requests;
         }
         catch (ApiException ex)

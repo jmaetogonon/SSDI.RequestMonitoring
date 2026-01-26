@@ -262,7 +262,7 @@ public partial class RequestAttachments__Control : ComponentBase
         try
         {
             var fileBytes = await AttachSvc.DownloadAllReqZipAsync(Request.Id, isPR);
-            var fileName = $"{(isPR ? "PR" : "JO")}#{Request.Id}_{Request.Name}_Attachments.zip";
+            var fileName = $"{(isPR ? "PR" : "JO")}{Request.SeriesNumber} Attachments.zip";
 
             if (fileBytes != null && fileBytes.Length > 0)
             {

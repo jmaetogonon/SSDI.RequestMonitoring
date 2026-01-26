@@ -21,6 +21,11 @@
     word-break: break-word;
 }
 
+    .details__row-value.valuebreak {
+        white-space: pre-line;
+        word-break: break-word;
+    }
+
 
 @media (max-width: 768px) {
     .details__row-content {

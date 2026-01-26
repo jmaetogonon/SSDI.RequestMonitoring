@@ -1,6 +1,6 @@
 ﻿<div class="details__row-content @(FullRow ? "details__row-full" : "")">
     <div class="details__row-label">@((MarkupString)Label)</div>
-    <div class="details__row-value">
+    <div class="details__row-value @(IsValueBreak ? "valuebreak" : "")">
         @if (ChildContent != null)
         {
             @ChildContent
@@ -17,4 +17,5 @@
     [Parameter] public string Value { get; set; } = string.Empty;
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public bool FullRow { get; set; }
+    [Parameter] public bool IsValueBreak { get; set; } = false;
 }

@@ -2,7 +2,7 @@
 
 public class RequestExportRow
 {
-    public string RequestNo { get; set; } = "";
+    public string SeriesNo { get; set; } = "";
     public string RequestedBy { get; set; } = "";
     public string NatureOfRequest { get; set; } = "";
     public string DivisionDepartment { get; set; } = "";

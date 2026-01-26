@@ -135,11 +135,11 @@ public class JobOrderSvc : BaseHttpService, IJobOrderSvc
         }
     }
 
-    public async Task<byte[]> GenerateJobOrderPdf(int id)
+    public async Task<byte[]> GenerateJobOrderPdf(int id, bool isWithAttach)
     {
         try
         {
-            var requests = await _client.GeneratePdfJobOrderAsync(id);
+            var requests = await _client.GeneratePdfJobOrderAsync(id, isWithAttach);
             return requests;
         }
         catch (ApiException ex)

@@ -295,8 +295,23 @@ public partial class PurchaseRequest_Details : ComponentBase
                 return;
             }
 
-            // Generate the PDF bytes
-            var pdfBytes = await purchaseRequestSvc.GeneratePurchaseRequestPdf(Request.Id);
+            byte[] pdfBytes;
+
+            var result = await confirmModal!.ShowPdfExportOptionsAsync($"PR{Request.SeriesNumber}.pdf"); 
+            await confirmModal!.SetLoadingAsync(true);
+
+            if (result)
+            {
+                // Generate the PDF bytes
+                pdfBytes = await purchaseRequestSvc.GeneratePurchaseRequestPdf(Request.Id, true); 
+
+            }
+            else
+            {
+                pdfBytes = await purchaseRequestSvc.GeneratePurchaseRequestPdf(Request.Id, false);
+            }
+
+            await CloseModalWithLoading();
             if (pdfBytes == null || pdfBytes.Length == 0)
             {
                 toastSvc.ShowError("Failed to generate PDF.");
@@ -387,7 +402,7 @@ public partial class PurchaseRequest_Details : ComponentBase
         // Check requisition slips
         if (hasRequisitionSlips)
         {
-            foreach (var slip in Request.RequisitionSlips!)
+            foreach (var slip in Request.RequisitionSlips!.Where(e => e.Approval != ApprovalAction.Reject))
             {
                 // Check for pending approvals
                 if (slip.Approval == ApprovalAction.Pending)
@@ -405,7 +420,7 @@ public partial class PurchaseRequest_Details : ComponentBase
         // Check PO slips
         if (hasPOSlips)
         {
-            foreach (var slip in Request.POSlips!)
+            foreach (var slip in Request.POSlips!.Where(e => e.Approval != ApprovalAction.Reject))
             {
                 // Check for pending approvals
                 if (slip.Approval == ApprovalAction.Pending)
