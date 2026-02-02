@@ -65,25 +65,24 @@
             {
                 var isExpanded = expandedSlips.Contains(slip.Id);
 
-                <div class="slip-card @(isExpanded ? "slip-card--expanded" : "")">
+                <div class="slip-card @(isExpanded ? "slip-card--expanded" : "") @(IsSlipPastDue(slip) ? "slip-card--past-due" : "")">
                     <!-- Slip Header -->
                     <div class="slip-card__header" @onclick="() => ToggleSlip(slip.Id)">
                         <div class="slip-card__main-info">
                             <div class="slip-card__type">
                                 <i class="bi @GetSlipIcon(slip.RequisitionSlip_For)"></i>
-                                <span>@GetSlipDisplayName(slip.RequisitionSlip_For)</span>          
-                                <small class="slip-card__type-id">#@slip.Id</small>
+                                <span>@GetSlipDisplayName(slip.RequisitionSlip_For)</span>
                             </div>
                             <div class="slip-card__summary">
-                                <div class="slip-card__amount">
+                                <div class="slip-card__amount @(IsSlipPastDue(slip) ? "slip-card__amount--past-due" : "")">
                                     @slip.AmountRequested.ToString("C", CultureInfo.GetCultureInfo("en-PH"))
                                 </div>
                                 <div class="slip-card__date">
                                     @slip.DateOfRequest?.ToString("MMM dd, yyyy")
                                 </div>
                                 <div class="slip-card__department">
-                                    <span class="slip-badge slip-badge--@slip.RequisitionSlip_Dept.ToString().ToLower()">
-                                        @GetDeptDisplayName(slip.RequisitionSlip_Dept)
+                                    <span class="slip-badge">
+                                        @slip.BusinessUnitCode
                                     </span>
                                 </div>
                             </div>
@@ -151,6 +150,15 @@
                             <div class="slip-card__actions-attach-count">
                                 <!-- Approval Section in Header -->
                                 <div class="slip-card__approval-header">
+
+
+                                    @if (IsSlipPastDue(slip))
+                                    {
+                                        <span class="slip-past-due-indicator" title="Past due for liquidation">
+                                            <i class="bi bi-exclamation-triangle-fill"></i>
+                                            @GetDaysPastDue(slip)d
+                                        </span>
+                                    }
                                     @if (currentUser.IsCEO && Request?.Status == RequestStatus.ForRequisition)
                                     {
                                         @if (slip.Approval == ApprovalAction.Pending)
@@ -192,26 +200,26 @@
                                         {
                                             <div class="slip-approval__status slip-approval__status--approved">
                                                 <i class="bi bi-check-circle-fill"></i>
-                                                <span>Approved by @slip.SlipApproverName</span>
-                                                @* @if (slip.SlipApprovalDate.HasValue)
-                                            {
-                                                <div class="slip-approval__timestamp">
-                                                    @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
-                                                </div>
-                                            } *@
+                                                <span>@GetApprovalText(slip)</span>
+                                                @if (slip.SlipApprovalDate.HasValue)
+                                                {
+                                                    <div class="slip-approval__timestamp">
+                                                        @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                         else if (slip.Approval == ApprovalAction.Reject)
                                         {
                                             <div class="slip-approval__status slip-approval__status--rejected">
                                                 <i class="bi bi-x-octagon-fill"></i>
-                                                <span>Rejected by @slip.SlipApproverName</span>
-                                                @*   @if (slip.SlipApprovalDate.HasValue)
-                                            {
-                                                <div class="slip-approval__timestamp">
-                                                    @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
-                                                </div>
-                                            } *@
+                                                <span>@GetApprovalText(slip)</span>
+                                                @if (slip.SlipApprovalDate.HasValue)
+                                                {
+                                                    <div class="slip-approval__timestamp">
+                                                        @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                     }
@@ -221,26 +229,26 @@
                                         {
                                             <div class="slip-approval__status slip-approval__status--approved">
                                                 <i class="bi bi-check-circle-fill"></i>
-                                                <span>Approved by @slip.SlipApproverName</span>
-                                                @* @if (slip.SlipApprovalDate.HasValue)
-                                            {
-                                                <div class="slip-approval__timestamp">
-                                                    @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
-                                                </div>
-                                            } *@
+                                                <span>@GetApprovalText(slip)</span>
+                                                @if (slip.SlipApprovalDate.HasValue)
+                                                {
+                                                    <div class="slip-approval__timestamp">
+                                                        @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                         else if (slip.Approval == ApprovalAction.Reject)
                                         {
                                             <div class="slip-approval__status slip-approval__status--rejected">
                                                 <i class="bi bi-x-octagon-fill"></i>
-                                                <span>Rejected by @slip.SlipApproverName</span>
-                                                @*  @if (slip.SlipApprovalDate.HasValue)
-                                            {
-                                                <div class="slip-approval__timestamp">
-                                                    @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
-                                                </div>
-                                            } *@
+                                                <span>@GetApprovalText(slip)</span>
+                                                @if (slip.SlipApprovalDate.HasValue)
+                                                {
+                                                    <div class="slip-approval__timestamp">
+                                                        @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                         else
@@ -273,7 +281,18 @@
                         <div class="slip-card__expanded-content">
                             <!-- Slip Details -->
                             <div class="slip-details-section">
-                                <h4>Slip Details</h4>
+                                <div class="slip-details-section-header">
+                                    <h4> Slip Details </h4>
+                                    <small class="slip-card__type-id">@slip.SeriesNumber</small>
+                                    @if (slip.Approval == ApprovalAction.Approve && slip.NoOfdaysToLiquidate > 0)
+                                    {
+                                        <div class="slip-liquidation-info">
+                                            <i class="bi bi-calendar-check"></i>
+                                            <span>@slip.NoOfdaysToLiquidate days to liquidate</span>
+                                        </div>
+
+                                    }
+                                </div>
                                 <div class="slip-details-grid">
                                     @if (slip.RequisitionSlip_For == RequisitionSlip_For.Advances)
                                     {
@@ -298,7 +317,7 @@
                                     {
                                         <div class="detail-item">
                                             <label>Payee:</label>
-                                            <span>@slip.Payment_Payee</span>
+                                            <span>@slip.Payment_PayeeName</span>
                                         </div>
                                         <div class="detail-item">
                                             <label>Payment Details:</label>
@@ -367,6 +386,7 @@
                                             {
                                                 @foreach (var attachment in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id))
                                                 {
+                                                    var isDeletingThis = (deletingAttachments.Contains(attachment.Id.ToString()));
                                                     var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
 
                                                     <div class="attachment-item">
@@ -395,6 +415,20 @@
                                                                     <i class="bi bi-download"></i>
                                                                 }
                                                             </button>
+                                                            <button class="btn btn--outline btn--xs btn--danger"
+                                                                    @onclick="@(() => DeleteAttachment(attachment))"
+                                                                    @onclick:stopPropagation="true"
+                                                                    title="Delete"
+                                                                    disabled="@isDeletingThis">
+                                                                @if (isDeletingThis)
+                                                                {
+                                                                    <i class="bi bi-arrow-repeat spinning"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="bi bi-trash"></i>
+                                                                }
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 }
@@ -416,6 +450,8 @@
                                                 @foreach (var receipt in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id))
                                                 {
                                                     var isDownloadingThis = (downloadingAttachments.Contains(receipt.Id.ToString()));
+                                                    var isDeletingThis = (deletingAttachments.Contains(receipt.Id.ToString()));
+
                                                     <div class="attachment-item">
                                                         <div class="attachment-icon">
                                                             <i class="bi @GetFileIcon(receipt.ContentType)"></i>
@@ -443,6 +479,20 @@
                                                                 else
                                                                 {
                                                                     <i class="bi bi-download"></i>
+                                                                }
+                                                            </button>
+                                                            <button class="btn btn--outline btn--xs btn--danger"
+                                                                    @onclick="@(() => DeleteAttachment(receipt))"
+                                                                    @onclick:stopPropagation="true"
+                                                                    title="Delete"
+                                                                    disabled="@isDeletingThis">
+                                                                @if (isDeletingThis)
+                                                                {
+                                                                    <i class="bi bi-arrow-repeat spinning"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="bi bi-trash"></i>
                                                                 }
                                                             </button>
                                                         </div>

@@ -1,0 +1,7 @@
+﻿#show__new__vendor-modal {
+    display: block;
+}
+
+#hide__new__vendor-modal {
+    display: none;
+}

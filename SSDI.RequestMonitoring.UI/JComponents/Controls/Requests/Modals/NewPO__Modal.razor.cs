@@ -58,7 +58,7 @@ public partial class NewPO__Modal : ComponentBase
             Model.Purchase_RequestId = RequestType is RequestType.JobOrder ? null : RequestHeader!.Id;
             Model.Job_OrderId = RequestType is RequestType.JobOrder ? RequestHeader!.Id : null;
 
-            var response = await POSlipSvc.CreatePOSlip(Model);
+            var response = await POSlipSvc.CreatePOSlip(Model, RequestType);
             if (response.Success)
             {
                 if (Attachments.Count != 0)

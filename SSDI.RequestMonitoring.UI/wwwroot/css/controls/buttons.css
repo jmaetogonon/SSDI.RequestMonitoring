@@ -403,3 +403,26 @@
             font-size: 0.8rem;
         }
 }
+
+/* ===== DANGER OUTLINE BUTTON FIX ===== */
+.btn--outline.btn--danger {
+    border: 1.5px solid #ef4444;
+    background: transparent;
+    color: #ef4444;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+    .btn--outline.btn--danger::after {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .btn--outline.btn--danger:hover {
+        color: white;
+        border-color: #dc2626;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+        /* Override the base outline hover that adds blue */
+        .btn--outline.btn--danger:hover::after {
+            opacity: 1;
+        }

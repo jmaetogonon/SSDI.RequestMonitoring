@@ -1,0 +1,115 @@
+﻿@namespace SSDI.RequestMonitoring.UI.JComponents.Controls
+@typeparam TItem where TItem : notnull
+@typeparam TValue
+
+<div class="autocomplete-container" @onmousedown:stopPropagation="true">
+    <div class="autocomplete-input-wrapper">
+        <input @ref="searchInput"
+               type="text"
+               class="form-control autocomplete-input"
+               value="@_displayText"
+               @oninput="@HandleInput"
+               @onfocus="@HandleFocus"
+               @onblur="@HandleBlur"
+               placeholder="@Placeholder"
+               disabled="@Disabled" />
+
+        @if (ShowClearButton && !string.IsNullOrEmpty(_displayText))
+        {
+            <button type="button"
+                    class="autocomplete-clear-btn"
+                    @onclick="@ClearSelection"
+                    @onmousedown:stopPropagation="true"
+                    title="Clear">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        }
+
+        @if (ShowLoading)
+        {
+            <div class="autocomplete-spinner">
+                <i class="bi bi-arrow-repeat spinning"></i>
+            </div>
+        }
+
+        <div class="autocomplete-dropdown-toggle"
+             @onclick="@ToggleDropdown"
+             @onmousedown:stopPropagation="true">
+            <i class="bi bi-chevron-down"></i>
+        </div>
+    </div>
+
+    @if (IsDropdownVisible && FilteredItems.Any())
+    {
+        <div class="autocomplete-dropdown" @onmousedown:stopPropagation="true">
+            <div class="autocomplete-dropdown-header">
+                <span>@FilteredItems.Count() items found</span>
+                @if (ShowAddNewOption && !string.IsNullOrEmpty(_displayText))
+                {
+                    <button type="button"
+                            class="autocomplete-add-new"
+                            @onclick="@AddNewItem"
+                            @onmousedown:stopPropagation="true">
+                        <i class="bi bi-plus-circle"></i> Add "@_displayText"
+                    </button>
+                }
+            </div>
+
+            <div class="autocomplete-items-list" @ref="dropdownList">
+                @foreach (var item in FilteredItems)
+                {
+                    <div class="autocomplete-item @(IsSelected(item) ? "selected" : "")"
+                         @onclick="() => SelectItem(item)"
+                         @onmouseover="() => SetHoveredItem(item)"
+                         @onmousedown:stopPropagation="true">
+                        <div class="autocomplete-item-content">
+                            @if (ItemTemplate != null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                @GetItemDisplayText(item)
+                            }
+                        </div>
+                        @if (IsSelected(item))
+                        {
+                            <i class="bi bi-check-lg autocomplete-item-check"></i>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (HasMoreItems && !string.IsNullOrEmpty(_displayText))
+            {
+                <div class="autocomplete-footer">
+                    <button type="button"
+                            class="autocomplete-load-more"
+                            @onclick="@LoadMoreItems"
+                            @onmousedown:stopPropagation="true">
+                        Load more results...
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (IsDropdownVisible && !FilteredItems.Any() && !string.IsNullOrEmpty(_displayText))
+    {
+        <div class="autocomplete-dropdown" @onmousedown:stopPropagation="true">
+            <div class="autocomplete-no-results">
+                <i class="bi bi-search"></i>
+                <span>No results found for "@_displayText"</span>
+                @if (ShowAddNewOption)
+                {
+                    <button type="button"
+                            class="autocomplete-add-new"
+                            @onclick="@AddNewItem"
+                            @onmousedown:stopPropagation="true">
+                        <i class="bi bi-plus-circle"></i> Add "@_displayText" as new item
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>

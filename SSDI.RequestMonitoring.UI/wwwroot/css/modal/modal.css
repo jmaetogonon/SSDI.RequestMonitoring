@@ -1,4 +1,8 @@
-﻿.modal__overlay {
+﻿.fluent-toast-provider {
+    z-index: 12000 !important;
+}
+
+.modal__overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -108,6 +112,25 @@
             align-items: center;
         }
 
+    .form-group .label-actions {
+        display: inline-flex;
+        gap: 0.5rem;
+        margin-left: 0.5rem;
+        color: var(--color-darkmidnightblue);
+        background-color: transparent;
+    }
+
+        .form-group .label-actions i {
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+            .form-group .label-actions i:hover {
+                opacity: 1;
+            }
+
 .form-control {
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -134,7 +157,7 @@
     background-color: var(--color-whitesmoke);
     border: 1px solid var(--color-whitesmoke);
     box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 5.646a.5.5 0 0 1 .708 0L8 11.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
     background-position: right 0.75rem center;
     background-repeat: no-repeat;
     background-size: 16px 12px;
@@ -161,6 +184,39 @@
         cursor: not-allowed;
         opacity: 0.7;
     }
+
+/* Select with Actions */
+.select-with-actions {
+    position: relative;
+}
+
+    .select-with-actions .form-select {
+        padding-right: 4rem;
+        width: 100%;
+        background-position: right 3.55rem center;
+    }
+
+.select-actions {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 0.5rem;
+    color: var(--color-darkmidnightblue);
+    background-color: transparent;
+}
+
+    .select-actions i {
+        cursor: pointer;
+        font-size: 1rem;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+        .select-actions i:hover {
+            opacity: 1;
+        }
 /*radio button*/
 
 .radio-group::part(positioning-region) {
@@ -323,7 +379,7 @@
     margin: 0.5rem 0;
     padding: 1rem;
     border-radius: 12px;
-     box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
     position: relative;
     overflow: hidden;
 }
@@ -344,7 +400,7 @@
     }
 
 .form-section-title {
-     background: #636363;
+    background: #636363;
     color: white;
     padding: 0.75rem 1rem;
     border-radius: 8px;
@@ -365,7 +421,6 @@
         background: rgba(255, 255, 255, 0.8);
         border-radius: 2px;
     }
-
 
     .form-section-title.full-width {
         grid-column: 1 / -1;
@@ -602,8 +657,7 @@
         max-height: 60vh !important;
     }
 
-
-    .modal__form-group, .grid-two-col  {
+    .modal__form-group, .grid-two-col {
         grid-template-columns: 1fr; /* stack all */
     }
 }

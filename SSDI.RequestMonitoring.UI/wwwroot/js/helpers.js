@@ -41,3 +41,22 @@ function scrollTableToBottom() {
 window.scrollTableToBottom = scrollTableToBottom;
 
 //=============================================================
+
+
+
+window.scrollToElement = function (element) {
+    if (element) {
+        element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+};
+
+window.scrollToTopOfModal = function () {
+    // Find the modal container and scroll it to top
+    const modal = document.querySelector('.modal__overlay[style*="display: flex"] .modal');
+    if (modal) {
+        modal.scrollTop = 0;
+    }
+};

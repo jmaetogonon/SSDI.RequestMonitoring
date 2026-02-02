@@ -65,7 +65,7 @@
                         <div class="slip-card__main-info">
                             <div class="slip-card__type">
                                 <i class="bi bi-receipt"></i>
-                                <span>@slip.PO_Number | @slip.Supplier</span>
+                                <span>@slip.SeriesNumber | @slip.Supplier</span>
                             </div>
                             <div class="slip-card__summary">
                                 <div class="slip-card__amount">
@@ -180,14 +180,26 @@
                                         {
                                             <div class="slip-approval__status slip-approval__status--approved">
                                                 <i class="bi bi-check-circle-fill"></i>
-                                                <span>Approved by @slip.SlipApproverName</span>
+                                                <span>@GetApprovalText(slip)</span>
+                                                @if (slip.SlipApprovalDate.HasValue)
+                                                {
+                                                    <div class="slip-approval__timestamp">
+                                                        @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                         else if (slip.Approval == ApprovalAction.Reject)
                                         {
                                             <div class="slip-approval__status slip-approval__status--rejected">
                                                 <i class="bi bi-x-octagon-fill"></i>
-                                                <span>Rejected by @slip.SlipApproverName</span>
+                                                <span>@GetApprovalText(slip)</span>
+                                                @if (slip.SlipApprovalDate.HasValue)
+                                                {
+                                                    <div class="slip-approval__timestamp">
+                                                        @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                     }
@@ -197,14 +209,26 @@
                                         {
                                             <div class="slip-approval__status slip-approval__status--approved">
                                                 <i class="bi bi-check-circle-fill"></i>
-                                                <span>Approved by @slip.SlipApproverName</span>
+                                                <span>@GetApprovalText(slip)</span>
+                                                @if (slip.SlipApprovalDate.HasValue)
+                                                {
+                                                    <div class="slip-approval__timestamp">
+                                                        @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                         else if (slip.Approval == ApprovalAction.Reject)
                                         {
                                             <div class="slip-approval__status slip-approval__status--rejected">
                                                 <i class="bi bi-x-octagon-fill"></i>
-                                                <span>Rejected by @slip.SlipApproverName</span>
+                                                <span>@GetApprovalText(slip)</span>
+                                                @if (slip.SlipApprovalDate.HasValue)
+                                                {
+                                                    <div class="slip-approval__timestamp">
+                                                        @slip.SlipApprovalDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
                                             </div>
                                         }
                                         else

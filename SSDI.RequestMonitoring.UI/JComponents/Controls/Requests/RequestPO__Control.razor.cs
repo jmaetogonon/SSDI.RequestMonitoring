@@ -71,7 +71,7 @@ public partial class RequestPO__Control : ComponentBase
         {
             var options = new ConfirmationModalOptions
             {
-                Message = $"Approve purchase order <b>#{slip.PO_Number}</b> slip?",
+                Message = $"Approve purchase order <b>#{slip.SeriesNumber}</b> slip?",
                 Title = "Approve Slip",
                 Variant = ConfirmationModalVariant.confirmation,
                 ConfirmText = "Yes, Approve",
@@ -112,7 +112,7 @@ public partial class RequestPO__Control : ComponentBase
         {
             var options = new ConfirmationModalOptions
             {
-                Message = $"Reject purchase order <b>#{slip.PO_Number}</b> slip?",
+                Message = $"Reject purchase order <b>#{slip.SeriesNumber}</b> slip?",
                 Title = "Reject Slip",
                 Variant = ConfirmationModalVariant.confirmation,
                 ConfirmText = "Yes, Reject",
@@ -243,7 +243,6 @@ public partial class RequestPO__Control : ComponentBase
             var fileBytes = await AttachSvc.DownloadAllPOZipAsync(Request.Id, isPR);
             var fileName = $"{(isPR ? "PR" : "JO")}{Request.SeriesNumber} Purchase Order Slips.zip";
 
-
             if (fileBytes != null && fileBytes.Length > 0)
             {
                 await jsRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
@@ -265,7 +264,7 @@ public partial class RequestPO__Control : ComponentBase
     {
         var options = new ConfirmationModalOptions
         {
-            Message = $"Are you sure you want to delete purchase order <b>#{slip.PO_Number}</b> slip?",
+            Message = $"Are you sure you want to delete purchase order <b>#{slip.SeriesNumber}</b> slip?",
             Title = "Delete Purchase Order Slip",
             Variant = ConfirmationModalVariant.delete,
             ConfirmText = "Yes, Delete",
@@ -316,6 +315,8 @@ public partial class RequestPO__Control : ComponentBase
         var result = await ConfirmModal!.ShowAsync(options);
         if (!result) return;
 
+        await ConfirmModal.SetLoadingAsync(true);
+
         foreach (var file in e.GetMultipleFiles())
         {
             if (file.Size > 10 * 1024 * 1024)
@@ -348,6 +349,8 @@ public partial class RequestPO__Control : ComponentBase
             toastSvc.ShowError("Error uploading attachments. Please try again.");
         }
 
+        await ConfirmModal.SetLoadingAsync(false);
+        await ConfirmModal.HideAsync();
         await Refresh();
         StateHasChanged();
     }
@@ -376,6 +379,8 @@ public partial class RequestPO__Control : ComponentBase
 
         var result = await ConfirmModal!.ShowAsync(options);
         if (!result) return;
+
+        await ConfirmModal.SetLoadingAsync(true);
 
         if (file.Size > 10 * 1024 * 1024)
         {
@@ -409,6 +414,8 @@ public partial class RequestPO__Control : ComponentBase
             toastSvc.ShowError("Error uploading attachments. Please try again.");
         }
 
+        await ConfirmModal.SetLoadingAsync(false);
+        await ConfirmModal.HideAsync();
         await Refresh();
         StateHasChanged();
     }
@@ -602,6 +609,23 @@ public partial class RequestPO__Control : ComponentBase
         await Task.Delay(100); // Small delay to ensure clean state
     }
 
+    private string GetApprovalText(Request_PO_SlipVM slip)
+    {
+        if (slip.Approval == ApprovalAction.Approve)
+        {
+            return slip.SlipApproverId == currentUser.UserId
+                ? "Approved by You"
+                : $"Approved by {utils.FormatNameShort(slip.SlipApproverName)}";
+        }
+        else if (slip.Approval == ApprovalAction.Reject)
+        {
+            return slip.SlipApproverId == currentUser.UserId
+                ? "Rejected by You"
+                : $"Rejected by {utils.FormatNameShort(slip.SlipApproverName)}";
+        }
+        return "Pending Approval";
+    }
+
     public async ValueTask DisposeAsync()
     {
         foreach (var blobUrl in blobUrls)
@@ -620,5 +644,4 @@ public partial class RequestPO__Control : ComponentBase
         }
         blobUrls.Clear();
     }
-
 }

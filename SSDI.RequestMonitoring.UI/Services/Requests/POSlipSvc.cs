@@ -17,11 +17,12 @@ public class POSlipSvc : BaseHttpService, IPOSlipSvc
         _mapper = mapper;
     }
 
-    public async Task<Response<int>> CreatePOSlip(Request_PO_SlipVM slip)
+    public async Task<Response<int>> CreatePOSlip(Request_PO_SlipVM slip, Models.Enums.RequestType type)
     {
         try
         {
             var createCommand = _mapper.Map<Create_POSlipCommand>(slip);
+            createCommand.RequestType = (Base.RequestType)type;
             var newId = await _client.CreatePOSlipAsync(createCommand);
             return new Response<int>()
             {

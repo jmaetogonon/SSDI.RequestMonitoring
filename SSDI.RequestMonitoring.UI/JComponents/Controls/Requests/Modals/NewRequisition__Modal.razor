@@ -4,7 +4,7 @@
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 
- 
+
 <Confirmation__Modal @ref="confirmModal" />
 <div class="modal__overlay" id="@(IsModalVisible ? "show__new__purchase-requisition-modal" : "hide__new__purchase-requisition-modal")">
     <div class="modal">
@@ -13,9 +13,15 @@
         </div>
 
         <div class="modal__alert">
-            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+            <Alert Message="@AlertMessage" Type="@CurrentAlertType" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
         </div>
 
-        <RequestRequisition__Form FormModel="@Model" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="@_isDisabledBtns" SelectedFiles="@Attachments" />
+        <RequestRequisition__Form FormModel="@Model"
+                                  OnValidSubmit="HandleSave" 
+                                  OnCloseModal="CloseModal" 
+                                  ConfirmModal="@confirmModal"
+                                  OnShowAlert="@_onShowAlertCallback"
+                                  IsDisabledBtns="@_isDisabledBtns" 
+                                  SelectedFiles="@Attachments" />
     </div>
 </div>

@@ -7,7 +7,7 @@ using SSDI.RequestMonitoring.UI.Models.Requests;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Controls.Requests;
 
-public partial class RequestRequisition__Control : ComponentBase
+public partial class RequestRequisition__Control : ComponentBase, IAsyncDisposable
 {
     [Parameter] public IRequestDetailVM Request { get; set; } = default!;
     [Parameter] public IAttachSvc AttachSvc { get; set; } = default!;
@@ -39,6 +39,8 @@ public partial class RequestRequisition__Control : ComponentBase
     private List<string> blobUrls = [];
     private bool isLoadingPreview = false;
     private HashSet<string> downloadingAttachments = [];
+    private HashSet<string> deletingAttachments = [];
+    private bool _disposed;
 
     private async Task Refresh()
     { if (OnRequestChanged.HasDelegate) await OnRequestChanged.InvokeAsync(); }
@@ -233,7 +235,7 @@ public partial class RequestRequisition__Control : ComponentBase
 
     private async Task DownloadAllAsPdf()
     {
-        if (Request.RequisitionSlips.Count == 0) return;
+        if (Request.RequisitionSlips?.Count == 0) return;
 
         isDownloadingAll = true;
         currentDownloadIndex = 0;
@@ -248,14 +250,6 @@ public partial class RequestRequisition__Control : ComponentBase
             {
                 await jsRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(fileBytes));
             }
-            //foreach (var attachment in Request.SlipsBase)
-            //{
-            //    currentDownloadIndex++;
-            //    StateHasChanged();
-
-            //    await DownloadSlipPdf(attachment);
-            //    await Task.Delay(200);
-            //}
         }
         catch (Exception ex)
         {
@@ -324,6 +318,8 @@ public partial class RequestRequisition__Control : ComponentBase
         var result = await ConfirmModal!.ShowAsync(options);
         if (!result) return;
 
+        await ConfirmModal.SetLoadingAsync(true);
+
         foreach (var file in e.GetMultipleFiles())
         {
             if (file.Size > 10 * 1024 * 1024)
@@ -356,6 +352,8 @@ public partial class RequestRequisition__Control : ComponentBase
             toastSvc.ShowError("Error uploading attachments. Please try again.");
         }
 
+        await ConfirmModal.SetLoadingAsync(false);
+        await ConfirmModal.HideAsync();
         await Refresh();
         StateHasChanged();
     }
@@ -384,6 +382,8 @@ public partial class RequestRequisition__Control : ComponentBase
 
         var result = await ConfirmModal!.ShowAsync(options);
         if (!result) return;
+
+        await ConfirmModal.SetLoadingAsync(true);
 
         if (file.Size > 10 * 1024 * 1024)
         {
@@ -417,6 +417,8 @@ public partial class RequestRequisition__Control : ComponentBase
             toastSvc.ShowError("Error uploading attachments. Please try again.");
         }
 
+        await ConfirmModal.SetLoadingAsync(false);
+        await ConfirmModal.HideAsync();
         await Refresh();
         StateHasChanged();
     }
@@ -516,6 +518,50 @@ public partial class RequestRequisition__Control : ComponentBase
             downloadingAttachments.Remove(attachment.Id.ToString());
             StateHasChanged();
         }
+    }
+
+    private async Task DeleteAttachment(Request_AttachVM attachment)
+    {
+        if (!CanDeleteAttachment())
+            return;
+
+        var options = new ConfirmationModalOptions
+        {
+            Title = $"Delete {(attachment.AttachType == RequestAttachType.Receipt ? "Receipt" : "Attachment")}",
+            Message = $"Are you sure you want to delete '{attachment.FileName}' {(attachment.AttachType == RequestAttachType.Receipt ? $"w/ <b>{attachment.ReceiptAmount:N2}</b> amount" : "")}?",
+            Variant = ConfirmationModalVariant.delete,
+            ConfirmText = "Yes, Delete",
+            CancelText = "No, Cancel",
+        };
+
+        var result = await ConfirmModal!.ShowAsync(options);
+        if (!result) return;
+
+        await ConfirmModal.SetLoadingAsync(true);
+        deletingAttachments.Add(attachment.Id.ToString());
+
+        var deleteResult = await AttachSvc.DeleteAsync(attachment.Id);
+        if (deleteResult.Success)
+        {
+            //Request!.Attachments.Remove(editLoading =>);
+            toastSvc.ShowSuccess($"{(attachment.AttachType == RequestAttachType.Receipt ? "Receipt" : "Attachment")} deleted successfully");
+        }
+        else
+        {
+            toastSvc.ShowError(deleteResult.Message);
+        }
+
+        await ConfirmModal.SetLoadingAsync(false);
+        await ConfirmModal.HideAsync();
+        deletingAttachments.Remove(attachment.Id.ToString());
+        await Refresh();
+    }
+
+    private bool CanDeleteAttachment()
+    {
+        // Only admin/CEO can delete during requisition phase
+        return (currentUser.IsAdmin || currentUser.IsCEO) &&
+               Request?.Status == RequestStatus.ForRequisition;
     }
 
     private async Task<string> GetPdfBlobUrl(Request_AttachVM attachment)
@@ -618,6 +664,58 @@ public partial class RequestRequisition__Control : ComponentBase
         };
     }
 
+    private bool IsSlipPastDue(Request_RS_SlipVM slip)
+    {
+        if (slip == null)
+            return false;
+
+        // Only check if slip is approved
+        if (slip.Approval != ApprovalAction.Approve)
+            return false;
+
+        // Need approval date to calculate
+        if (!slip.SlipApprovalDate.HasValue || slip.NoOfdaysToLiquidate <= 0)
+            return false;
+
+        // Calculate due date: approval date + NoOfDaysToLiquidate
+        var dueDate = slip.SlipApprovalDate.Value.AddDays(slip.NoOfdaysToLiquidate);
+
+        // Check if current date is past due date
+        return DateTime.Now.Date > dueDate.Date && slip.AmountRequested > Request.Attachments.Where(e => e.RequisitionId == slip.Id).Sum(e => e.ReceiptAmount);
+    }
+
+    private int GetDaysPastDue(Request_RS_SlipVM slip)
+    {
+        if (slip == null)
+            return 0;
+
+        if (slip.Approval != ApprovalAction.Approve ||
+            !slip.SlipApprovalDate.HasValue)
+            return 0;
+
+        var dueDate = slip.SlipApprovalDate.Value.AddDays(slip.NoOfdaysToLiquidate);
+        var daysPastDue = (DateTime.Now.Date - dueDate.Date).Days;
+
+        return Math.Max(0, daysPastDue);
+    }
+
+    private string GetApprovalText(Request_RS_SlipVM slip)
+    {
+        if (slip.Approval == ApprovalAction.Approve)
+        {
+            return slip.SlipApproverId == currentUser.UserId
+                ? "Approved by You"
+                : $"Approved by {utils.FormatNameShort(slip.SlipApproverName)}";
+        }
+        else if (slip.Approval == ApprovalAction.Reject)
+        {
+            return slip.SlipApproverId == currentUser.UserId
+                ? "Rejected by You"
+                : $"Rejected by {utils.FormatNameShort(slip.SlipApproverName)}";
+        }
+        return "Pending Approval";
+    }
+
     private async Task CloseAttachmentPreview()
     {
         showPreview = false;
@@ -648,6 +746,8 @@ public partial class RequestRequisition__Control : ComponentBase
 
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
+
         foreach (var blobUrl in blobUrls)
         {
             if (!string.IsNullOrEmpty(blobUrl))
@@ -656,12 +756,19 @@ public partial class RequestRequisition__Control : ComponentBase
                 {
                     await jsRuntime.InvokeVoidAsync("revokeBlobUrl", blobUrl);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.WriteLine($"Error revoking blob URL: {ex.Message}");
+                    // swallow — JS runtime may already be gone
                 }
             }
         }
+
         blobUrls.Clear();
+    }
+
+    private void SafeStateHasChanged()
+    {
+        if (!_disposed)
+            InvokeAsync(StateHasChanged);
     }
 }

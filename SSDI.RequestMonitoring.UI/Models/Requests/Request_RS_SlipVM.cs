@@ -6,12 +6,15 @@ public class Request_RS_SlipVM
 {
     public int Id { get; set; }
 
+    public string SeriesNumber { get; set; } = string.Empty;
     public int? Job_OrderId { get; set; } = null;
     public int? Purchase_RequestId { get; set; } = null;
 
     public RequisitionSlip_For RequisitionSlip_For { get; set; } = RequisitionSlip_For.CashPayment;
     public string OthersRequisitionSlip_For { get; set; } = string.Empty;
-    public RequisitionSlip_Dept RequisitionSlip_Dept { get; set; } = RequisitionSlip_Dept.Acctg;
+    //public RequisitionSlip_Dept RequisitionSlip_Dept { get; set; } = RequisitionSlip_Dept.Acctg;
+    public int BusinessUnitId { get; set; }
+    public string BusinessUnitCode { get; set; } = string.Empty;
 
     public int RequisitionerId { get; set; }
     public string RequisitionerName { get; set; } = string.Empty;
@@ -29,7 +32,8 @@ public class Request_RS_SlipVM
     public DateTime? CA_LiquidationDueDate { get; set; }
 
     //PAYMENT
-    public string Payment_Payee { get; set; } = string.Empty;
+    public int Payment_PayeeId { get; set; }
+    public string Payment_PayeeName { get; set; } = string.Empty;
 
     public string Payment_PaymentDetails { get; set; } = string.Empty;
     public string Payment_References { get; set; } = string.Empty;
@@ -45,6 +49,9 @@ public class Request_RS_SlipVM
     public DateTime DateCreated { get; set; }
     public DateTime? DateModified { get; set; }
     public ApprovalAction Approval { get; set; } = ApprovalAction.Pending;
+    public int? SlipApproverId { get; set; }
     public string SlipApproverName { get; set; } = string.Empty;
     public DateTime? SlipApprovalDate { get; set; } = null;
+
+    public int NoOfdaysToLiquidate { get; set; }
 }

@@ -5,7 +5,7 @@ namespace SSDI.RequestMonitoring.UI.Contracts.MasterData;
 
 public interface IDepartmentSvc
 {
-    Task<List<DepartmentVM>> GetAllDepartments(); 
-    Task<Response<Guid>> BulkUpsertDepartments(List<DepartmentVM> departmentList);
+    Task<List<DepartmentVM>> GetAllDepartments();
 
+    Task<Response<Guid>> BulkUpsertDepartments(List<DepartmentVM> departmentList);
 }

@@ -51,6 +51,49 @@
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
+/* Past Due Slip Card */
+.slip-card--past-due {
+    border-color: #ef4444 !important;
+    background: linear-gradient(135deg, #fef2f2, #fee2e2) !important;
+}
+
+    .slip-card--past-due:hover {
+        border-color: #dc2626 !important;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15) !important;
+    }
+
+    .slip-card--past-due .slip-card__header {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2) !important;
+    }
+
+        .slip-card--past-due .slip-card__header:hover {
+            background: linear-gradient(135deg, #fee2e2, #fecaca) !important;
+        }
+
+/* Past Due Indicator */
+.slip-past-due-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+    .slip-past-due-indicator i {
+        font-size: 0.875rem !important;
+    }
+
+/* Warning badge for amount */
+.slip-card__amount--past-due {
+    color: #dc2626 !important;
+    position: relative;
+}
+
 /* Slip Header */
 .slip-card__header {
     display: flex;
@@ -79,7 +122,7 @@
     gap: 0.75rem;
     font-weight: 600;
     color: #1f2937;
-    min-width: 200px;
+    min-width: 180px;
 }
 
     .slip-card__type i {
@@ -87,14 +130,28 @@
         color: var(--color-darkmidnightblue);
     }
 
-
 .slip-card__type-id {
     color: #6b7280;
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.5px;
     line-height: normal;
+    margin-top: 3px;
 }
+
+.slip-liquidation-info {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+    color: #6b7280;
+    opacity: 0.8;
+    margin-top: 5px;
+}
+
+    .slip-liquidation-info i {
+        font-size: 0.75rem;
+    }
 
 .slip-card__summary {
     display: flex;
@@ -268,6 +325,13 @@
     color: #9ca3af;
 }
 
+.slip-approval__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin-top: 0.125rem;
+}
+
 /* Action Buttons */
 .slip-card__actions {
     display: flex;
@@ -346,14 +410,20 @@
     margin-bottom: 1rem;
 }
 
-    .slip-details-section h4 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #f3f4f6;
-    }
+.slip-details-section-header { 
+     margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.slip-details-section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
 
 .slip-details-grid {
     display: grid;
@@ -477,7 +547,6 @@
     margin-top: 2px;
     margin-right: 0.75rem;
 }
-
 
 .attachment-name {
     font-weight: 500;
@@ -681,7 +750,6 @@
         justify-content: center;
     }
 }
-
 
 /* Scrollbar Styling */
 .attachments-list::-webkit-scrollbar {

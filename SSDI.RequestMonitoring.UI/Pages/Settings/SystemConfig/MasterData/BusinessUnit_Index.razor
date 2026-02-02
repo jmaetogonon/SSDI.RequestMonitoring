@@ -1,0 +1,130 @@
+﻿@page "/system-configuration/business-units"
+@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
+@using SSDI.RequestMonitoring.UI.Models.MasterData
+@attribute [Authorize(Roles = TokenCons.Role__Admin)]
+@inject IBusinessUnitSvc buSvc
+
+<PageTitle>Business Units</PageTitle>
+
+<div class="main--content">
+    <BreadcrumbNav IsNoPadding="true">
+        <BreadcrumbItem Label="System Configuration" Href="/system-configuration" />
+        <BreadcrumbItem Label="Business Units" IsCurrent="true" />
+    </BreadcrumbNav>
+
+    <FluentMessageBarProvider Section="BUSINESSUNITSC" ClearAfterNavigation=true MaxMessageCount="1" />
+
+    <div class="sysconfig-page__header">
+        <div class="sysconfig-page__title-section">
+            <p class="sysconfig-page__header-title">Business Units</p>
+            <p class="sysconfig-page__header-subtitle">Manage organizational business units</p>
+        </div>
+
+        <div class="sysconfig-page__header-cta">
+            <button class="btn btn--secondary" @onclick="OnCancel">
+                <i class="bi bi-x-lg"></i> Cancel
+            </button>
+            <button class="btn btn--primary" @onclick="OnSync">
+                <i class="bi bi-arrow-repeat"></i> Sync
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="sysconfig-filter-container">
+        <FluentSearch @bind-Value="@searchValue"
+                      @bind-Value:after="HandleSearch"
+                      Immediate="true"
+                      Placeholder="Search"
+                      Class="page__filters-search" />
+    </div>
+
+    <div class="sysconfig-page__main__section">
+        <div class="sysconfig__table-container">
+            @if (AllItems == null)
+            {
+                <div class="sysconfig-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading divisions...</p>
+                </div>
+            }
+            else if (AllItems.Count == 0)
+            {
+                <div class="sysconfig-empty">
+                    <i class="bi bi-building"></i>
+                    <h3>No Business Unit Found</h3>
+                    <p>Start by adding syncing business units from server</p>
+                    <button class="btn btn--primary" @onclick="OnSync">
+                        <i class="bi bi-arrow-repeat"></i> Sync
+                    </button>
+                </div>
+            }
+            else if (FilteredItems.Count == 0)
+            {
+                <div class="sysconfig-empty">
+                    <i class="bi bi-search"></i>
+                    <h3>No Results Found</h3>
+                    <p>No divisions match your search "<strong>@searchValue</strong>"</p>
+                    <button class="btn btn--ghost" @onclick="ClearSearch">
+                        <i class="bi bi-x-lg"></i> Clear Search
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="sysconfig-table">
+                    <!-- Table Header -->
+                    <div class="sysconfig-table-header">
+                        <div class="sysconfig-table-row header-row">
+                            <div class="sysconfig-table-cell header-cell" style="flex: 0 0 60px;">#</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 0 0 222px;">Code</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 0 0 222px;">Prefix</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 1;">Description</div>
+                        </div>
+                    </div>
+
+                    <!-- Table Body -->
+                    <div class="sysconfig-table-body" id="divisionTableBody">
+                        @{
+                            var displayIndex = 1;
+                        }
+                        @foreach (var bu in FilteredItems)
+                        {
+                            var isNew = bu.Id == 0;
+                            <div class="sysconfig-table-row data-row @(isNew ? "new-item" : "")" key="@bu.Id">
+                                <div class="sysconfig-table-cell" style="flex: 0 0 60px;" data-label="#">
+                                    <span class="row-number">@(displayIndex++)</span>
+                                </div>
+                                <div class="sysconfig-table-cell" data-label="Code">
+                                    <div class="input-wrapper">
+                                        <input type="text" readonly
+                                               class="table-text-input"
+                                               @bind="bu.BU_Code" />
+                                    </div>
+                                </div>
+                                <div class="sysconfig-table-cell" data-label="Prefix">
+                                    <div class="input-wrapper">
+                                        <input type="text" readonly
+                                               class="table-text-input"
+                                               @bind="bu.Prefix" />
+                                    </div>
+                                </div>
+                                <div class="sysconfig-table-cell" style="flex: 1;" data-label="Description">
+                                    <div class="input-wrapper">
+                                        <input type="text" readonly
+                                               class="table-text-input"
+                                               @bind="bu.BU_Desc" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<Confirmation__Modal @ref="confirmModal" /> 

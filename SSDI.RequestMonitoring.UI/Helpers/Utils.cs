@@ -22,7 +22,33 @@ public class Utils
     public bool IsUserDivisionHead(IRequestDetailVM request) => (request.UserDivisionHeadId == _currentUser.UserId || request.ReportToDivSupId == _currentUser.UserId) && _currentUser.IsSupervisor;
 
     public string FormatDate(DateTime date) => date.ToString("yyyy-MM-dd");
+    public string FormatNameShort(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return string.Empty;
 
+        var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        
+        if (parts.Length == 0)
+            return string.Empty;
+        
+        if (parts.Length == 1)
+            return parts[0];
+        
+        var firstName = parts[0];
+        var lastName = parts[^1];
+        
+        // Handle suffixes
+        var suffixes = new[] { "jr", "sr", "ii", "iii", "iv", "v" };
+        if (suffixes.Contains(lastName.ToLower()))
+        {
+            lastName = parts[^2];
+        }
+
+        var lastInitial = lastName[0].ToString().ToUpperInvariant() + ".";
+        
+        return $"{firstName} {lastInitial}";
+    }
     public string GetLastModifiedDisplay(DateTime? dateModified)
     {
         if (dateModified is null) return "Never modified";

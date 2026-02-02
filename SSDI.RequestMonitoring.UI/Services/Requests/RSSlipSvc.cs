@@ -16,11 +16,12 @@ public class RSSlipSvc : BaseHttpService, IRSSlipSvc
         _mapper = mapper;
     }
 
-    public async Task<Response<int>> CreateRequisition(Request_RS_SlipVM slip)
+    public async Task<Response<int>> CreateRequisition(Request_RS_SlipVM slip, Models.Enums.RequestType type)
     {
         try
         {
             var createCommand = _mapper.Map<Create_RSSlipCommand>(slip);
+            createCommand.RequestType = (Base.RequestType)type;
             var newId = await _client.CreateRSSlipAsync(createCommand);
             return new Response<int>()
             {

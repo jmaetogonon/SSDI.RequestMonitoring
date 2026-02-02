@@ -18,7 +18,6 @@ public partial class PurchaseRequest_Details : ComponentBase
     private bool CanEdit => CheckEditPermissions();
     private bool CanClose => CheckClosePermission();
     private bool CanCEOApproveSlips => CheckCEOApproveSlipPermission();
-    private bool IsSlipHasPending => CheckSlipsPending();
 
     private bool isEditRequestModalVisible = false;
     private string EditBtnText => SetEditBtnText();
@@ -297,14 +296,13 @@ public partial class PurchaseRequest_Details : ComponentBase
 
             byte[] pdfBytes;
 
-            var result = await confirmModal!.ShowPdfExportOptionsAsync($"PR{Request.SeriesNumber}.pdf"); 
+            var result = await confirmModal!.ShowPdfExportOptionsAsync($"PR{Request.SeriesNumber}.pdf");
             await confirmModal!.SetLoadingAsync(true);
 
             if (result)
             {
                 // Generate the PDF bytes
-                pdfBytes = await purchaseRequestSvc.GeneratePurchaseRequestPdf(Request.Id, true); 
-
+                pdfBytes = await purchaseRequestSvc.GeneratePurchaseRequestPdf(Request.Id, true);
             }
             else
             {

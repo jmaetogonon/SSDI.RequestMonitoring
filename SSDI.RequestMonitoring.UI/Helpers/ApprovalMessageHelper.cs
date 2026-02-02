@@ -101,7 +101,7 @@ public static class ApprovalMessageHelper
             var receiptTotal = receiptAmounts.GetValueOrDefault(requisition.Id, 0m);
             if (Math.Abs(requisition.AmountRequested - receiptTotal) > 0.01m)
             {
-                discrepancies.Add($"Req #{GetSlipIdentifier(requisition)}");
+                discrepancies.Add($"Req #{requisition.SeriesNumber}");
             }
         }
 
@@ -117,7 +117,7 @@ public static class ApprovalMessageHelper
         foreach (var po in poSlips)
         {
             var poAmount = po.Total_Amount;
-            var poNumber = po.PO_Number;
+            var poNumber = po.SeriesNumber;
             // Get all receipts attached to this PO
             var poReceipts = request.Attachments?
                 .Where(a => a.AttachType == RequestAttachType.Receipt && a.POId == po.Id)
@@ -128,16 +128,11 @@ public static class ApprovalMessageHelper
             // Compare PO total amount with sum of receipts
             if (Math.Abs(po.Total_Amount - totalReceipts) > 0.01m)
             {
-                discrepancies.Add($"PO #{po.PO_Number}");
+                discrepancies.Add($"PO #{po.SeriesNumber}");
             }
         }
 
         return discrepancies;
-    }
-
-    private static string GetSlipIdentifier(Request_RS_SlipVM slip)
-    {
-        return slip.Id.ToString().Substring(0, Math.Min(6, slip.Id.ToString().Length));
     }
 
     private static string FormatDiscrepancies(List<string> discrepancies)

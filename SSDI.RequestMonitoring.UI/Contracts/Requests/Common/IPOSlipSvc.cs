@@ -6,7 +6,7 @@ namespace SSDI.RequestMonitoring.UI.Contracts.Requests.Common;
 
 public interface IPOSlipSvc
 {
-    Task<Response<int>> CreatePOSlip(Request_PO_SlipVM slip);
+    Task<Response<int>> CreatePOSlip(Request_PO_SlipVM slip, Models.Enums.RequestType type);
 
     Task<Response<Guid>> EditPO(Request_PO_SlipVM request);
 

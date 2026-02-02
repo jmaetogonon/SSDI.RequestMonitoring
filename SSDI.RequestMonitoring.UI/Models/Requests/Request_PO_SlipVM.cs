@@ -6,7 +6,7 @@ public class Request_PO_SlipVM
     private bool _isManualTotal = false;
 
     public int Id { get; set; }
-    public string PO_Number { get; set; } = string.Empty;
+    public string SeriesNumber { get; set; } = string.Empty;
     public int? Job_OrderId { get; set; } = null;
     public int? Purchase_RequestId { get; set; } = null;
     public string Supplier { get; set; } = string.Empty;
@@ -29,6 +29,7 @@ public class Request_PO_SlipVM
     public int PreparedById { get; set; }
 
     public ApprovalAction Approval { get; set; } = ApprovalAction.Pending;
+    public int? SlipApproverId { get; set; }
     public string SlipApproverName { get; set; } = string.Empty;
     public DateTime? SlipApprovalDate { get; set; } = null;
 

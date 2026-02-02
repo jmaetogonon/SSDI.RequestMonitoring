@@ -1,16 +1,32 @@
-﻿@using SSDI.RequestMonitoring.UI.JComponents.Loading
+﻿@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
+@using SSDI.RequestMonitoring.UI.JComponents.Loading
+@using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Models.Common
+@using SSDI.RequestMonitoring.UI.Models.MasterData
 @using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
+@using SSDI.RequestMonitoring.UI.Pages.Settings.SystemConfig.MasterData
+@using System.Threading.Tasks
+
+@inject IBusinessUnitSvc businessUnitSvc
+@inject IVendorSvc vendorSvc
+
+<Vendor_AddDialog IsModalVisible="@IsAddModalVisible" OnSave="@OnSaveNewVendorModal" OnClose="OnCloseNewVendorModal" />
 
 <EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <div class="modal__body">
         <div class="modal__form-group position-relative">
 
-            <div class="form-group full-width">
+            <div class="form-group">
                 <label for="requisitioner">Requisitioner</label>
                 <InputText id="requisitioner" class="form-control" @bind-Value="FormModel.RequisitionerName" readonly />
+            </div>
+
+            <div class="form-group">
+                <label for="dateOfRequest">Date of Request</label>
+                <InputDate id="dateOfRequest" class="form-control" @bind-Value="FormModel.DateOfRequest" />
             </div>
 
             <div class="form-group">
@@ -24,13 +40,21 @@
             </div>
 
             <div class="form-group">
-                <label for="slipDept">Department</label>
-                <InputSelect id="slipDept" class="form-select" @bind-Value="FormModel.RequisitionSlip_Dept">
-                    @foreach (RequisitionSlip_Dept dept in Enum.GetValues(typeof(RequisitionSlip_Dept)))
+                <label for="slipDept">Business Unit</label>
+                @* <InputSelect id="slipDept" class="form-select" @bind-Value="FormModel.BusinessUnitId">
+                    @foreach (var bu in businessUnits ?? [])
                     {
-                        <option value="@dept">@GetDeptDisplayName(dept)</option>
+                        <option value="@bu.Id">@bu.BU_Code</option>
                     }
-                </InputSelect>
+                </InputSelect> *@
+
+                <Autocomplete__Control TItem="BusinessUnitVM"
+                                       TValue="int"
+                                       Items="businessUnits"
+                                       @bind-SelectedValue="FormModel.BusinessUnitId"
+                                       TextSelector="@(bu => bu.BU_Code)"
+                                       ValueSelector="@(bu => bu.Id)"
+                                       Placeholder="Select business unit..." />
             </div>
 
             <div class="form-group">
@@ -39,8 +63,8 @@
             </div>
 
             <div class="form-group">
-                <label for="dateOfRequest">Date of Request</label>
-                <InputDate id="dateOfRequest" class="form-control" @bind-Value="FormModel.DateOfRequest" />
+                <label for="noOfDays">No. of Days to Liquidate</label>
+                <InputNumber id="noOfDays" class="form-control" @bind-Value="FormModel.NoOfdaysToLiquidate" />
             </div>
 
             <!-- Dynamic fields based on slip type -->
@@ -82,14 +106,44 @@
             <div class="form-section">
                 <div class="form-section-title">PAYMENT</div>
 
-                <div class="form-group full-width">
+                @* <div class="form-group full-width">
                     <label for="paymentPayee">Payee</label>
-                    <InputText id="paymentPayee" class="form-control" @bind-Value="FormModel.Payment_Payee" />
+                    <div class="select-with-actions">
+                        <InputSelect id="paymentPayee" class="form-select" @bind-Value="FormModel.Payment_PayeeId" @bind-Value:after="SetSelectedVendorDetails">
+                            @foreach (var bu in vendors ?? [])
+                            {
+                                <option value="@bu.Id">@bu.Vendor_Name</option>
+                            }
+                        </InputSelect>
+                        <div class="select-actions">
+                            <i class="bi bi-plus-lg" @onclick="@AddNewPayee" title="Add new payee"></i>
+                            <i class="bi bi-arrow-repeat" @onclick="@SyncPayee" title="Sync payees"></i>
+                        </div>
+                    </div>
+                </div> *@
+                <div class="form-group full-width">
+                    <label for="paymentPayee" class="labelwithicon">
+                        Payee
+                        <div class="label-actions">
+                            <i class="bi bi-plus-lg" @onclick="@AddNewPayee" title="Add new payee"></i>
+                            <i class="bi bi-arrow-repeat" @onclick="@SyncPayee" title="Sync payees"></i>
+                        </div>
+                    </label>
+
+                    <Autocomplete__Control TItem="VendorVM"
+                                           TValue="int"
+                                           Items="vendors"
+                                           @bind-SelectedValue="FormModel.Payment_PayeeId"
+                                           @bind-SelectedValue:after="SetSelectedVendor"
+                                           TextSelector="@(bu => bu.Vendor_Name)"
+                                           ValueSelector="@(bu => bu.Id)"
+                                           Placeholder="Search payee..." />
                 </div>
+
 
                 <div class="form-group full-width">
                     <label for="paymentDetails">Payment Details</label>
-                    <InputText id="paymentDetails" class="form-control" @bind-Value="FormModel.Payment_PaymentDetails" />
+                    <InputTextArea id="paymentDetails" class="form-control" @bind-Value="FormModel.Payment_PaymentDetails" />
                 </div>
 
                 <div class="form-group full-width">
@@ -193,6 +247,28 @@
     [Parameter] public EventCallback OnValidSubmit { get; set; }
     [Parameter] public EventCallback OnCloseModal { get; set; }
     [Parameter] public bool IsForUpdate { get; set; }
+    [Parameter] public Confirmation__Modal? ConfirmModal { get; set; }
+    [Parameter] public string AlertMessage { get; set; } = string.Empty;
+    [Parameter] public EventCallback<(string Message, AlertType Type)> OnShowAlert { get; set; }
+
+    private IEnumerable<BusinessUnitVM> businessUnits = [];
+    private IEnumerable<VendorVM> vendors = [];
+    private bool IsAddModalVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        businessUnits = await businessUnitSvc.GetAllBusinessUnits();
+        vendors = await vendorSvc.GetAllVendors();
+    }
+
+    private void SetSelectedVendorDetails()
+    {
+        if (FormModel.Payment_PayeeId == 0) return;
+
+        FormModel.Payment_PaymentDetails = vendors
+            .FirstOrDefault(v => v.Id == FormModel.Payment_PayeeId)?
+            .Payment_Details ?? string.Empty;
+    }
 
     private List<IBrowserFile> uploadedFiles = [];
 
@@ -284,6 +360,94 @@
 
         if (toRemove != null)
             SelectedFiles.Remove(toRemove);
+    }
+
+    private void AddNewPayee() => IsAddModalVisible = true;
+
+    private async Task SyncPayee()
+    {
+        var options = new ConfirmationModalOptions
+        {
+            Message = "Are you sure you want to sync payees from server?",
+            Title = "Sync Payees",
+            Variant = ConfirmationModalVariant.confirmation,
+            ConfirmText = "Yes, Sync",
+            CancelText = "No, Cancel",
+        };
+
+        var result = await ConfirmModal!.ShowAsync(options);
+        if (!result) return;
+
+        try
+        {
+            await ConfirmModal!.SetLoadingAsync(true);
+
+            var response = await vendorSvc.SyncVendors();
+
+            if (!response)
+            {
+                await OnShowAlert.InvokeAsync(("Something went wrong. Please try again.", AlertType.error));
+                return;
+            }
+
+            vendors = await vendorSvc.GetAllVendors();
+            await OnShowAlert.InvokeAsync(("Payees were synced successfully.", AlertType.success));
+            StateHasChanged();
+
+            await CloseModalWithLoading();
+
+        }
+        catch (Exception ex)
+        {
+            await OnShowAlert.InvokeAsync(($"An error occurred while syncing: {ex.Message}", AlertType.error));
+            await CloseModalWithLoading();
+        }
+    }
+
+
+    private void OnCloseNewVendorModal() => IsAddModalVisible = false;
+
+    private async Task OnSaveNewVendorModal(VendorVM newVendor)
+    {
+        IsAddModalVisible = false;
+        await OnShowAlert.InvokeAsync(("The new payee has been added successfully.", AlertType.success));
+
+        var syncResponse = await vendorSvc.SyncVendors();
+        if (!syncResponse)
+        {
+            await OnShowAlert.InvokeAsync(("The new payee has been added successfully but failed to sync payees from server. Please sync again.", AlertType.error));
+            return;
+        }
+
+        vendors = await vendorSvc.GetAllVendors();
+
+        if (newVendor != null && !string.IsNullOrEmpty(newVendor?.Vendor_Name))
+        {
+            var addedVendor = vendors.FirstOrDefault(v => v.Vendor_Name == newVendor.Vendor_Name);
+            if (addedVendor != null)
+            {
+                FormModel.Payment_PayeeId = addedVendor.Id;
+                FormModel.Payment_PaymentDetails = addedVendor.Payment_Details;
+            }
+        }
+    }
+
+    private async Task CloseModalWithLoading()
+    {
+        await ConfirmModal!.SetLoadingAsync(false);
+        await ConfirmModal!.HideAsync();
+    }
+
+    private void SetSelectedVendor()
+    {
+        var addedVendor = vendors.FirstOrDefault(v => v.Id == FormModel.Payment_PayeeId);
+        if (addedVendor != null)
+        {
+            FormModel.Payment_PaymentDetails = addedVendor.Payment_Details;
+        }
+        else{
+            FormModel.Payment_PaymentDetails = string.Empty;
+        }
     }
 
 }
