@@ -12,6 +12,8 @@ public abstract class BaseRequestVM : IRequestDetailVM
     public int DivisionId { get; set; }
     public int DepartmentId { get; set; }
     public string Division_Department { get; set; } = string.Empty;
+    public int BusinessUnitId { get; set; }
+    public string BusinessUnitCode { get; set; } = string.Empty;
 
     public string Nature_Of_Request { get; set; } = string.Empty;
     public string Justification { get; set; } = string.Empty;

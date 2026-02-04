@@ -24,7 +24,7 @@ public partial class RequestRequisition__Control : ComponentBase, IAsyncDisposab
     private Request_RS_SlipVM? selectedSlip = null;
     private string? currentPdfBase64 = null;
     private HashSet<int> expandedSlips = [];
-    private string activeAttachmentTab = "requisition";
+    private string activeAttachmentTab = "receipts";
 
     private Dictionary<int, bool> viewLoading = [];
     private Dictionary<int, bool> editLoading = [];
@@ -188,7 +188,7 @@ public partial class RequestRequisition__Control : ComponentBase, IAsyncDisposab
             StateHasChanged();
 
             // Generate the PDF bytes
-            var pdfBytes = await RSSlipSvc.GenerateRequisitionPdf(slip.Id);
+            var pdfBytes = await RSSlipSvc.GenerateRequisitionPdf(slip.Id, Request.BusinessUnitCode);
             if (pdfBytes == null || pdfBytes.Length == 0)
             {
                 toastSvc.ShowError("Failed to generate PDF.");
@@ -218,7 +218,7 @@ public partial class RequestRequisition__Control : ComponentBase, IAsyncDisposab
             StateHasChanged();
 
             // Generate and download PDF
-            var pdfBytes = await RSSlipSvc.GenerateRequisitionPdf(slip.Id);
+            var pdfBytes = await RSSlipSvc.GenerateRequisitionPdf(slip.Id, Request.BusinessUnitCode);
             var pdfBase64 = Convert.ToBase64String(pdfBytes);
             await jsRuntime.InvokeVoidAsync("downloadBase64File", "application/pdf", pdfBase64, $"R{Request.SeriesNumber}_Reqslip_{slip.Id}.pdf");
         }
@@ -681,19 +681,26 @@ public partial class RequestRequisition__Control : ComponentBase, IAsyncDisposab
         var dueDate = slip.SlipApprovalDate.Value.AddDays(slip.NoOfdaysToLiquidate);
 
         // Check if current date is past due date
-        return DateTime.Now.Date > dueDate.Date && slip.AmountRequested > Request.Attachments.Where(e => e.RequisitionId == slip.Id).Sum(e => e.ReceiptAmount);
+        if (DateTime.Now.Date <= dueDate.Date)
+            return false; // Not past due yet
+
+        // Get total receipt amount for this slip
+        var totalReceipts = Request.Attachments
+            .Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)
+            .Sum(e => e.ReceiptAmount);
+
+        // A slip is past due if:
+        // 1. The due date has passed, AND
+        // 2. It's not fully liquidated (some amount still pending)
+        return slip.AmountRequested > totalReceipts;
     }
 
     private int GetDaysPastDue(Request_RS_SlipVM slip)
     {
-        if (slip == null)
+        if (!IsSlipPastDue(slip))
             return 0;
 
-        if (slip.Approval != ApprovalAction.Approve ||
-            !slip.SlipApprovalDate.HasValue)
-            return 0;
-
-        var dueDate = slip.SlipApprovalDate.Value.AddDays(slip.NoOfdaysToLiquidate);
+        var dueDate = slip.SlipApprovalDate!.Value.AddDays(slip.NoOfdaysToLiquidate);
         var daysPastDue = (DateTime.Now.Date - dueDate.Date).Days;
 
         return Math.Max(0, daysPastDue);

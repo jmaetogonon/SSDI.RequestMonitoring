@@ -2,7 +2,7 @@
 @typeparam TItem where TItem : notnull
 @typeparam TValue
 
-<div class="autocomplete-container" @onmousedown:stopPropagation="true">
+<div class="autocomplete-container @(Disabled ? "autocomplete-container--disabled" : "")" @onmousedown:stopPropagation="true">
     <div class="autocomplete-input-wrapper">
         <input @ref="searchInput"
                type="text"
@@ -14,7 +14,7 @@
                placeholder="@Placeholder"
                disabled="@Disabled" />
 
-        @if (ShowClearButton && !string.IsNullOrEmpty(_displayText))
+        @if (ShowClearButton && !string.IsNullOrEmpty(_displayText) && !Disabled)
         {
             <button type="button"
                     class="autocomplete-clear-btn"
@@ -32,14 +32,14 @@
             </div>
         }
 
-        <div class="autocomplete-dropdown-toggle"
+        <div class="autocomplete-dropdown-toggle @(Disabled ? "autocomplete-dropdown-toggle--disabled" : "")"
              @onclick="@ToggleDropdown"
              @onmousedown:stopPropagation="true">
             <i class="bi bi-chevron-down"></i>
         </div>
     </div>
 
-    @if (IsDropdownVisible && FilteredItems.Any())
+    @if (IsDropdownVisible && FilteredItems.Any() && !Disabled)
     {
         <div class="autocomplete-dropdown" @onmousedown:stopPropagation="true">
             <div class="autocomplete-dropdown-header">
@@ -94,7 +94,7 @@
         </div>
     }
 
-    @if (IsDropdownVisible && !FilteredItems.Any() && !string.IsNullOrEmpty(_displayText))
+    @if (IsDropdownVisible && !FilteredItems.Any() && !string.IsNullOrEmpty(_displayText) && !Disabled)
     {
         <div class="autocomplete-dropdown" @onmousedown:stopPropagation="true">
             <div class="autocomplete-no-results">

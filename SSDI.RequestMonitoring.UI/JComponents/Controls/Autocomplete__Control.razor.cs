@@ -161,6 +161,8 @@ public partial class Autocomplete__Control<TItem, TValue> : ComponentBase, IAsyn
 
     private void HandleFocus()
     {
+        if (Disabled) return;
+
         if (!IsDropdownVisible)
         {
             IsDropdownVisible = true;
@@ -289,6 +291,8 @@ public partial class Autocomplete__Control<TItem, TValue> : ComponentBase, IAsyn
 
     private void ToggleDropdown()
     {
+        if (Disabled) return;
+
         IsDropdownVisible = !IsDropdownVisible;
         if (IsDropdownVisible)
         {

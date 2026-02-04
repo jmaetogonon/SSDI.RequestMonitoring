@@ -256,3 +256,40 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* Disabled State Styles */
+.autocomplete-container--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.autocomplete-input:disabled {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.autocomplete-dropdown-toggle--disabled {
+    color: #9ca3af !important;
+    cursor: not-allowed !important;
+}
+
+    .autocomplete-dropdown-toggle--disabled:hover {
+        color: #9ca3af !important;
+    }
+
+/* Additional disabled styles for better UX */
+.autocomplete-input-wrapper.disabled {
+    cursor: not-allowed;
+}
+
+.autocomplete-input[disabled] {
+    cursor: not-allowed;
+}
+
+/* If you want to keep the clear button hidden when disabled */
+.autocomplete-clear-btn[disabled],
+.autocomplete-clear-btn.disabled {
+    display: none !important;
+}

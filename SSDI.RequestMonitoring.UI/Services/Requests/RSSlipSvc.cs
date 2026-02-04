@@ -88,11 +88,11 @@ public class RSSlipSvc : BaseHttpService, IRSSlipSvc
         }
     }
 
-    public async Task<byte[]> GenerateRequisitionPdf(int id)
+    public async Task<byte[]> GenerateRequisitionPdf(int id, string businessUnit)
     {
         try
         {
-            var requests = await _client.GeneratePdfRSSlipAsync(id);
+            var requests = await _client.GeneratePdfRSSlipAsync(id, businessUnit);
             return requests;
         }
         catch (ApiException ex)

@@ -82,7 +82,7 @@
                                 </div>
                                 <div class="slip-card__department">
                                     <span class="slip-badge">
-                                        @slip.BusinessUnitCode
+                                        @Request.BusinessUnitCode
                                     </span>
                                 </div>
                             </div>
@@ -338,17 +338,17 @@
                             <!-- Attachments Section -->
                             <div class="attachments-section">
                                 <div class="attachments-tabs">
-                                    <button class="attachments-tab @(activeAttachmentTab == "requisition" ? "attachments-tab--active" : "")"
-                                            @onclick="@(() => SwitchAttachmentTab("requisition"))">
-                                        <i class="bi bi-file-earmark"></i>
-                                        Requisition Attachments
-                                        <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
-                                    </button>
                                     <button class="attachments-tab @(activeAttachmentTab == "receipts" ? "attachments-tab--active" : "")"
                                             @onclick="@(() => SwitchAttachmentTab("receipts"))">
                                         <i class="bi bi-receipt"></i>
                                         Receipts
                                         <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
+                                    </button>
+                                    <button class="attachments-tab @(activeAttachmentTab == "requisition" ? "attachments-tab--active" : "")"
+                                            @onclick="@(() => SwitchAttachmentTab("requisition"))">
+                                        <i class="bi bi-file-earmark"></i>
+                                        Requisition Attachments
+                                        <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
                                     </button>
 
 
@@ -356,7 +356,15 @@
                                     @if ((currentUser.IsAdmin || currentUser.IsCEO) && Request.Status == RequestStatus.ForRequisition)
                                     {
                                         <div class="attachments-upload">
-                                            @if (activeAttachmentTab == "requisition")
+                                            @if (activeAttachmentTab == "receipts")
+                                            {
+                                                <label for="@($"file-upload-add{slip.Id}")" class="btn btn--outline btn--sm" title="Add Receipt">
+                                                    <i class="bi bi-plus-lg"></i>
+                                                    <span>Add Receipt</span>
+                                                </label>
+                                                <InputFile id="@($"file-upload-add{slip.Id}")" OnChange="(e) => AddReceiptAttach(slip, e)" style="display: none;" />
+                                            }
+                                            else
                                             {
                                                 <label for="@($"file-upload-add{slip.Id}")" class="btn btn--outline btn--sm" title="Add Requisition Attachment">
                                                     <i class="bi bi-plus-lg"></i>
@@ -366,83 +374,12 @@
                                                            multiple
                                                            OnChange="(e) => AddRequisitionAttach(slip, e)" style="display: none;" />
                                             }
-                                            else
-                                            {
-                                                <label for="@($"file-upload-add{slip.Id}")" class="btn btn--outline btn--sm" title="Add Receipt">
-                                                    <i class="bi bi-plus-lg"></i>
-                                                    <span>Add Receipt</span>
-                                                </label>
-                                                <InputFile id="@($"file-upload-add{slip.Id}")" OnChange="(e) => AddReceiptAttach(slip, e)" style="display: none;" />
-                                            }
                                         </div>
                                     }
                                 </div>
 
                                 <div class="attachments-content">
-                                    @if (activeAttachmentTab == "requisition")
-                                    {
-                                        <div class="attachments-list">
-                                            @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Any() == true)
-                                            {
-                                                @foreach (var attachment in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id))
-                                                {
-                                                    var isDeletingThis = (deletingAttachments.Contains(attachment.Id.ToString()));
-                                                    var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
-
-                                                    <div class="attachment-item">
-                                                        <div class="attachment-icon">
-                                                            <i class="bi @GetFileIcon(attachment.ContentType)"></i>
-                                                        </div>
-                                                        <div class="attachment-info">
-                                                            <div class="attachment-name">@attachment.FileName</div>
-                                                            <div class="attachment-meta">
-                                                                <span>@FormatFileSize(attachment.Size)</span>
-                                                                <span>•</span>
-                                                                <span>@attachment.DateCreated?.ToString("MMM dd, yyyy")</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="attachment-actions">
-                                                            <button class="btn btn--outline btn--xs" @onclick="@(() => ViewAttachment(attachment))" @onclick:stopPropagation="true" title="View">
-                                                                <i class="bi bi-eye"></i>
-                                                            </button>
-                                                            <button class="btn btn--outline btn--xs" @onclick="@(() => DownloadAttachment(attachment))" @onclick:stopPropagation="true" title="Download" disabled="@isDownloadingThis">
-                                                                @if (isDownloadingThis)
-                                                                {
-                                                                    <i class="bi bi-arrow-repeat spinning"></i>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <i class="bi bi-download"></i>
-                                                                }
-                                                            </button>
-                                                            <button class="btn btn--outline btn--xs btn--danger"
-                                                                    @onclick="@(() => DeleteAttachment(attachment))"
-                                                                    @onclick:stopPropagation="true"
-                                                                    title="Delete"
-                                                                    disabled="@isDeletingThis">
-                                                                @if (isDeletingThis)
-                                                                {
-                                                                    <i class="bi bi-arrow-repeat spinning"></i>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <i class="bi bi-trash"></i>
-                                                                }
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                }
-                                            }
-                                            else
-                                            {
-                                                <div class="empty-attachments">
-                                                    <i class="bi bi-file-earmark-plus"></i>
-                                                    <p>No requisition attachments</p>
-                                                </div>
-                                            }
-                                        </div>
-                                    }
-                                    else
+                                    @if (activeAttachmentTab == "receipts")
                                     {
                                         <div class="attachments-list">
                                             @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Any() == true)
@@ -504,6 +441,69 @@
                                                 <div class="empty-attachments">
                                                     <i class="bi bi-receipt"></i>
                                                     <p>No receipt attachments</p>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="attachments-list">
+                                            @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id)?.Any() == true)
+                                            {
+                                                @foreach (var attachment in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id))
+                                                {
+                                                    var isDeletingThis = (deletingAttachments.Contains(attachment.Id.ToString()));
+                                                    var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
+
+                                                    <div class="attachment-item">
+                                                        <div class="attachment-icon">
+                                                            <i class="bi @GetFileIcon(attachment.ContentType)"></i>
+                                                        </div>
+                                                        <div class="attachment-info">
+                                                            <div class="attachment-name">@attachment.FileName</div>
+                                                            <div class="attachment-meta">
+                                                                <span>@FormatFileSize(attachment.Size)</span>
+                                                                <span>•</span>
+                                                                <span>@attachment.DateCreated?.ToString("MMM dd, yyyy")</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="attachment-actions">
+                                                            <button class="btn btn--outline btn--xs" @onclick="@(() => ViewAttachment(attachment))" @onclick:stopPropagation="true" title="View">
+                                                                <i class="bi bi-eye"></i>
+                                                            </button>
+                                                            <button class="btn btn--outline btn--xs" @onclick="@(() => DownloadAttachment(attachment))" @onclick:stopPropagation="true" title="Download" disabled="@isDownloadingThis">
+                                                                @if (isDownloadingThis)
+                                                                {
+                                                                    <i class="bi bi-arrow-repeat spinning"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="bi bi-download"></i>
+                                                                }
+                                                            </button>
+                                                            <button class="btn btn--outline btn--xs btn--danger"
+                                                                    @onclick="@(() => DeleteAttachment(attachment))"
+                                                                    @onclick:stopPropagation="true"
+                                                                    title="Delete"
+                                                                    disabled="@isDeletingThis">
+                                                                @if (isDeletingThis)
+                                                                {
+                                                                    <i class="bi bi-arrow-repeat spinning"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="bi bi-trash"></i>
+                                                                }
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="empty-attachments">
+                                                    <i class="bi bi-file-earmark-plus"></i>
+                                                    <p>No requisition attachments</p>
                                                 </div>
                                             }
                                         </div>

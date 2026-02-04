@@ -99,11 +99,6 @@ public partial class NewRequisition__Modal : ComponentBase
 
     private bool IsInvalidModel()
     {
-        if (Model.BusinessUnitId == 0)
-        {
-            HandleFormAlert(("Business Unit is Required", AlertType.error));
-            return true;
-        }
         if (Model.AmountRequested == 0)
         {
             HandleFormAlert(("Amount Requested is Required", AlertType.error));

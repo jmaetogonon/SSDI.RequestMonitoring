@@ -9,7 +9,6 @@
 @using SSDI.RequestMonitoring.UI.Pages.Settings.SystemConfig.MasterData
 @using System.Threading.Tasks
 
-@inject IBusinessUnitSvc businessUnitSvc
 @inject IVendorSvc vendorSvc
 
 <Vendor_AddDialog IsModalVisible="@IsAddModalVisible" OnSave="@OnSaveNewVendorModal" OnClose="OnCloseNewVendorModal" />
@@ -40,22 +39,10 @@
             </div>
 
             <div class="form-group">
-                <label for="slipDept">Business Unit</label>
-                @* <InputSelect id="slipDept" class="form-select" @bind-Value="FormModel.BusinessUnitId">
-                    @foreach (var bu in businessUnits ?? [])
-                    {
-                        <option value="@bu.Id">@bu.BU_Code</option>
-                    }
-                </InputSelect> *@
-
-                <Autocomplete__Control TItem="BusinessUnitVM"
-                                       TValue="int"
-                                       Items="businessUnits"
-                                       @bind-SelectedValue="FormModel.BusinessUnitId"
-                                       TextSelector="@(bu => bu.BU_Code)"
-                                       ValueSelector="@(bu => bu.Id)"
-                                       Placeholder="Select business unit..." />
+                <label for="slipBU">Business Unit</label>
+                <InputText id="slipBU" class="form-control" @bind-Value="BusinessUnitCode" readonly />
             </div>
+
 
             <div class="form-group">
                 <label for="amount">Amount Requested</label>
@@ -250,15 +237,17 @@
     [Parameter] public Confirmation__Modal? ConfirmModal { get; set; }
     [Parameter] public string AlertMessage { get; set; } = string.Empty;
     [Parameter] public EventCallback<(string Message, AlertType Type)> OnShowAlert { get; set; }
+    [Parameter] public string BusinessUnitCode { get; set; } = string.Empty;
 
-    private IEnumerable<BusinessUnitVM> businessUnits = [];
     private IEnumerable<VendorVM> vendors = [];
     private bool IsAddModalVisible = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        businessUnits = await businessUnitSvc.GetAllBusinessUnits();
-        vendors = await vendorSvc.GetAllVendors();
+        if (!vendors.Any())
+        {
+            vendors = await vendorSvc.GetAllVendors();
+        }
     }
 
     private void SetSelectedVendorDetails()

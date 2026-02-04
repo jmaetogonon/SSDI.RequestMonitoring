@@ -99,7 +99,9 @@ public static class ApprovalMessageHelper
         foreach (var requisition in requisitionSlips)
         {
             var receiptTotal = receiptAmounts.GetValueOrDefault(requisition.Id, 0m);
-            if (Math.Abs(requisition.AmountRequested - receiptTotal) > 0.01m)
+
+            // Flag as discrepancy ONLY if UNDERPAID (requested > receipts)
+            if (requisition.AmountRequested > receiptTotal)
             {
                 discrepancies.Add($"Req #{requisition.SeriesNumber}");
             }
@@ -125,8 +127,8 @@ public static class ApprovalMessageHelper
 
             var totalReceipts = poReceipts.Sum(r => r.ReceiptAmount);
 
-            // Compare PO total amount with sum of receipts
-            if (Math.Abs(po.Total_Amount - totalReceipts) > 0.01m)
+            // Flag as discrepancy ONLY if UNDERPAID (PO total > receipts)
+            if (po.Total_Amount > totalReceipts)
             {
                 discrepancies.Add($"PO #{po.SeriesNumber}");
             }

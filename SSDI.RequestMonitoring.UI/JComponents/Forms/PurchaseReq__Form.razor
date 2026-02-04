@@ -1,10 +1,13 @@
-﻿@using SSDI.RequestMonitoring.UI.Contracts.Users
+﻿@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+@using SSDI.RequestMonitoring.UI.Contracts.Users
+@using SSDI.RequestMonitoring.UI.JComponents.Controls
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.Models.MasterData
 @using SSDI.RequestMonitoring.UI.Models.Requests
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 @using SSDI.RequestMonitoring.UI.Models.Users
 @inject IUserSvc userSvc
+@inject IBusinessUnitSvc businessUnitSvc
 
 <EditForm Model="FormModel" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
@@ -22,39 +25,68 @@
                 <input id="nature" @bind="FormModel.Nature_Of_Request" class="form-control" placeholder="e.g., Purchase of Equipment" required />
             </div>
 
-            <!-- Division / Department -->
-            <div class="form-group">
-                <label for="divisionId" class="labelwithicon">
-                    Division
-                    @if (FormModel.DivisionId == 0)
-                    {
-                        <i class="bi bi-arrow-clockwise" style="color: var(--color-lightGray);" />
-                    }
-                    else
-                    {
-                        <i class="bi bi-arrow-clockwise" @onclick="@ResetSelectedDivision" style="color: var(--color-green); cursor:pointer;" />
-                    }
-                </label>
-                <InputSelect id="divisionId" class="form-select" @bind-Value="FormModel.DivisionId" disabled="@(FormModel.DepartmentId != 0)" required>
-                    <option value="0">--Select--</option>
-                    @foreach (var item in FormDivisions ?? [])
-                    {
-                        <option value="@item.Id">@item.Name</option>
-                    }
-                </InputSelect>
-            </div>
+            <div class="grid-three-col full-width">
+                <!-- Division / Department -->
+                <div class="form-group">
+                    <label for="divisionId" class="labelwithicon">
+                        Division
+                        @if (FormModel.DivisionId == 0)
+                        {
+                            <i class="bi bi-arrow-clockwise" style="color: var(--color-lightGray);" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-arrow-clockwise" @onclick="@ResetSelectedDivision" style="color: var(--color-green); cursor:pointer;" />
+                        }
+                    </label>
+                    @* <InputSelect id="divisionId" class="form-select" @bind-Value="FormModel.DivisionId" disabled="@(FormModel.DepartmentId != 0)" required>
+                        <option value="0">--Select--</option>
+                        @foreach (var item in FormDivisions ?? [])
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </InputSelect> *@
+                    <Autocomplete__Control TItem="DivisionVM"
+                                           TValue="int"
+                                           Items="FormDivisions ?? []"
+                                           @bind-SelectedValue="FormModel.DivisionId"
+                                           TextSelector="@(bu => bu.Name)"
+                                           ValueSelector="@(bu => bu.Id)"
+                                           Placeholder="--Select--" 
+                                           Disabled="@(FormModel.DepartmentId != 0)" />
+                </div>
 
-            <div class="form-group">
-                <label for="departmentid">Department</label>
-                <InputSelect id="departmentid" class="form-select" @bind-Value="FormModel.DepartmentId" disabled="@(FormModel.DivisionId == 0)" required>
-                    <option value="0">--Select--</option>
-                    @foreach (var item in FormDepartments?.Where(e => e.DivisionId == FormModel.DivisionId) ?? [])
-                    {
-                        <option value="@item.Id">@item.Name</option>
-                    }
-                </InputSelect>
-            </div>
+                <div class="form-group">
+                    <label for="departmentid">Department</label>
+                    @* <InputSelect id="departmentid" class="form-select" @bind-Value="FormModel.DepartmentId" disabled="@(FormModel.DivisionId == 0)" required>
+                        <option value="0">--Select--</option>
+                        @foreach (var item in FormDepartments?.Where(e => e.DivisionId == FormModel.DivisionId) ?? [])
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </InputSelect> *@
+                    <Autocomplete__Control TItem="DepartmentVM"
+                                           TValue="int"
+                                           Items="FormDepartments?.Where(e => e.DivisionId == FormModel.DivisionId) ?? []"
+                                           @bind-SelectedValue="FormModel.DepartmentId"
+                                           TextSelector="@(bu => bu.Name)"
+                                           ValueSelector="@(bu => bu.Id)"
+                                           Placeholder="--Select--"
+                                           Disabled="@(FormModel.DivisionId == 0)" />
+                </div>
 
+                <!-- Business Unit -->
+                <div class="form-group">
+                    <label for="slipDept">Business Unit</label>
+                    <Autocomplete__Control TItem="BusinessUnitVM"
+                                           TValue="int"
+                                           Items="businessUnits"
+                                           @bind-SelectedValue="FormModel.BusinessUnitId"
+                                           TextSelector="@(bu => bu.BU_Code)"
+                                           ValueSelector="@(bu => bu.Id)"
+                                           Placeholder="--Select--" />
+                </div>
+           </div>
 
             <!-- Justification -->
             <div class="form-group full-width">
@@ -94,10 +126,10 @@
             <!-- Priority -->
             <div class="form-group full-width">
                 <label>Priority</label>
-                <FluentRadioGroup Class="radio-group" Name="priority" @bind-Value="FormModel.Priority">
-                    <FluentRadio Class="radio-option" Value="RequestPriority.Hrs24">Must be done within 24 hours</FluentRadio>
-                    <FluentRadio Class="radio-option" Value="RequestPriority.ThisWeek">Must be done within the week</FluentRadio>
-                    <FluentRadio Class="radio-option" Value="RequestPriority.Others">Others, please specify</FluentRadio>
+                <FluentRadioGroup Class="radio-group" Name="priority" @bind-Value="@FormModel.Priority">
+                    <FluentRadio Class="radio-option" Value="@RequestPriority.Hrs24">Must be done within 24 hours</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="@RequestPriority.ThisWeek">Must be done within the week</FluentRadio>
+                    <FluentRadio Class="radio-option" Value="@RequestPriority.Others">Others, please specify</FluentRadio>
                 </FluentRadioGroup>
                 <ValidationMessage For="() => FormModel.Priority" />
 
@@ -175,6 +207,7 @@
 
     private List<IBrowserFile> uploadedFiles = [];
     private List<SupervisorVM> Supervisors = new();
+    private IEnumerable<BusinessUnitVM> businessUnits = [];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -186,6 +219,11 @@
         if (!currentUser.IsAuthenticated && FormDivisions is not null)
         {
             Supervisors = await userSvc.GetSupervisors() ?? new();
+        }
+
+        if (!businessUnits.Any())
+        {
+            businessUnits = await businessUnitSvc.GetAllBusinessUnits();
         }
     }
 

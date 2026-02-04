@@ -335,9 +335,11 @@ public partial class JobOrder_Index : ComponentBase
             RequestedBy = r.Name,
             NatureOfRequest = r.Nature_Of_Request,
             DivisionDepartment = r.Division_Department,
+            BusinessUnit = r.BusinessUnitCode,
             Priority = utils.GetPriorityDisplay(r.Priority, r.OtherPriority, false),
             Status = utils.GetStatusDisplay(r.Status),
-            DateRequested = $"{r.DateRequested:MM/dd/yy}"
+            DateRequested = r.DateRequested,
+            TotalAmount = r.Attachments.Sum(e => e.ReceiptAmount),
         }).ToList();
 
         var fileBytes = await export.Export(

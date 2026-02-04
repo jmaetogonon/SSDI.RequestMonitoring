@@ -2,11 +2,13 @@
 
 public class RequestExportRow
 {
-    public string SeriesNo { get; set; } = "";
-    public string RequestedBy { get; set; } = "";
-    public string NatureOfRequest { get; set; } = "";
-    public string DivisionDepartment { get; set; } = "";
-    public string Priority { get; set; } = "";
-    public string Status { get; set; } = "";
-    public string DateRequested { get; set; } = "";
+    public string SeriesNo { get; set; } = string.Empty;
+    public string RequestedBy { get; set; } = string.Empty;
+    public string NatureOfRequest { get; set; } = string.Empty;
+    public string DivisionDepartment { get; set; } = string.Empty;
+    public string BusinessUnit { get; set; } = string.Empty; // NEW
+    public string Priority { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public decimal? TotalAmount { get; set; } // NEW (nullable for requests without amount)
+    public DateTime? DateRequested { get; set; }
 }

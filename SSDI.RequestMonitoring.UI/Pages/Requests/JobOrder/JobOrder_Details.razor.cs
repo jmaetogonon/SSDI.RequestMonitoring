@@ -410,7 +410,7 @@ public partial class JobOrder_Details : ComponentBase
                 var totalReceiptAmount = receiptAmountsByRequisitionId
                     .GetValueOrDefault(slip.Id, 0m);
 
-                if (slip.AmountRequested != totalReceiptAmount)
+                if (slip.AmountRequested > totalReceiptAmount)
                     return false;
             }
         }
@@ -428,7 +428,7 @@ public partial class JobOrder_Details : ComponentBase
                 var totalReceiptAmount = receiptAmountsByPOId
                     .GetValueOrDefault(slip.Id, 0m);
 
-                if (slip.Total_Amount != totalReceiptAmount)
+                if (slip.Total_Amount > totalReceiptAmount)
                     return false;
             }
         }

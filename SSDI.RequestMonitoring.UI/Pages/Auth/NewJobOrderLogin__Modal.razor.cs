@@ -34,6 +34,14 @@ public partial class NewJobOrderLogin__Modal : ComponentBase
             AlertMessage = "Please select a department.";
             return;
         }
+
+        if (RequestModel.BusinessUnitId == 0)
+        {
+            IsShowAlert = true;
+            AlertMessage = "Please select a business unit.";
+            return;
+        }
+
         if (RequestModel.ReportToDeptSupId == null || RequestModel.ReportToDeptSupId == 0)
         {
             IsShowAlert = true;

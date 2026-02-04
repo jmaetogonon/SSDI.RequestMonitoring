@@ -14,5 +14,5 @@ public interface IRSSlipSvc
 
     Task<Response<Guid>> ApproveRequisition(Request_RS_SlipVM slip, ApprovalAction action, int approverId);
 
-    Task<byte[]> GenerateRequisitionPdf(int id);
+    Task<byte[]> GenerateRequisitionPdf(int id, string businessUnit);
 }

@@ -24,7 +24,7 @@ public partial class RequestPO__Control : ComponentBase
     private Request_PO_SlipVM? selectedSlip = null;
     private string? currentPdfBase64 = null;
     private HashSet<int> expandedSlips = [];
-    private string activeAttachmentTab = "requisition";
+    private string activeAttachmentTab = "receipts";
 
     private Dictionary<int, bool> viewLoading = [];
     private Dictionary<int, bool> editLoading = [];

@@ -13,8 +13,6 @@ public class Request_RS_SlipVM
     public RequisitionSlip_For RequisitionSlip_For { get; set; } = RequisitionSlip_For.CashPayment;
     public string OthersRequisitionSlip_For { get; set; } = string.Empty;
     //public RequisitionSlip_Dept RequisitionSlip_Dept { get; set; } = RequisitionSlip_Dept.Acctg;
-    public int BusinessUnitId { get; set; }
-    public string BusinessUnitCode { get; set; } = string.Empty;
 
     public int RequisitionerId { get; set; }
     public string RequisitionerName { get; set; } = string.Empty;

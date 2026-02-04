@@ -43,6 +43,13 @@ public partial class NewJORequest__Modal : ComponentBase
             return;
         }
 
+        if (RequestModel.BusinessUnitId == 0)
+        {
+            IsShowAlert = true;
+            AlertMessage = "Please select a business unit.";
+            return;
+        }
+
         var options = new ConfirmationModalOptions
         {
             Message = "Are you sure you want to save this job order?",

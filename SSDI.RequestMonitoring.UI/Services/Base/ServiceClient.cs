@@ -524,12 +524,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<byte[]> GeneratePdfRSSlipAsync(int? id);
+        System.Threading.Tasks.Task<byte[]> GeneratePdfRSSlipAsync(int? id, string businessUnitCode);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<byte[]> GeneratePdfRSSlipAsync(int? id, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<byte[]> GeneratePdfRSSlipAsync(int? id, string businessUnitCode, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -5582,15 +5582,15 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<byte[]> GeneratePdfRSSlipAsync(int? id)
+        public virtual System.Threading.Tasks.Task<byte[]> GeneratePdfRSSlipAsync(int? id, string businessUnitCode)
         {
-            return GeneratePdfRSSlipAsync(id, System.Threading.CancellationToken.None);
+            return GeneratePdfRSSlipAsync(id, businessUnitCode, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<byte[]> GeneratePdfRSSlipAsync(int? id, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<byte[]> GeneratePdfRSSlipAsync(int? id, string businessUnitCode, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -5609,6 +5609,10 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
                     if (id != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("id")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (businessUnitCode != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("businessUnitCode")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(businessUnitCode, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -7182,6 +7186,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("departmentId")]
         public int DepartmentId { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -7232,6 +7239,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("departmentId")]
         public int DepartmentId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
@@ -7328,9 +7338,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("othersRequisitionSlip_For")]
         public string OthersRequisitionSlip_For { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
-        public int BusinessUnitId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("requisitionerId")]
         public int RequisitionerId { get; set; }
@@ -7524,9 +7531,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("othersRequisitionSlip_For")]
         public string OthersRequisitionSlip_For { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
-        public int BusinessUnitId { get; set; }
-
         [System.Text.Json.Serialization.JsonPropertyName("requisitionerId")]
         public int RequisitionerId { get; set; }
 
@@ -7704,6 +7708,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -7757,6 +7767,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<JobOrderAttachByIdDto> Attachments { get; set; }
 
     }
 
@@ -7779,6 +7792,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -7832,6 +7851,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<JobOrderAttachByIdDto> Attachments { get; set; }
 
     }
 
@@ -7859,6 +7881,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
@@ -7956,6 +7984,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -8022,6 +8056,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<JobOrderAttachByIdDto> Attachments { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8042,6 +8079,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
@@ -8097,6 +8140,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<JobOrderApprovalByIdDto> Approvals { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<JobOrderAttachByIdDto> Attachments { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8117,6 +8163,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
@@ -8265,12 +8317,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("othersRequisitionSlip_For")]
         public string OthersRequisitionSlip_For { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
-        public int BusinessUnitId { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
-        public string BusinessUnitCode { get; set; }
-
         [System.Text.Json.Serialization.JsonPropertyName("requisitionerId")]
         public int RequisitionerId { get; set; }
 
@@ -8381,6 +8427,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("departmentId")]
         public int DepartmentId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnit")]
+        public BusinessUnit BusinessUnit { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
@@ -8583,6 +8635,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -8636,6 +8694,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<PurchaseRequestAttachByIdDto> Attachments { get; set; }
 
     }
 
@@ -8658,6 +8719,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -8712,6 +8779,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<PurchaseRequestAttachByIdDto> Attachments { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8732,6 +8802,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
@@ -8799,6 +8875,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("approvals")]
         public System.Collections.Generic.ICollection<PurchaseRequestApprovalByIdDto> Approvals { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<PurchaseRequestAttachByIdDto> Attachments { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8819,6 +8898,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
@@ -8870,6 +8955,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("isNoUser")]
         public bool IsNoUser { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<PurchaseRequestAttachByIdDto> Attachments { get; set; }
 
     }
 
@@ -8982,6 +9070,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -9078,6 +9172,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("division_Department")]
         public string Division_Department { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
+        public string BusinessUnitCode { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -9131,6 +9231,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("reportType")]
         public string ReportType { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.ICollection<PurchaseRequestAttachByIdDto> Attachments { get; set; }
 
     }
 
@@ -9239,12 +9342,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("othersRequisitionSlip_For")]
         public string OthersRequisitionSlip_For { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
-        public int BusinessUnitId { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("businessUnitCode")]
-        public string BusinessUnitCode { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("requisitionerId")]
         public int RequisitionerId { get; set; }
@@ -9356,6 +9453,12 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("departmentId")]
         public int DepartmentId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnit")]
+        public BusinessUnit BusinessUnit { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
@@ -9798,12 +9901,6 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("othersRequisitionSlip_For")]
         public string OthersRequisitionSlip_For { get; set; }
 
-        [System.Text.Json.Serialization.JsonPropertyName("businessUnit")]
-        public BusinessUnit BusinessUnit { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
-        public int BusinessUnitId { get; set; }
-
         [System.Text.Json.Serialization.JsonPropertyName("requisitioner")]
         public UserM Requisitioner { get; set; }
 
@@ -10045,6 +10142,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
         [System.Text.Json.Serialization.JsonPropertyName("departmentId")]
         public int DepartmentId { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }
 
@@ -10080,6 +10180,9 @@ namespace SSDI.RequestMonitoring.UI.Services.Base
 
         [System.Text.Json.Serialization.JsonPropertyName("departmentId")]
         public int DepartmentId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("businessUnitId")]
+        public int BusinessUnitId { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("nature_Of_Request")]
         public string Nature_Of_Request { get; set; }

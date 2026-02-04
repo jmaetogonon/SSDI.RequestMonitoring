@@ -28,7 +28,8 @@ public class ExportRequest
         package.Workbook.Properties.Subject = "System Requests";
         package.Workbook.Properties.Created = DateTime.Now;
 
-        const int totalColumns = 7;
+        // Updated column count: Added Business Unit (8) and Amount (9)
+        const int totalColumns = 9;
         int currentRow = 1;
 
         // ======================
@@ -136,14 +137,17 @@ public class ExportRequest
         // ======================
         int headerRow = currentRow;
 
+        // Updated headers with Business Unit and Amount
         string[] headers =
         {
             "Series No",
             "Requested By",
             "Nature Of Request",
             "Division / Department",
+            "Business Unit", // NEW COLUMN
             "Priority",
             "Status",
+            "Amount", // NEW COLUMN
             "Date Requested"
         };
 
@@ -153,20 +157,20 @@ public class ExportRequest
             cell.Value = headers[col];
 
             cell.Style.Font.Bold = true;
-            cell.Style.Font.Color.SetColor(Color.White);
-            //cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            cell.Style.Font.Color.SetColor(Color.Black);
             cell.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
+            // Dark gray background for headers
             cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
-            cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(64, 64, 64));
+            cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(225, 233, 241));
 
-            // FIX: Set border style first, then color
+            // Set border style
             cell.Style.Border.Top.Style = ExcelBorderStyle.Medium;
             cell.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
             cell.Style.Border.Left.Style = ExcelBorderStyle.Medium;
             cell.Style.Border.Right.Style = ExcelBorderStyle.Medium;
 
-            // Now set colors
+            // Set border colors
             cell.Style.Border.Top.Color.SetColor(Color.Black);
             cell.Style.Border.Bottom.Color.SetColor(Color.Black);
             cell.Style.Border.Left.Color.SetColor(Color.Black);
@@ -177,8 +181,10 @@ public class ExportRequest
         currentRow++;
 
         // ======================
-        // DATA ROWS - SIMPLE BORDERS (NO STRIPES)
+        // DATA ROWS
         // ======================
+        decimal totalAmount = 0;
+
         for (int i = 0; i < data.Count; i++)
         {
             int rowIndex = currentRow;
@@ -188,12 +194,33 @@ public class ExportRequest
             ws.Cells[rowIndex, 2].Value = r.RequestedBy;
             ws.Cells[rowIndex, 3].Value = r.NatureOfRequest;
             ws.Cells[rowIndex, 4].Value = r.DivisionDepartment;
-            ws.Cells[rowIndex, 5].Value = r.Priority;
-            ws.Cells[rowIndex, 6].Value = r.Status;
-            ws.Cells[rowIndex, 7].Value = r.DateRequested;
+            ws.Cells[rowIndex, 5].Value = r.BusinessUnit; // NEW: Business Unit
+            ws.Cells[rowIndex, 6].Value = r.Priority;
+            ws.Cells[rowIndex, 7].Value = r.Status;
 
-            // Add vertical alignment
-            //ws.Cells[rowIndex, 1, rowIndex, totalColumns].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+            // Amount column (format as currency)
+            if (r.TotalAmount.HasValue && r.TotalAmount > 0)
+            {
+                ws.Cells[rowIndex, 8].Value = r.TotalAmount.Value;
+                ws.Cells[rowIndex, 8].Style.Numberformat.Format = "#,##0.00";
+                totalAmount += r.TotalAmount.Value;
+            }
+            else
+            {
+                ws.Cells[rowIndex, 8].Value = "-";
+                ws.Cells[rowIndex, 8].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            }
+
+            ws.Cells[rowIndex, 9].Value = r.DateRequested;
+
+            // Format date column
+            ws.Cells[rowIndex, 9].Style.Numberformat.Format = "mmmm dd, yyyy";
+            ws.Cells[rowIndex, 9].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+            // Center align for certain columns
+            ws.Cells[rowIndex, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center; // Series No
+            ws.Cells[rowIndex, 6].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center; // Priority
+            ws.Cells[rowIndex, 7].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center; // Status
 
             currentRow++;
             progress?.Report((i + 1) * 100 / data.Count);
@@ -201,7 +228,7 @@ public class ExportRequest
         }
 
         // ======================
-        // ADD BORDERS TO DATA AREA (CLEAN APPROACH)
+        // ADD BORDERS TO DATA AREA
         // ======================
         if (data.Count > 0)
         {
@@ -231,18 +258,58 @@ public class ExportRequest
         }
 
         // ======================
+        // GRAND TOTAL ROW
+        // ======================
+        if (totalAmount > 0)
+        {
+            int totalRow = currentRow + 1;
+
+            // Merge cells for "Grand Total" label
+            ws.Cells[totalRow, 1, totalRow, 7].Merge = true;
+            ws.Cells[totalRow, 1].Value = "GRAND TOTAL";
+            ws.Cells[totalRow, 1].Style.Font.Bold = true;
+            ws.Cells[totalRow, 1].Style.Font.Size = 11;
+            ws.Cells[totalRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+            ws.Cells[totalRow, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+            // Total amount cell
+            ws.Cells[totalRow, 8].Value = totalAmount;
+            ws.Cells[totalRow, 8].Style.Numberformat.Format = "#,##0.00";
+            ws.Cells[totalRow, 8].Style.Font.Bold = true;
+            ws.Cells[totalRow, 8].Style.Font.Color.SetColor(Color.DarkGreen);
+            ws.Cells[totalRow, 8].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            ws.Cells[totalRow, 8].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(235, 247, 235)); // Light green
+
+            // Formatting for total row
+            ws.Cells[totalRow, 8].Style.Border.Top.Style = ExcelBorderStyle.Double;
+            ws.Cells[totalRow, 8].Style.Border.Bottom.Style = ExcelBorderStyle.Thick;
+            ws.Cells[totalRow, 8].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+            ws.Cells[totalRow, 8].Style.Border.Right.Style = ExcelBorderStyle.Thin;
+            ws.Cells[totalRow, 8].Style.Border.Top.Color.SetColor(Color.DarkGray);
+            ws.Cells[totalRow, 8].Style.Border.Bottom.Color.SetColor(Color.DarkGray);
+
+            // Empty cell for date column
+            ws.Cells[totalRow, 9].Value = "";
+
+            // Set row height for total row
+            ws.Row(totalRow).Height = 22;
+        }
+
+        // ======================
         // FINAL FORMATTING
         // ======================
         ws.Cells[1, 1, currentRow - 1, totalColumns].AutoFitColumns();
 
         // Set column widths
-        ws.Column(1).Width = Math.Max(ws.Column(1).Width, 15);
-        ws.Column(2).Width = Math.Max(ws.Column(2).Width, 25);
-        ws.Column(3).Width = Math.Max(ws.Column(3).Width, 35);
-        ws.Column(4).Width = Math.Max(ws.Column(4).Width, 25);
-        ws.Column(5).Width = Math.Max(ws.Column(5).Width, 15);
-        ws.Column(6).Width = Math.Max(ws.Column(6).Width, 15);
-        ws.Column(7).Width = Math.Max(ws.Column(7).Width, 15);
+        ws.Column(1).Width = Math.Max(ws.Column(1).Width, 15);  // Series No
+        ws.Column(2).Width = Math.Max(ws.Column(2).Width, 25);  // Requested By
+        ws.Column(3).Width = Math.Max(ws.Column(3).Width, 35);  // Nature Of Request
+        ws.Column(4).Width = Math.Max(ws.Column(4).Width, 25);  // Division/Dept
+        ws.Column(5).Width = Math.Max(ws.Column(5).Width, 20);  // Business Unit
+        ws.Column(6).Width = Math.Max(ws.Column(6).Width, 15);  // Priority
+        ws.Column(7).Width = Math.Max(ws.Column(7).Width, 15);  // Status
+        ws.Column(8).Width = Math.Max(ws.Column(8).Width, 18);  // Amount
+        ws.Column(9).Width = Math.Max(ws.Column(9).Width, 18);  // Date Requested
 
         // Freeze table header
         ws.View.FreezePanes(headerRow + 1, 1);

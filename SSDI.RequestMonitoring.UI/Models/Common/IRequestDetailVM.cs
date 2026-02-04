@@ -11,6 +11,8 @@ public interface IRequestDetailVM
     int DivisionId { get; }
     int DepartmentId { get; }
     string Division_Department { get; }
+    int BusinessUnitId { get; }
+    string BusinessUnitCode { get; }
 
     string Nature_Of_Request { get; }
     string Justification { get; }
