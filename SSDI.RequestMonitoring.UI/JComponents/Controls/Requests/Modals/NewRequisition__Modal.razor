@@ -4,25 +4,27 @@
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 
+  
+@if (IsModalVisible)
+{
+    <div class="modal__overlay">
+        <div class="modal">
+            <div class="modal__header">
+                <h5 class="modal__header-title">NEW REQUISITION SLIP / ADVANCES SUBJECT TO LIQUIDATION</h5>
+            </div>
 
-<Confirmation__Modal @ref="confirmModal" />
-<div class="modal__overlay" id="@(IsModalVisible ? "show__new__purchase-requisition-modal" : "hide__new__purchase-requisition-modal")">
-    <div class="modal">
-        <div class="modal__header">
-            <h5 class="modal__header-title">NEW REQUISITION SLIP / ADVANCES SUBJECT TO LIQUIDATION</h5>
+            <div class="modal__alert">
+                <Alert Message="@AlertMessage" Type="@CurrentAlertType" ShowCloseButton="false" @bind-IsVisible="@IsShowAlert" />
+            </div>
+
+            <RequestRequisition__Form FormModel="@Model"
+            OnValidSubmit="@HandleSave" 
+            OnCloseModal="@CloseModal" 
+            ConfirmModal="@ConfirmModal"
+            OnShowAlert="@_onShowAlertCallback"
+            IsDisabledBtns="@_isDisabledBtns" 
+            SelectedFiles="@Attachments"
+            BusinessUnitCode="@RequestHeader?.BusinessUnitCode" />
         </div>
-
-        <div class="modal__alert">
-            <Alert Message="@AlertMessage" Type="@CurrentAlertType" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
-        </div>
-
-        <RequestRequisition__Form FormModel="@Model"
-                                  OnValidSubmit="HandleSave" 
-                                  OnCloseModal="CloseModal" 
-                                  ConfirmModal="@confirmModal"
-                                  OnShowAlert="@_onShowAlertCallback"
-                                  IsDisabledBtns="@_isDisabledBtns" 
-                                  SelectedFiles="@Attachments"
-                                  BusinessUnitCode="@RequestHeader?.BusinessUnitCode" />
-    </div>
-</div>
+    </div>            
+}

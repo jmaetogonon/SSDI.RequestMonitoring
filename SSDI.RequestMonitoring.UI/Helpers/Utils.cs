@@ -4,40 +4,34 @@ using SSDI.RequestMonitoring.UI.Models.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Helpers;
 
-public class Utils
+public static class Utils
 {
-    private readonly CurrentUser _currentUser;
+    public static string GenerateGuid() => Guid.NewGuid().ToString();
 
-    public Utils(CurrentUser currentUser)
-    {
-        _currentUser = currentUser;
-    }
+    public static string GenerateUniqId() => DateTime.Now.ToString("yyyyMMddhhmmssfff");
 
-    public string GenerateGuid() => Guid.NewGuid().ToString();
+    public static bool IsUserDepartmentHead(IRequestDetailVM request, CurrentUser currentUser) => (request.UserDepartmentHeadId == currentUser.UserId || request.ReportToDeptSupId == currentUser.UserId || request.RequestedByDeptHeadId == currentUser.UserId) && currentUser.IsSupervisor;
 
-    public string GenerateUniqId() => DateTime.Now.ToString("yyyyMMddhhmmssfff");
+    public static bool IsUserDivisionHead(IRequestDetailVM request, CurrentUser currentUser) => (request.UserDivisionHeadId == currentUser.UserId || request.ReportToDivSupId == currentUser.UserId) && currentUser.IsSupervisor;
 
-    public bool IsUserDepartmentHead(IRequestDetailVM request) => (request.UserDepartmentHeadId == _currentUser.UserId || request.ReportToDeptSupId == _currentUser.UserId || request.RequestedByDeptHeadId == _currentUser.UserId) && _currentUser.IsSupervisor;
+    public static string FormatDate(DateTime date) => date.ToString("yyyy-MM-dd");
 
-    public bool IsUserDivisionHead(IRequestDetailVM request) => (request.UserDivisionHeadId == _currentUser.UserId || request.ReportToDivSupId == _currentUser.UserId) && _currentUser.IsSupervisor;
-
-    public string FormatDate(DateTime date) => date.ToString("yyyy-MM-dd");
-    public string FormatNameShort(string fullName)
+    public static string FormatNameShort(string fullName)
     {
         if (string.IsNullOrWhiteSpace(fullName))
             return string.Empty;
 
         var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
+
         if (parts.Length == 0)
             return string.Empty;
-        
+
         if (parts.Length == 1)
             return parts[0];
-        
+
         var firstName = parts[0];
         var lastName = parts[^1];
-        
+
         // Handle suffixes
         var suffixes = new[] { "jr", "sr", "ii", "iii", "iv", "v" };
         if (suffixes.Contains(lastName.ToLower()))
@@ -46,10 +40,11 @@ public class Utils
         }
 
         var lastInitial = lastName[0].ToString().ToUpperInvariant() + ".";
-        
+
         return $"{firstName} {lastInitial}";
     }
-    public string GetLastModifiedDisplay(DateTime? dateModified)
+
+    public static string GetLastModifiedDisplay(DateTime? dateModified)
     {
         if (dateModified is null) return "Never modified";
 
@@ -66,7 +61,7 @@ public class Utils
         };
     }
 
-    public string GetPriorityDisplay(RequestPriority priority, string otherPriority, bool isShort = false)
+    public static string GetPriorityDisplay(RequestPriority priority, string otherPriority, bool isShort = false)
     {
         return priority switch
         {
@@ -76,7 +71,7 @@ public class Utils
         };
     }
 
-    public string GetRelativeTime(DateTime? date)
+    public static string GetRelativeTime(DateTime? date)
     {
         if (date is null) return "Unknown";
 
@@ -107,7 +102,7 @@ public class Utils
         //};
     }
 
-    public string GetRequestTypeName(RequestType type) =>
+    public static string GetRequestTypeName(RequestType type) =>
     type switch
     {
         RequestType.Purchase => "Purchase",
@@ -115,10 +110,10 @@ public class Utils
         _ => "All"
     };
 
-    public string FirstCharToUpper(string input) =>
-        string.IsNullOrEmpty(input) ? input : char.ToUpper(input[0]) + input.Substring(1);
+    public static string FirstCharToUpper(string input) =>
+        string.IsNullOrEmpty(input) ? input : char.ToUpper(input[0]) + input[1..];
 
-    public string GetStatusDisplay(RequestStatus item)
+    public static string GetStatusDisplay(RequestStatus item)
     {
         return item switch
         {
@@ -135,7 +130,7 @@ public class Utils
         };
     }
 
-    public string GetStatusIcon(RequestStatus status)
+    public static string GetStatusIcon(RequestStatus status)
     {
         return status switch
         {
@@ -153,7 +148,7 @@ public class Utils
         };
     }
 
-    public string GetStatusColor(RequestStatus status) =>
+    public static string GetStatusColor(RequestStatus status) =>
         status switch
         {
             RequestStatus.Draft => "#9ca3af",
@@ -168,7 +163,7 @@ public class Utils
             _ => "#d1d5db" // default gray
         };
 
-    public string GetApprovalStatusText(IApprovalVM approval)
+    public static string GetApprovalStatusText(IApprovalVM approval)
     {
         return approval.IsApproved ? (approval.Stage is ApprovalStage.DepartmentHead ? "Submitted" : "Approved") :
                approval.IsRejected ? "Rejected" :
@@ -176,7 +171,7 @@ public class Utils
                "Pending";
     }
 
-    public string GetApprovalByText(IApprovalVM approval)
+    public static string GetApprovalByText(IApprovalVM approval)
     {
         return approval.Stage switch
         {
@@ -188,7 +183,7 @@ public class Utils
         };
     }
 
-    public string GetApprovalByTimelineText(Purchase_Request_ApprovalVM approval)
+    public static string GetApprovalByTimelineText(Purchase_Request_ApprovalVM approval)
     {
         return approval.Stage switch
         {
@@ -200,7 +195,7 @@ public class Utils
         };
     }
 
-    public string GetApprovalStagesDisplay(ApprovalStage item)
+    public static string GetApprovalStagesDisplay(ApprovalStage item)
     {
         return item switch
         {
@@ -212,7 +207,7 @@ public class Utils
         };
     }
 
-    public string FormatPendingAge(DateTime since)
+    public static string FormatPendingAge(DateTime since)
     {
         var span = DateTime.Now - since;
 

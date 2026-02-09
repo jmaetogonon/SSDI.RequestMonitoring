@@ -10,6 +10,8 @@
 
 <PageTitle>Departments</PageTitle>
 
+<Confirmation__Modal @ref="_confirmModal" />
+
 <div class="main--content">
     <BreadcrumbNav IsNoPadding="true">
         <BreadcrumbItem Label="System Configuration" Href="/system-configuration" />
@@ -36,14 +38,14 @@
 
     <!-- Filter Bar -->
     <div class="sysconfig-filter-container">
-        <FluentSearch @bind-Value="@searchValue"
+        <FluentSearch @bind-Value="@_searchValue"
                       @bind-Value:after="HandleSearch"
                       Immediate="true"
                       Placeholder="Search"
                       Class="page__filters-search" />
 
-        <Division__Filter @ref="divisionFilter"
-                          Divisions="@Divisions"
+        <Division__Filter @ref="_divisionFilter"
+                          _divisions="@_divisions"
                           SelectedDivisionsChanged="OnDivisionFilterChanged" />
 
         <Clear__Filters OnClear="@ClearAllFilters" />
@@ -51,14 +53,14 @@
 
     <div class="sysconfig-page__main__section">
         <div class="sysconfig__table-container">
-            @if (AllItems == null || Divisions == null)
+            @if (_allItems == null || _divisions == null)
             {
                 <div class="sysconfig-loading">
                     <div class="loading-spinner"></div>
                     <p>Loading departments...</p>
                 </div>
             }
-            else if (AllItems.Count == 0)
+            else if (_allItems.Count == 0)
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-building"></i>
@@ -69,12 +71,12 @@
                     </button>
                 </div>
             }
-            else if (FilteredItems.Count == 0)
+            else if (_filteredItems.Count == 0)
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-search"></i>
                     <h3>No Results Found</h3>
-                    <p>No departments match your search "<strong>@searchValue</strong>"</p>
+                    <p>No departments match your search "<strong>@_searchValue</strong>"</p>
                     <button class="btn btn--ghost" @onclick="ClearSearch">
                         <i class="bi bi-x-lg"></i> Clear Search
                     </button>
@@ -98,10 +100,10 @@
                         @{
                             var displayIndex = 1;
                         }
-                        @foreach (var department in FilteredItems)
+                        @foreach (var department in _filteredItems)
                         {
                             var isNew = department.Id == 0;
-                            var divisionName = Divisions.FirstOrDefault(d => d.Id == department.DivisionId)?.Name ?? "Not assigned";
+                            var divisionName = _divisions.FirstOrDefault(d => d.Id == department.DivisionId)?.Name ?? "Not assigned";
                             <div class="sysconfig-table-row data-row @(isNew ? "new-item" : "")" key="@department.Id">
                                 <div class="sysconfig-table-cell" style="flex: 0 0 60px;" data-label="#">
                                     <span class="row-number">@(displayIndex++)</span>
@@ -119,7 +121,7 @@
                                             <span class="input-counter">@department.Name.Length/100</span>
                                         }
                                     </div>
-                                    @if (string.IsNullOrEmpty(department.Name) && showValidations)
+                                    @if (string.IsNullOrEmpty(department.Name) && _showValidations)
                                     {
                                         <span class="validation-error">Department name is required</span>
                                     }
@@ -129,14 +131,14 @@
                                         <select class="table-select-input"
                                                 @bind="department.DivisionId">
                                             <option value="0">-- Select Division --</option>
-                                            @foreach (var division in Divisions)
+                                            @foreach (var division in _divisions)
                                             {
                                                 <option value="@division.Id">@division.Name</option>
                                             }
                                         </select>
                                         <i class="bi bi-chevron-down table-select-arrow"></i>
                                     </div>
-                                    @if (department.DivisionId == 0 && showValidations)
+                                    @if (department.DivisionId == 0 && _showValidations)
                                     {
                                         <span class="validation-error">Division is required</span>
                                     }
@@ -168,11 +170,11 @@
                         <i class="bi bi-plus-lg"></i> Add New Department
                     </button>
 
-                    @if (AllItems.Any(d => d.Id == 0))
+                    @if (_allItems.Any(d => d.Id == 0))
                     {
                         <div class="new-items-count" @onclick="ScrollToNewItems" title="Click to scroll to new items">
                             <i class="bi bi-arrow-down-circle"></i>
-                            <span>@AllItems.Count(d => d.Id == 0) new department(s) pending save</span>
+                            <span>@_allItems.Count(d => d.Id == 0) new department(s) pending save</span>
                         </div>
                     }
                 </div>
@@ -180,5 +182,3 @@
         </div>
     </div>
 </div>
-
-<Confirmation__Modal @ref="confirmModal" />

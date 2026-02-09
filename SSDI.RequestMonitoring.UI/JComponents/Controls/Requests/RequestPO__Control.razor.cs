@@ -16,55 +16,51 @@ public partial class RequestPO__Control : ComponentBase
     [Parameter] public RequestType RequestType { get; set; }
     [Parameter] public Confirmation__Modal ConfirmModal { get; set; } = default!;
 
-    private bool showNewSlipModal, showEditSlipModal = false;
-    private bool showPdfModal = false;
-    private bool isDownloadingAll = false;
-    private bool isPR => RequestType == RequestType.Purchase;
-    private Request_PO_SlipVM? EditModel = default!;
-    private Request_PO_SlipVM? selectedSlip = null;
-    private string? currentPdfBase64 = null;
-    private HashSet<int> expandedSlips = [];
-    private string activeAttachmentTab = "receipts";
+    private bool _showNewSlipModal, _showEditSlipModal = false;
+    private bool _showPdfModal = false;
+    private bool _isDownloadingAll = false;
+    private bool IsPR => RequestType == RequestType.Purchase;
+    private Request_PO_SlipVM? _editModel = default!;
+    private Request_PO_SlipVM? _selectedSlip = null;
+    private string? _currentPdfBase64 = null;
+    private readonly HashSet<int> _expandedSlips = [];
+    private string _activeAttachmentTab = "receipts";
 
-    private Dictionary<int, bool> viewLoading = [];
-    private Dictionary<int, bool> editLoading = [];
-    private Dictionary<int, bool> downloadLoading = [];
-    private Dictionary<int, bool> approveLoading = [];
-    private Dictionary<int, bool> rejectLoading = [];
-    private int currentDownloadIndex = 0;
+    private readonly Dictionary<int, bool> _viewLoading = [];
+    private readonly Dictionary<int, bool> _editLoading = [];
+    private readonly Dictionary<int, bool> _downloadLoading = [];
+    private readonly Dictionary<int, bool> _approveLoading = [];
+    private readonly Dictionary<int, bool> _rejectLoading = [];
+    private int _currentDownloadIndex = 0;
 
-    private bool showPreview = false;
-    private Request_AttachVM? selectedAttachment;
-    private string? previewUrl;
-    private List<string> blobUrls = [];
-    private bool isLoadingPreview = false;
-    private HashSet<string> downloadingAttachments = [];
+    private bool _showPreview = false;
+    private Request_AttachVM? _selectedAttachment;
+    private string? _previewUrl;
+    private readonly List<string> _blobUrls = [];
+    private bool _isLoadingPreview = false;
+    private readonly HashSet<string> _downloadingAttachments = [];
 
     private async Task Refresh()
     { if (OnRequestChanged.HasDelegate) await OnRequestChanged.InvokeAsync(); }
 
     private void ToggleSlip(int slipId)
     {
-        if (expandedSlips.Contains(slipId))
+        if (!_expandedSlips.Remove(slipId))
         {
-            expandedSlips.Remove(slipId);
-        }
-        else
-        {
-            expandedSlips.Add(slipId);
+            _expandedSlips.Add(slipId);
         }
         StateHasChanged();
     }
 
     private void SwitchAttachmentTab(string tab)
     {
-        activeAttachmentTab = tab;
+        _activeAttachmentTab = tab;
         StateHasChanged();
     }
 
     private async Task ApproveSlip(Request_PO_SlipVM slip)
     {
-        approveLoading[slip.Id] = true;
+        _approveLoading[slip.Id] = true;
         StateHasChanged();
 
         try
@@ -99,14 +95,14 @@ public partial class RequestPO__Control : ComponentBase
         }
         finally
         {
-            approveLoading[slip.Id] = false;
+            _approveLoading[slip.Id] = false;
             StateHasChanged();
         }
     }
 
     private async Task RejectSlip(Request_PO_SlipVM slip)
     {
-        rejectLoading[slip.Id] = true;
+        _rejectLoading[slip.Id] = true;
         StateHasChanged();
         try
         {
@@ -140,23 +136,23 @@ public partial class RequestPO__Control : ComponentBase
         }
         finally
         {
-            rejectLoading[slip.Id] = false;
+            _rejectLoading[slip.Id] = false;
             StateHasChanged();
         }
     }
 
-    private void AddNewSlip() => showNewSlipModal = true;
+    private void AddNewSlip() => _showNewSlipModal = true;
 
     private void EditSlip(Request_PO_SlipVM slip)
     {
-        EditModel = slip;
-        showEditSlipModal = true;
+        _editModel = slip;
+        _showEditSlipModal = true;
     }
 
     private async Task SaveNewSlip()
     {
         await Refresh();
-        showNewSlipModal = false;
+        _showNewSlipModal = false;
         toastSvc.ShowSuccess("Purchase order slip successfully added.");
         StateHasChanged();
     }
@@ -164,12 +160,12 @@ public partial class RequestPO__Control : ComponentBase
     private async Task SaveEditSlip()
     {
         await Refresh();
-        showEditSlipModal = false;
+        _showEditSlipModal = false;
         toastSvc.ShowSuccess("Purchase order slip successfully updated.");
         StateHasChanged();
     }
 
-    private void CloseSlipModal() => showNewSlipModal = showEditSlipModal = false;
+    private void CloseSlipModal() => _showNewSlipModal = _showEditSlipModal = false;
 
     private async Task ViewSlip(Request_PO_SlipVM slip)
     {
@@ -180,8 +176,8 @@ public partial class RequestPO__Control : ComponentBase
                 toastSvc.ShowError("No request details to export.");
                 return;
             }
-            selectedSlip = slip;
-            viewLoading[slip.Id] = true;
+            _selectedSlip = slip;
+            _viewLoading[slip.Id] = true;
             StateHasChanged();
 
             //Generate the PDF bytes
@@ -192,8 +188,8 @@ public partial class RequestPO__Control : ComponentBase
                 return;
             }
 
-            currentPdfBase64 = Convert.ToBase64String(pdfBytes);
-            showPdfModal = true;
+            _currentPdfBase64 = Convert.ToBase64String(pdfBytes);
+            _showPdfModal = true;
         }
         catch (Exception ex)
         {
@@ -202,7 +198,7 @@ public partial class RequestPO__Control : ComponentBase
         }
         finally
         {
-            viewLoading[slip.Id] = false;
+            _viewLoading[slip.Id] = false;
             StateHasChanged();
         }
     }
@@ -211,7 +207,7 @@ public partial class RequestPO__Control : ComponentBase
     {
         try
         {
-            downloadLoading[slip.Id] = true;
+            _downloadLoading[slip.Id] = true;
             StateHasChanged();
 
             // Generate and download PDF
@@ -225,7 +221,7 @@ public partial class RequestPO__Control : ComponentBase
         }
         finally
         {
-            downloadLoading[slip.Id] = false;
+            _downloadLoading[slip.Id] = false;
             StateHasChanged();
         }
     }
@@ -234,14 +230,14 @@ public partial class RequestPO__Control : ComponentBase
     {
         if (Request.POSlips.Count == 0) return;
 
-        isDownloadingAll = true;
-        currentDownloadIndex = 0;
+        _isDownloadingAll = true;
+        _currentDownloadIndex = 0;
         StateHasChanged();
 
         try
         {
-            var fileBytes = await AttachSvc.DownloadAllPOZipAsync(Request.Id, isPR);
-            var fileName = $"{(isPR ? "PR" : "JO")}{Request.SeriesNumber} Purchase Order Slips.zip";
+            var fileBytes = await AttachSvc.DownloadAllPOZipAsync(Request.Id, IsPR);
+            var fileName = $"{(IsPR ? "PR" : "JO")}{Request.SeriesNumber} Purchase Order Slips.zip";
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
@@ -254,8 +250,8 @@ public partial class RequestPO__Control : ComponentBase
         }
         finally
         {
-            isDownloadingAll = false;
-            currentDownloadIndex = 0;
+            _isDownloadingAll = false;
+            _currentDownloadIndex = 0;
             StateHasChanged();
         }
     }
@@ -332,7 +328,7 @@ public partial class RequestPO__Control : ComponentBase
 
             var attach = new Request_AttachVM
             {
-                UniqId = utils.GenerateUniqId(),
+                UniqId = Utils.GenerateUniqId(),
                 FileName = file.Name,
                 ContentType = file.ContentType,
                 ImgData = fileBytes,
@@ -343,7 +339,7 @@ public partial class RequestPO__Control : ComponentBase
             dummies.Add(attach);
         }
 
-        var res = await AttachSvc.UploadAsync(Request.Id, isPR, dummies, RequestAttachType.PurchaseOrder, poID: slip.Id);
+        var res = await AttachSvc.UploadAsync(Request.Id, IsPR, dummies, RequestAttachType.PurchaseOrder, poID: slip.Id);
         if (!res.Success)
         {
             toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -398,7 +394,7 @@ public partial class RequestPO__Control : ComponentBase
 
         var attach = new Request_AttachVM
         {
-            UniqId = utils.GenerateUniqId(),
+            UniqId = Utils.GenerateUniqId(),
             FileName = file.Name,
             ContentType = file.ContentType,
             ImgData = fileBytes,
@@ -408,7 +404,7 @@ public partial class RequestPO__Control : ComponentBase
             ReceiptRemarks = ConfirmModal.Remarks
         };
 
-        var res = await AttachSvc.UploadAsync(Request.Id, isPR, [attach], RequestAttachType.Receipt, 0, ConfirmModal.Number, ConfirmModal.Remarks, poID: slip.Id);
+        var res = await AttachSvc.UploadAsync(Request.Id, IsPR, [attach], RequestAttachType.Receipt, 0, ConfirmModal.Number, ConfirmModal.Remarks, poID: slip.Id);
         if (!res.Success)
         {
             toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -422,13 +418,13 @@ public partial class RequestPO__Control : ComponentBase
 
     private void ClosePdfModal()
     {
-        showPdfModal = false;
-        selectedSlip = null;
-        currentPdfBase64 = null;
+        _showPdfModal = false;
+        _selectedSlip = null;
+        _currentPdfBase64 = null;
     }
 
     // Attachment Methods
-    private string GetFileIcon(string contentType)
+    private static string GetFileIcon(string contentType)
     {
         if (contentType.Contains("image"))
             return "bi-file-image";
@@ -441,7 +437,7 @@ public partial class RequestPO__Control : ComponentBase
         return "bi-file-earmark";
     }
 
-    private string FormatFileSize(long bytes)
+    private static string FormatFileSize(long bytes)
     {
         string[] sizes = ["B", "KB", "MB", "GB"];
         int order = 0;
@@ -456,44 +452,44 @@ public partial class RequestPO__Control : ComponentBase
 
     private async Task ViewAttachment(Request_AttachVM attachment)
     {
-        selectedAttachment = attachment;
-        isLoadingPreview = true;
-        showPreview = true;
+        _selectedAttachment = attachment;
+        _isLoadingPreview = true;
+        _showPreview = true;
         StateHasChanged();
 
         try
         {
             if (IsPdf(attachment.FileName))
             {
-                previewUrl = await GetPdfBlobUrl(attachment);
+                _previewUrl = await GetPdfBlobUrl(attachment);
             }
             else if (IsImage(attachment.FileName))
             {
-                previewUrl = await GetImageDataUrl(attachment);
+                _previewUrl = await GetImageDataUrl(attachment);
             }
             else
             {
-                previewUrl = null;
+                _previewUrl = null;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading preview: {ex.Message}");
-            previewUrl = null;
+            _previewUrl = null;
         }
         finally
         {
-            isLoadingPreview = false;
+            _isLoadingPreview = false;
             StateHasChanged();
         }
     }
 
     private async Task DownloadAttachment(Request_AttachVM attachment)
     {
-        if (downloadingAttachments.Contains(attachment.Id.ToString()))
+        if (_downloadingAttachments.Contains(attachment.Id.ToString()))
             return;
 
-        downloadingAttachments.Add(attachment.Id.ToString());
+        _downloadingAttachments.Add(attachment.Id.ToString());
         StateHasChanged();
 
         try
@@ -512,7 +508,7 @@ public partial class RequestPO__Control : ComponentBase
         }
         finally
         {
-            downloadingAttachments.Remove(attachment.Id.ToString());
+            _downloadingAttachments.Remove(attachment.Id.ToString());
             StateHasChanged();
         }
     }
@@ -530,7 +526,7 @@ public partial class RequestPO__Control : ComponentBase
 
             if (!string.IsNullOrEmpty(blobUrl))
             {
-                blobUrls.Add(blobUrl);
+                _blobUrls.Add(blobUrl);
             }
 
             return blobUrl;
@@ -570,26 +566,26 @@ public partial class RequestPO__Control : ComponentBase
         }
     }
 
-    private bool IsImage(string fileName)
+    private static bool IsImage(string fileName)
     {
         var extension = Path.GetExtension(fileName).ToLower();
         return extension is ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp";
     }
 
-    private bool IsPdf(string fileName)
+    private static bool IsPdf(string fileName)
     {
         return Path.GetExtension(fileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task CloseAttachmentPreview()
     {
-        showPreview = false;
-        selectedAttachment = null;
-        previewUrl = null;
-        isLoadingPreview = false;
+        _showPreview = false;
+        _selectedAttachment = null;
+        _previewUrl = null;
+        _isLoadingPreview = false;
 
         // Clean up any blob URLs
-        foreach (var blobUrl in blobUrls)
+        foreach (var blobUrl in _blobUrls)
         {
             if (!string.IsNullOrEmpty(blobUrl))
             {
@@ -603,7 +599,7 @@ public partial class RequestPO__Control : ComponentBase
                 }
             }
         }
-        blobUrls.Clear();
+        _blobUrls.Clear();
 
         StateHasChanged();
         await Task.Delay(100); // Small delay to ensure clean state
@@ -615,20 +611,20 @@ public partial class RequestPO__Control : ComponentBase
         {
             return slip.SlipApproverId == currentUser.UserId
                 ? "Approved by You"
-                : $"Approved by {utils.FormatNameShort(slip.SlipApproverName)}";
+                : $"Approved by {Utils.FormatNameShort(slip.SlipApproverName)}";
         }
         else if (slip.Approval == ApprovalAction.Reject)
         {
             return slip.SlipApproverId == currentUser.UserId
                 ? "Rejected by You"
-                : $"Rejected by {utils.FormatNameShort(slip.SlipApproverName)}";
+                : $"Rejected by {Utils.FormatNameShort(slip.SlipApproverName)}";
         }
         return "Pending Approval";
     }
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var blobUrl in blobUrls)
+        foreach (var blobUrl in _blobUrls)
         {
             if (!string.IsNullOrEmpty(blobUrl))
             {
@@ -642,6 +638,6 @@ public partial class RequestPO__Control : ComponentBase
                 }
             }
         }
-        blobUrls.Clear();
+        _blobUrls.Clear();
     }
 }

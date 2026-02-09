@@ -6,23 +6,26 @@
 @inject IJobOrderSvc jobOrderSvc
 @inject IAttachSvc attachSvc
 
-<Confirmation__Modal @ref="confirmModal" />
-<div class="modal__overlay" id="@(IsModalVisible ? "show__new__edit-purchase-request-modal" : "hide__new__edit-purchase-request-modal")">
-    <div class="modal">
-        <div class="modal__header">
-            <h5 class="modal__header-title">UPDATE REQUEST</h5>
-            <div class="modal__header-date">
-                <i class="bi bi-clock-history"></i>
-                <span title="@RequestModel?.DateModified?.ToString("MMMM dd, yyyy 'at' h:mm tt")">
-                    @utils.GetLastModifiedDisplay(RequestModel?.DateModified)
-                </span>
+@if (IsModalVisible)
+{
+    <div class="modal__overlay">
+        <div class="modal">
+            <div class="modal__header">
+                <h5 class="modal__header-title">UPDATE REQUEST</h5>
+                <div class="modal__header-date">
+                    <i class="bi bi-clock-history"></i>
+                    <span title="@RequestModel?.DateModified?.ToString("MMMM dd, yyyy 'at' h:mm tt")">
+                        @Utils.GetLastModifiedDisplay(RequestModel?.DateModified)
+                    </span>
+                </div>
             </div>
-        </div>
 
-        <div class="modal__alert">
-            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
-        </div>
+            <div class="modal__alert">
+                <Alert Message="@AlertMessage" Type="@AlertType.error" ShowCloseButton="false" @bind-IsVisible="@IsShowAlert" />
+            </div>
 
-        <JobOrder__Form FormModel="RequestModel" FormDepartments="Departments" FormDivisions="Divisions" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" IsForUpdate="true" />
+            <JobOrder__Form FormModel="@RequestModel" FormDepartments="@Departments" FormDivisions="@Divisions" OnValidSubmit="@HandleSave" OnCloseModal="@CloseModal" IsDisabledBtns="@_isDisabledBtns" IsForUpdate="true" />
+        </div>
     </div>
-</div>
+}
+

@@ -1,36 +1,32 @@
-﻿@page "/system-configuration/vendors"
-@using SSDI.RequestMonitoring.UI.Contracts.MasterData
+﻿@page "/system-configuration/users"
+@using SSDI.RequestMonitoring.UI.Contracts.Users
 @using SSDI.RequestMonitoring.UI.JComponents.Controls
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 @using SSDI.RequestMonitoring.UI.Models.MasterData
 @attribute [Authorize(Roles = TokenCons.Role__Admin)]
-@inject IVendorSvc vendorSvc
+@inject IUserSvc userSvc
 
-<PageTitle>Vendors</PageTitle>
+<PageTitle>Users</PageTitle>
 
 <Confirmation__Modal @ref="_confirmModal" />
-<Vendor_AddDialog IsModalVisible="@_isAddModalVisible" OnSave="@OnSaveNewVendorModal" OnClose="OnCloseNewVendorModal" ConfirmModal="_confirmModal" />
 
 <div class="main--content">
     <BreadcrumbNav IsNoPadding="true">
         <BreadcrumbItem Label="System Configuration" Href="/system-configuration" />
-        <BreadcrumbItem Label="Vendors" IsCurrent="true" />
+        <BreadcrumbItem Label="Users" IsCurrent="true" />
     </BreadcrumbNav>
 
-    <FluentMessageBarProvider Section="VENDORSC" ClearAfterNavigation=true MaxMessageCount="1" />
+    <FluentMessageBarProvider Section="USERSC" ClearAfterNavigation=true MaxMessageCount="1" />
 
     <div class="sysconfig-page__header">
         <div class="sysconfig-page__title-section">
-            <p class="sysconfig-page__header-title">Vendors</p>
-            <p class="sysconfig-page__header-subtitle">Manage organizational vendors</p>
+            <p class="sysconfig-page__header-title">Users</p>
+            <p class="sysconfig-page__header-subtitle">Manage organizational users</p>
         </div>
 
         <div class="sysconfig-page__header-cta">
             <button class="btn btn--secondary" @onclick="OnCancel">
                 <i class="bi bi-x-lg"></i> Cancel
-            </button>
-            <button class="btn btn--outline" @onclick="OnAdd">
-                <i class="bi bi-plus-lg"></i> Add
             </button>
             <button class="btn btn--primary" @onclick="OnSync">
                 <i class="bi bi-arrow-repeat"></i> Sync
@@ -53,15 +49,15 @@
             {
                 <div class="sysconfig-loading">
                     <div class="loading-spinner"></div>
-                    <p>Loading divisions...</p>
+                    <p>Loading users...</p>
                 </div>
             }
             else if (_allItems.Count == 0)
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-building"></i>
-                    <h3>No Vendor Found</h3>
-                    <p>Start by adding syncing Vendors from server</p>
+                    <h3>No User Found</h3>
+                    <p>Start by adding syncing business units from server</p>
                     <button class="btn btn--primary" @onclick="OnSync">
                         <i class="bi bi-arrow-repeat"></i> Sync
                     </button>
@@ -85,8 +81,11 @@
                     <div class="sysconfig-table-header">
                         <div class="sysconfig-table-row header-row">
                             <div class="sysconfig-table-cell header-cell" style="flex: 0 0 60px;">#</div>
-                            <div class="sysconfig-table-cell header-cell" style="flex: 1;">Vendor</div>
-                            <div class="sysconfig-table-cell header-cell" style="flex: 1;">Payment Details</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 0 0 222px;">Name</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 0 0 222px;">Username</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 1;">Role</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 1;">Dept Head</div>
+                            <div class="sysconfig-table-cell header-cell" style="flex: 1;">Div Head</div>
                         </div>
                     </div>
 
@@ -102,20 +101,41 @@
                                 <div class="sysconfig-table-cell" style="flex: 0 0 60px;" data-label="#">
                                     <span class="row-number">@(displayIndex++)</span>
                                 </div>
-                                <div class="sysconfig-table-cell" style="flex: 1;" data-label="Code">
+                                <div class="sysconfig-table-cell" data-label="Name">
                                     <div class="input-wrapper">
                                         <input type="text" readonly
                                                class="table-text-input"
-                                               @bind="bu.Vendor_Name" />
+                                               @bind="bu.FullName" />
                                     </div>
                                 </div>
-                                <div class="sysconfig-table-cell" style="flex: 1;" data-label="Prefix">
+                                <div class="sysconfig-table-cell" data-label="Username">
                                     <div class="input-wrapper">
                                         <input type="text" readonly
                                                class="table-text-input"
-                                               @bind="bu.Payment_Details" />
+                                               @bind="bu.Username" />
                                     </div>
                                 </div>
+                                <div class="sysconfig-table-cell" style="flex: 1;" data-label="Role">
+                                    <div class="input-wrapper">
+                                        <input type="text" readonly
+                                               class="table-text-input"
+                                               @bind="bu.RoleDesc" />
+                                    </div>
+                                </div>
+                                <div class="sysconfig-table-cell" style="flex: 1;" data-label="Dept Head">
+                                    <div class="input-wrapper">
+                                        <input type="text" readonly
+                                               class="table-text-input"
+                                               @bind="bu.DepartmentHeadName" />
+                                    </div>
+                                </div>
+                                <div class="sysconfig-table-cell" style="flex: 1;" data-label="Div Head">
+                                    <div class="input-wrapper">
+                                        <input type="text" readonly
+                                               class="table-text-input"
+                                               @bind="bu.DivisionHeadName" />
+                                    </div>
+                                </div> 
                             </div>
                         }
                     </div>
@@ -123,4 +143,4 @@
             }
         </div>
     </div>
-</div>
+</div> 

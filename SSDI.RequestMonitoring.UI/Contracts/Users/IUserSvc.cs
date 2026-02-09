@@ -7,6 +7,8 @@ public interface IUserSvc
 {
     Task<List<SupervisorVM>> GetSupervisors();
 
+    Task<List<UserVM>> GetUsers();
+
     Task<bool> SyncUsers();
 
     Task<byte[]?> GetAttachByte(int attachmentId);

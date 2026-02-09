@@ -1,16 +1,19 @@
 ﻿@using SSDI.RequestMonitoring.UI.JComponents.Forms
-@using SSDI.RequestMonitoring.UI.JComponents.Modals
-<Confirmation__Modal @ref="confirmModal" />
-<div class="modal__overlay" id="@(IsModalVisible ? "show__new__purchase-order-modal" : "hide__new__purchase-order-modal")">
-    <div class="modal">
-        <div class="modal__header">
-            <h5 class="modal__header-title">NEW PURCHASE ORDER</h5>
-        </div>
+@using SSDI.RequestMonitoring.UI.JComponents.Modals 
 
-        <div class="modal__alert">
-            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
-        </div>
+@if (IsModalVisible)
+{
+    <div class="modal__overlay">
+        <div class="modal">
+            <div class="modal__header">
+                <h5 class="modal__header-title">NEW PURCHASE ORDER</h5>
+            </div>
 
-        <PurchaseOrder__Form FormModel="@Model" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="@_isDisabledBtns" SelectedFiles="@Attachments" />
-    </div>
-</div>
+            <div class="modal__alert">
+                <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+            </div>
+
+            <PurchaseOrder__Form FormModel="@Model" OnValidSubmit="@HandleSave" OnCloseModal="@CloseModal" IsDisabledBtns="@_isDisabledBtns" SelectedFiles="@Attachments" />
+        </div>
+    </div>            
+}

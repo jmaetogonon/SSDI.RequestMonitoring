@@ -15,13 +15,12 @@ public partial class EditRequest__Modal : ComponentBase
     [Parameter] public RequestType RequestType { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public Confirmation__Modal? ConfirmModal { get; set; }
 
-    private bool isPR => RequestType == RequestType.Purchase;
+    private bool IsPR => RequestType == RequestType.Purchase;
     private bool _isDisabledBtns = false;
     private bool IsShowAlert { get; set; }
-    private string AlertMessage { get; set; } = string.Empty;
-
-    private Confirmation__Modal? confirmModal;
+    private string AlertMessage { get; set; } = string.Empty; 
 
     private async void CloseModal()
     {
@@ -37,27 +36,14 @@ public partial class EditRequest__Modal : ComponentBase
 
         ConfirmationModalOptions options = SetModalOptions();
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await ConfirmModal!.ShowAsync(options);
 
         if (result && !IsResubmit)
         {
             var response = await purchaseRequestSvc.UpdatePurchaseRequest(RequestModel.Id, RequestModel);
             if (response.Success)
             {
-                var command = new UploadAttachmentPurchaseCommandVM
-                {
-                    PurchaseRequestId = RequestModel.Id,
-                    Files = RequestModel.Attachments
-                };
-
-                var res = await attachSvc.UploadAsync(RequestModel.Id, isPR, RequestModel.Attachments, RequestAttachType.Request);
-                if (!res.Success)
-                {
-                    if (RequestModel.Attachments.Count != 0)
-                    {
-                        toastSvc.ShowError("Error uploading attachments. Please try again.");
-                    }
-                }
+                await attachSvc.UploadAsync(RequestModel.Id, IsPR, RequestModel.Attachments, RequestAttachType.Request);
 
                 ResetForm();
                 await OnSave.InvokeAsync(null);
@@ -82,19 +68,13 @@ public partial class EditRequest__Modal : ComponentBase
                 Stage = ApprovalStage.DepartmentHead,
                 ApproverId = currentUser.UserId,
                 Action = ApprovalAction.Approve,
-                Remarks = string.IsNullOrEmpty(confirmModal.Remarks) ? "Re-submitted after previous rejection" : $"[Re-submitted] {confirmModal.Remarks}"
+                Remarks = string.IsNullOrEmpty(ConfirmModal.Remarks) ? "Re-submitted after previous rejection" : $"[Re-submitted] {ConfirmModal.Remarks}"
             };
 
             var apiResult = await purchaseRequestSvc.ApprovePurchaseRequest(command);
             if (apiResult.Success)
             {
-                var attachCommand = new UploadAttachmentPurchaseCommandVM
-                {
-                    PurchaseRequestId = RequestModel.Id,
-                    Files = RequestModel.Attachments
-                };
-
-                var res = await attachSvc.UploadAsync(RequestModel.Id, isPR, RequestModel.Attachments, RequestAttachType.Request);
+                var res = await attachSvc.UploadAsync(RequestModel.Id, IsPR, RequestModel.Attachments, RequestAttachType.Request);
                 if (!res.Success)
                 {
                     toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -148,7 +128,7 @@ public partial class EditRequest__Modal : ComponentBase
 
     private async Task CloseModalWithLoading()
     {
-        await confirmModal!.SetLoadingAsync(false);
-        await confirmModal!.HideAsync();
+        await ConfirmModal!.SetLoadingAsync(false);
+        await ConfirmModal!.HideAsync();
     }
 }

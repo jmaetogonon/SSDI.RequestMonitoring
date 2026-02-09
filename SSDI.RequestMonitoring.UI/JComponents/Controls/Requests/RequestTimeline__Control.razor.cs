@@ -56,7 +56,7 @@ public partial class RequestTimeline__Control : ComponentBase
                 list.Add(new TimelineEvent
                 {
                     Date = a.ActionDate.Value,
-                    Title = $"{utils.GetApprovalStagesDisplay(a.Stage)} - {utils.GetApprovalStatusText(a)}",
+                    Title = $"{Utils.GetApprovalStagesDisplay(a.Stage)} - {Utils.GetApprovalStatusText(a)}",
                     Description = BuildApprovalDescription(a),
                     Remarks = a.Remarks,
                     CssClass = GetTimelinePointClass(a)

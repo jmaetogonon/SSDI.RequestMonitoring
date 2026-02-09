@@ -19,14 +19,14 @@
     <DetailsRow__Card Label="Priority Level">
         <div class="page__table-priority" style="justify-content:start;">
             <div class="priority-dot" data-prio="@Request.Priority"></div>
-            <span>@(utils.GetPriorityDisplay(Request.Priority, Request.OtherPriority))</span>
+            <span>@(Utils.GetPriorityDisplay(Request.Priority, Request.OtherPriority))</span>
         </div>
     </DetailsRow__Card>
     <DetailsRow__Card Label="Current Status">
         <div class="status-container">
             <div class="page__table-status" data-status="@Request.Status">
-                <i class="@utils.GetStatusIcon(Request.Status)"></i>
-                <span class="page__table-status-text">@utils.GetStatusDisplay(Request.Status)</span>
+                <i class="@Utils.GetStatusIcon(Request.Status)"></i>
+                <span class="page__table-status-text">@Utils.GetStatusDisplay(Request.Status)</span>
             </div>
             @if (Request.Status == RequestStatus.Rejected)
             {
@@ -145,7 +145,7 @@ else
                     @Request.DateCreated?.ToString("MMM dd, yyyy")
                 </span>
                 <span class="page__table-date-relative">
-                    (@(utils.GetRelativeTime(Request.DateCreated)))
+                    (@(Utils.GetRelativeTime(Request.DateCreated)))
                 </span>
             </div>
         </DetailsRow__Card>

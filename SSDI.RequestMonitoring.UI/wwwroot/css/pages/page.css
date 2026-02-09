@@ -209,6 +209,8 @@
 
 .page__filters-right {
     margin-left: auto;
+    display: flex;
+    gap: 1rem;
 }
 
 .page__filters-search::part(root) {
@@ -298,11 +300,11 @@
     }
 
 .page__export-btn {
-    background: #dce7ff;
+    background: #bcd4e6;
 }
 /* Checkbox Items */
 .page__filter-checkbox {
-    --checked-bg: #e4e9ed;
+    --checked-bg: #bcd4e6;
     --unchecked-bg: transparent;
     --checked-color: white;
     --unchecked-color: #374151;

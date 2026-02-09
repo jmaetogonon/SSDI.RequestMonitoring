@@ -57,7 +57,7 @@
                     <div class="approval-step__content">
                         <div class="approval-step__header">
                             <div class="approval-step__subheader">
-                                <span class="approval-step__stage">@utils.GetApprovalStagesDisplay(approval.Stage)</span>
+                                <span class="approval-step__stage">@Utils.GetApprovalStagesDisplay(approval.Stage)</span>
 
                                 <!-- Show iteration number if there are multiple actions at same stage -->
                                 @if (HasMultipleActionsAtStage(approval.Stage))
@@ -69,11 +69,11 @@
                                 }
                             </div>
                             <span class="approval-step__status @GetApprovalStatusClass(approval)">
-                                @utils.GetApprovalStatusText(approval)
+                                @Utils.GetApprovalStatusText(approval)
                             </span>
                         </div>
                         <div class="approval-step__approver">
-                            @utils.GetApprovalByText(approval): @(approval.ApproverName ?? $"User #{approval.ApproverId}")
+                            @Utils.GetApprovalByText(approval): @(approval.ApproverName ?? $"User #{approval.ApproverId}")
                         </div>
 
                         @if (approval.ActionDate.HasValue)

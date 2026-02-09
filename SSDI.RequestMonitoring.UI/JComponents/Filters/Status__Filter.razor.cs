@@ -8,9 +8,9 @@ public partial class Status__Filter : ComponentBase
     [Parameter] public string AnchorId { get; set; } = "statusFilter";
 
     private bool _isVisible = false;
-    private bool IsAllSelected = true;
+    private bool _isAllSelected = true;
 
-    private List<StatusOption> StatusOptions =
+    private readonly List<StatusOption> _statusOptions =
     [
         new StatusOption { Value = RequestStatus.Draft, DisplayName = TokenCons.Status__Draft, IsChecked = false },
         new StatusOption { Value = RequestStatus.ForEndorsement, DisplayName = TokenCons.Status__ForEndorsement, IsChecked = false },
@@ -23,14 +23,14 @@ public partial class Status__Filter : ComponentBase
         new StatusOption { Value = RequestStatus.Closed, DisplayName = TokenCons.Status__Closed, IsChecked = false },
     ];
 
-    private string DisplayedStatuses => IsAllSelected ? "All" :
-        string.Join(", ", StatusOptions.Where(p => p.IsChecked).Select(p => p.DisplayName).Take(2)) +
-        (StatusOptions.Count(p => p.IsChecked) > 2 ? $" (+{StatusOptions.Count(p => p.IsChecked) - 2})" : "");
+    private string DisplayedStatuses => _isAllSelected ? "All" :
+        string.Join(", ", _statusOptions.Where(p => p.IsChecked).Select(p => p.DisplayName).Take(2)) +
+        (_statusOptions.Count(p => p.IsChecked) > 2 ? $" (+{_statusOptions.Count(p => p.IsChecked) - 2})" : "");
 
     protected override void OnInitialized()
     {
         // Initialize all as unselected (which means "All" is selected)
-        foreach (var item in StatusOptions)
+        foreach (var item in _statusOptions)
         {
             item.IsChecked = false;
         }
@@ -44,11 +44,11 @@ public partial class Status__Filter : ComponentBase
     private void ToggleAll()
     {
         // When "All" is selected, uncheck all individual priorities
-        foreach (var item in StatusOptions)
+        foreach (var item in _statusOptions)
         {
             item.IsChecked = false;
         }
-        IsAllSelected = true;
+        _isAllSelected = true;
         NotifySelectionChanged();
         StateHasChanged();
     }
@@ -67,18 +67,18 @@ public partial class Status__Filter : ComponentBase
 
     private void UpdateAllSelectionState()
     {
-        var checkedCount = StatusOptions.Count(p => p.IsChecked);
+        var checkedCount = _statusOptions.Count(p => p.IsChecked);
 
         if (checkedCount == 0)
         {
             // If nothing is checked, select "All"
-            IsAllSelected = true;
+            _isAllSelected = true;
         }
-        else if (checkedCount == StatusOptions.Count)
+        else if (checkedCount == _statusOptions.Count)
         {
             // If all are checked, also treat as "All"
-            IsAllSelected = true;
-            foreach (var item in StatusOptions)
+            _isAllSelected = true;
+            foreach (var item in _statusOptions)
             {
                 item.IsChecked = false;
             }
@@ -86,21 +86,20 @@ public partial class Status__Filter : ComponentBase
         else
         {
             // If some are checked, "All" is not selected
-            IsAllSelected = false;
+            _isAllSelected = false;
         }
     }
 
     private HashSet<RequestStatus> GetSelectedStatus()
     {
-        if (IsAllSelected)
+        if (_isAllSelected)
         {
-            return new HashSet<RequestStatus>();
+            return [];
         }
 
-        return StatusOptions
+        return [.. _statusOptions
             .Where(p => p.IsChecked)
-            .Select(p => p.Value)
-            .ToHashSet();
+            .Select(p => p.Value)];
     }
 
     private async void NotifySelectionChanged()
@@ -118,7 +117,7 @@ public partial class Status__Filter : ComponentBase
     {
         var prioritySet = items.ToHashSet();
 
-        if (prioritySet.Count == 0 || prioritySet.SetEquals(StatusOptions.Select(p => p.Value)))
+        if (prioritySet.Count == 0 || prioritySet.SetEquals(_statusOptions.Select(p => p.Value)))
         {
             // If empty or all priorities selected, treat as "All"
             ToggleAll();
@@ -126,11 +125,11 @@ public partial class Status__Filter : ComponentBase
         else
         {
             // Set specific priorities
-            foreach (var status in StatusOptions)
+            foreach (var status in _statusOptions)
             {
                 status.IsChecked = prioritySet.Contains(status.Value);
             }
-            IsAllSelected = false;
+            _isAllSelected = false;
             StateHasChanged();
             NotifySelectionChanged();
         }

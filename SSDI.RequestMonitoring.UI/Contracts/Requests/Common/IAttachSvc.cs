@@ -1,5 +1,4 @@
-﻿using SSDI.RequestMonitoring.UI.Models.Common;
-using SSDI.RequestMonitoring.UI.Models.Requests;
+﻿using SSDI.RequestMonitoring.UI.Models.Requests;
 using SSDI.RequestMonitoring.UI.Services.Base;
 
 namespace SSDI.RequestMonitoring.UI.Contracts.Requests.Common;

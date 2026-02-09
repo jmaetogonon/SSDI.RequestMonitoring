@@ -2,13 +2,12 @@
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
 using SSDI.RequestMonitoring.UI.Models.MasterData;
 using SSDI.RequestMonitoring.UI.Models.Requests.JobOrder;
-using SSDI.RequestMonitoring.UI.Services.Requests.Purchase;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Requests.JobOrder;
 
 public partial class JobOrder_Details : ComponentBase
 {
-    [Parameter] public int paramId { get; set; }
+    [Parameter] public int ParamId { get; set; }
     [Parameter] public string? ReportType { get; set; }
 
     private Job_OrderVM? Request { get; set; }
@@ -19,24 +18,24 @@ public partial class JobOrder_Details : ComponentBase
     private bool CanEdit => CheckEditPermissions();
     private bool CanClose => CheckClosePermission();
     private bool CanCEOApproveSlips => CheckCEOApproveSlipPermission();
-    private bool isEditRequestModalVisible = false;
+    private bool _isEditRequestModalVisible = false;
     private string EditBtnText => SetEditBtnText();
 
-    private Confirmation__Modal? confirmModal;
+    private Confirmation__Modal? _confirmModal;
 
-    private List<DivisionVM> divisions = [];
-    private List<DepartmentVM> departments = [];
+    private List<DivisionVM> _divisions = [];
+    private List<DepartmentVM> _departments = [];
 
-    private string? pdfBase64;
-    private bool isPdfModalVisible = false;
+    private string? _pdfBase64;
+    private bool _isPdfModalVisible = false;
 
-    private string ActiveTab = "details";
-    public DateTime? awaitingApprovalDate => GetAwaitingApprovalDate();
+    private string _activeTab = "details";
+    public DateTime? AwaitingApprovalDate => GetAwaitingApprovalDate();
 
     protected override async Task OnInitializedAsync()
     {
-        divisions = await divisionSvc.GetAllDivisions();
-        departments = await departmentSvc.GetAllDepartments();
+        _divisions = await divisionSvc.GetAllDivisions();
+        _departments = await departmentSvc.GetAllDepartments();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -49,7 +48,7 @@ public partial class JobOrder_Details : ComponentBase
         IsLoading = true;
         try
         {
-            Request = await jobOrderSvc.GetByIdJobOrder(paramId);
+            Request = await jobOrderSvc.GetByIdJobOrder(ParamId);
         }
         catch (Exception ex)
         {
@@ -65,18 +64,18 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task Reload()
     {
-        Request = await jobOrderSvc.GetByIdJobOrder(paramId);
+        Request = await jobOrderSvc.GetByIdJobOrder(ParamId);
     }
 
     private void NavigateToEdit()
     {
         Request?.Attachments.Clear();
-        isEditRequestModalVisible = true;
+        _isEditRequestModalVisible = true;
     }
 
     private async Task SubmitRequestByDept()
     {
-        var result = await confirmModal!.ShowSubmitJobOrderAsync(Request!.RequestNumber);
+        var result = await _confirmModal!.ShowSubmitJobOrderAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DepartmentHead, ApprovalAction.Approve, "submitted");
@@ -98,7 +97,7 @@ public partial class JobOrder_Details : ComponentBase
             RemarksPlaceholder = "Please provide a reason for cancelling this request..."
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DepartmentHead, ApprovalAction.Cancel, "cancelled");
@@ -115,7 +114,7 @@ public partial class JobOrder_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DivisionHead, ApprovalAction.Approve, "endorsed");
@@ -123,7 +122,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task RejectEndorseRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
+        var result = await _confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DivisionHead, ApprovalAction.Reject, "rejected");
@@ -140,7 +139,7 @@ public partial class JobOrder_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.Admin, ApprovalAction.Approve, "verified");
@@ -148,7 +147,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task RejectVerifyByAdminRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
+        var result = await _confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.Admin, ApprovalAction.Reject, "rejected");
@@ -165,7 +164,7 @@ public partial class JobOrder_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.CeoOrAvp, ApprovalAction.Approve, "approved");
@@ -173,7 +172,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task RejectByCeoRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
+        var result = await _confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.CeoOrAvp, ApprovalAction.Reject, "rejected");
@@ -181,7 +180,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task OnApproveRequest(ApprovalStage stage, ApprovalAction action, string toastText)
     {
-        await confirmModal!.SetLoadingAsync(true);
+        await _confirmModal!.SetLoadingAsync(true);
 
         var command = new ApproveJobOrderCommandVM
         {
@@ -189,7 +188,7 @@ public partial class JobOrder_Details : ComponentBase
             Stage = stage,
             ApproverId = currentUser.UserId,
             Action = action,
-            Remarks = confirmModal!.Remarks
+            Remarks = _confirmModal!.Remarks
         };
 
         var apiResult = await jobOrderSvc.ApproveJobOrder(command);
@@ -218,7 +217,7 @@ public partial class JobOrder_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         var apiResult = await jobOrderSvc.InitiateCloseJobOrder(Request!.Id, currentUser.UserId);
@@ -242,7 +241,7 @@ public partial class JobOrder_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         var apiResult = await jobOrderSvc.ConfirmCloseJobOrder(Request!.Id, currentUser.UserId);
@@ -256,7 +255,7 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task KeepOpen()
     {
-        var result = await confirmModal!.ShowAsync(new ConfirmationModalOptions
+        var result = await _confirmModal!.ShowAsync(new ConfirmationModalOptions
         {
             Title = "Keep Open",
             Message = "Do you want to keep this request open?",
@@ -279,8 +278,8 @@ public partial class JobOrder_Details : ComponentBase
     private async Task OnSaveEditReqModal()
     {
         await LoadRequestDetails();
-        isEditRequestModalVisible = false;
-        Request = await jobOrderSvc.GetByIdJobOrder(paramId);
+        _isEditRequestModalVisible = false;
+        Request = await jobOrderSvc.GetByIdJobOrder(ParamId);
         toastSvc.ShowSuccess("The request has been updated successfully.");
     }
 
@@ -296,8 +295,8 @@ public partial class JobOrder_Details : ComponentBase
 
             byte[] pdfBytes;
 
-            var result = await confirmModal!.ShowPdfExportOptionsAsync($"JO{Request.SeriesNumber}.pdf");
-            await confirmModal!.SetLoadingAsync(true);
+            var result = await _confirmModal!.ShowPdfExportOptionsAsync($"JO{Request.SeriesNumber}.pdf");
+            await _confirmModal!.SetLoadingAsync(true);
 
             if (result)
             {
@@ -316,8 +315,8 @@ public partial class JobOrder_Details : ComponentBase
                 return;
             }
 
-            pdfBase64 = Convert.ToBase64String(pdfBytes);
-            isPdfModalVisible = true;
+            _pdfBase64 = Convert.ToBase64String(pdfBytes);
+            _isPdfModalVisible = true;
         }
         catch (Exception ex)
         {
@@ -328,8 +327,8 @@ public partial class JobOrder_Details : ComponentBase
 
     private void ClosePdfModal()
     {
-        isPdfModalVisible = false;
-        pdfBase64 = null;
+        _isPdfModalVisible = false;
+        _pdfBase64 = null;
     }
 
     private void NavigateBack()
@@ -533,19 +532,19 @@ public partial class JobOrder_Details : ComponentBase
 
     private async Task OnCloseEditReqModal()
     {
-        Request = await jobOrderSvc.GetByIdJobOrder(paramId);
-        isEditRequestModalVisible = false;
+        Request = await jobOrderSvc.GetByIdJobOrder(ParamId);
+        _isEditRequestModalVisible = false;
     }
 
     private async Task CloseModalWithLoading()
     {
-        await confirmModal!.SetLoadingAsync(false);
-        await confirmModal!.HideAsync();
+        await _confirmModal!.SetLoadingAsync(false);
+        await _confirmModal!.HideAsync();
     }
 
     private void SetActiveTab(string tab)
     {
-        ActiveTab = tab;
+        _activeTab = tab;
         StateHasChanged();
     }
 }

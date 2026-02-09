@@ -1,0 +1,391 @@
+﻿/* ============================================
+   DATE RANGE FILTER
+   ============================================ */
+
+.date-range-filter {
+    position: relative;
+    display: inline-block;
+}
+
+/* Main Button */
+.date-range-btn {
+    height: 3rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    background: var(--color-white);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: var(--color-darkmidnightblue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    min-width: 140px;
+    justify-content: space-between;
+    will-change: transform, border-color, box-shadow;
+    overflow: hidden;
+}
+
+    .date-range-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(30, 58, 138, 0.05), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .date-range-btn:hover::before {
+        left: 100%;
+    }
+
+    .date-range-btn:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
+    }
+
+    .date-range-btn:active {
+        transform: translateY(1px);
+    }
+
+    .date-range-btn .bi-calendar-range {
+        color: var(--color-gray);
+    }
+
+.date-range-label {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.date-range-arrow {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+}
+
+.date-range-btn:hover .date-range-arrow {
+    opacity: 1;
+}
+
+.filter-badge {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--color-green);
+    border-radius: 50%;
+    margin-left: 0.25rem;
+    animation: badgePulse 2s infinite;
+}
+
+/* Click Outside Overlay */
+.date-range-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    z-index: 999;
+    cursor: default;
+}
+
+/* Dropdown - FIXED FOR RIGHT ALIGNMENT */
+.date-range-dropdown {
+    position: absolute;
+    top: 100%;
+    left: auto;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    margin-top: 4px;
+    z-index: 1000;
+    min-width: 275px;
+    max-width: 300px;
+    animation: dateRangeFadeIn 0.2s ease;
+    transform-origin: top right;
+}
+
+    /* For left alignment class */
+    .date-range-dropdown.date-range-left {
+        left: 0;
+        right: auto;
+        transform-origin: top left;
+    }
+
+    /* For right alignment class */
+    .date-range-dropdown.date-range-right {
+        left: auto;
+        right: 0;
+        transform-origin: top right;
+    }
+
+/* Header */
+.date-range-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.clear-btn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+    .clear-btn:hover {
+        background: #eff6ff;
+    }
+
+    .clear-btn:active {
+        transform: translateY(1px);
+    }
+
+/* Preset Buttons */
+.date-range-presets {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.preset-btn {
+    padding: 0.5rem 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    outline: none;
+}
+
+    .preset-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+
+    .preset-btn:active {
+        transform: translateY(1px);
+    }
+
+    .preset-btn.active {
+        background: var(--color-paleaqua);
+        border-color: var(--color-darkmidnightblue);
+        color: var(--color-darkmidnightblue);
+        font-weight: 500;
+    }
+
+/* Custom Date Range */
+.date-range-custom {
+    padding: 1rem;
+}
+
+.date-input-group {
+    margin-bottom: 0.75rem;
+}
+
+    .date-input-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+.date-picker {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    background: white;
+}
+
+    .date-picker:focus {
+        outline: none;
+        border-color: var(--color-darkmidnightblue);
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+/* Apply Button */
+.date-range-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.apply-btn {
+    padding: 0.5rem 1.5rem;
+    background: var(--color-darkmidnightblue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+    .apply-btn:hover {
+        background: var(--color-darkimperialblue);
+    }
+
+    .apply-btn:active {
+        transform: translateY(1px);
+    }
+
+/* Animations */
+@keyframes dateRangeFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .date-range-dropdown {
+        min-width: 280px;
+        max-width: 320px;
+    }
+
+    .date-range-btn {
+        min-width: 130px;
+    }
+}
+
+/* Mobile - CENTER THE DROPDOWN */
+@media (max-width: 768px) {
+    .date-range-filter {
+        width: 100%;
+    }
+
+    .date-range-btn {
+        width: 100%;
+        min-width: auto;
+        justify-content: space-between;
+    }
+
+    /* OVERRIDE ALL POSITIONING FOR MOBILE - CENTER THE DROPDOWN */
+    .date-range-dropdown {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw;
+        max-width: 350px;
+        margin-top: 0 !important;
+        z-index: 1001;
+        animation: dateRangeFadeInMobile 0.2s ease;
+    }
+
+        /* Remove the position classes for mobile */
+        .date-range-dropdown.date-range-left,
+        .date-range-dropdown.date-range-right {
+            left: 50% !important;
+            right: auto !important;
+            transform: translate(-50%, -50%) !important;
+            transform-origin: center center !important;
+        }
+
+    .date-range-overlay {
+        z-index: 1000;
+    }
+
+    .date-range-presets {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Mobile-specific animation */
+    @keyframes dateRangeFadeInMobile {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .date-range-presets {
+        grid-template-columns: 1fr;
+    }
+
+    .date-range-dropdown {
+        width: 95vw;
+        max-width: 300px;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+.date-range-btn:focus-visible,
+.preset-btn:focus-visible,
+.clear-btn:focus-visible,
+.apply-btn:focus-visible {
+    outline: 2px solid var(--color-darkmidnightblue);
+    outline-offset: 2px;
+}
+
+/* Screen reader only */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

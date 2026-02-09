@@ -34,7 +34,7 @@
 
     <!-- Filter Bar -->
     <div class="sysconfig-filter-container">
-        <FluentSearch @bind-Value="@searchValue"
+        <FluentSearch @bind-Value="@_searchValue"
                       @bind-Value:after="HandleSearch"
                       Immediate="true"
                       Placeholder="Search"
@@ -43,14 +43,14 @@
 
     <div class="sysconfig-page__main__section">
         <div class="sysconfig__table-container">
-            @if (AllItems == null)
+            @if (_allItems == null)
             {
                 <div class="sysconfig-loading">
                     <div class="loading-spinner"></div>
                     <p>Loading divisions...</p>
                 </div>
             }
-            else if (AllItems.Count == 0)
+            else if (_allItems.Count == 0)
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-building"></i>
@@ -61,12 +61,12 @@
                     </button>
                 </div>
             }
-            else if (FilteredItems.Count == 0)
+            else if (_filteredItems.Count == 0)
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-search"></i>
                     <h3>No Results Found</h3>
-                    <p>No divisions match your search "<strong>@searchValue</strong>"</p>
+                    <p>No divisions match your search "<strong>@_searchValue</strong>"</p>
                     <button class="btn btn--ghost" @onclick="ClearSearch">
                         <i class="bi bi-x-lg"></i> Clear Search
                     </button>
@@ -90,7 +90,7 @@
                         @{
                             var displayIndex = 1;
                         }
-                        @foreach (var bu in FilteredItems)
+                        @foreach (var bu in _filteredItems)
                         {
                             var isNew = bu.Id == 0;
                             <div class="sysconfig-table-row data-row @(isNew ? "new-item" : "")" key="@bu.Id">
@@ -127,4 +127,4 @@
     </div>
 </div>
 
-<Confirmation__Modal @ref="confirmModal" /> 
+<Confirmation__Modal @ref="_confirmModal" /> 

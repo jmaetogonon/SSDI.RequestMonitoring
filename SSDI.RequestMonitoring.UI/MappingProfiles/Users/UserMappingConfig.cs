@@ -11,5 +11,6 @@ public class UserMappingConfig : Profile
         CreateMap<SupervisorDto, SupervisorVM>().ReverseMap();
 
         CreateMap<UserFile, UserFileVM>().ReverseMap();
+        CreateMap<UserDto, UserVM>().ReverseMap();
     }
 }

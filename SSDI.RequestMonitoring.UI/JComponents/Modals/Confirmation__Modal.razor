@@ -76,7 +76,7 @@
                                   id="remarks-input"
                                   class="confirmation-modal__remarks-input"
                                   placeholder="@RemarksPlaceholder"
-                                  rows="3" disabled="@(IsLoading)"
+                                  rows="3" @attributes="HtmlAttributes.DisabledIf(IsLoading)"
                                   required="@RemarksRequired"></textarea>
                         @if (RemarksRequired && string.IsNullOrWhiteSpace(Remarks))
                         {

@@ -2,15 +2,16 @@
 @typeparam TItem where TItem : notnull
 @typeparam TValue
 
-<div class="autocomplete-container @(Disabled ? "autocomplete-container--disabled" : "")" @onmousedown:stopPropagation="true">
+<div class="autocomplete-container @(Disabled ? "autocomplete-container--disabled" : "")"
+     @onmousedown:stopPropagation="true">
+
     <div class="autocomplete-input-wrapper">
-        <input @ref="searchInput"
+        <input @ref="_searchInput"
                type="text"
                class="form-control autocomplete-input"
                value="@_displayText"
-               @oninput="@HandleInput"
-               @onfocus="@HandleFocus"
-               @onblur="@HandleBlur"
+               @oninput="HandleInput"
+               @onfocus="HandleFocus"
                placeholder="@Placeholder"
                disabled="@Disabled" />
 
@@ -18,9 +19,8 @@
         {
             <button type="button"
                     class="autocomplete-clear-btn"
-                    @onclick="@ClearSelection"
-                    @onmousedown:stopPropagation="true"
-                    title="Clear">
+                    @onclick="ClearSelection"
+                    @onmousedown:stopPropagation="true">
                 <i class="bi bi-x-circle"></i>
             </button>
         }
@@ -33,35 +33,36 @@
         }
 
         <div class="autocomplete-dropdown-toggle @(Disabled ? "autocomplete-dropdown-toggle--disabled" : "")"
-             @onclick="@ToggleDropdown"
+             @onclick="ToggleDropdown"
              @onmousedown:stopPropagation="true">
             <i class="bi bi-chevron-down"></i>
         </div>
     </div>
 
-    @if (IsDropdownVisible && FilteredItems.Any() && !Disabled)
+    @if (_isDropdownVisible && _filteredItems.Any() && !Disabled)
     {
         <div class="autocomplete-dropdown" @onmousedown:stopPropagation="true">
             <div class="autocomplete-dropdown-header">
-                <span>@FilteredItems.Count() items found</span>
+                <span>@_filteredItems.Count() items found</span>
+
                 @if (ShowAddNewOption && !string.IsNullOrEmpty(_displayText))
                 {
                     <button type="button"
                             class="autocomplete-add-new"
-                            @onclick="@AddNewItem"
-                            @onmousedown:stopPropagation="true">
+                            @onclick="AddNewItem">
                         <i class="bi bi-plus-circle"></i> Add "@_displayText"
                     </button>
                 }
             </div>
 
-            <div class="autocomplete-items-list" @ref="dropdownList">
-                @foreach (var item in FilteredItems)
+            <div class="autocomplete-items-list">
+                @foreach (var item in _filteredItems)
                 {
                     <div class="autocomplete-item @(IsSelected(item) ? "selected" : "")"
                          @onclick="() => SelectItem(item)"
-                         @onmouseover="() => SetHoveredItem(item)"
+                         @onmouseover="() => _hoveredItem = item"
                          @onmousedown:stopPropagation="true">
+
                         <div class="autocomplete-item-content">
                             @if (ItemTemplate != null)
                             {
@@ -69,9 +70,10 @@
                             }
                             else
                             {
-                                @GetItemDisplayText(item)
+                                @GetItemDisplayTextCached(item)
                             }
                         </div>
+
                         @if (IsSelected(item))
                         {
                             <i class="bi bi-check-lg autocomplete-item-check"></i>
@@ -85,8 +87,7 @@
                 <div class="autocomplete-footer">
                     <button type="button"
                             class="autocomplete-load-more"
-                            @onclick="@LoadMoreItems"
-                            @onmousedown:stopPropagation="true">
+                            @onclick="LoadMoreItems">
                         Load more results...
                     </button>
                 </div>
@@ -94,19 +95,19 @@
         </div>
     }
 
-    @if (IsDropdownVisible && !FilteredItems.Any() && !string.IsNullOrEmpty(_displayText) && !Disabled)
+    @if (_isDropdownVisible && !_filteredItems.Any() && !string.IsNullOrEmpty(_displayText) && !Disabled)
     {
-        <div class="autocomplete-dropdown" @onmousedown:stopPropagation="true">
+        <div class="autocomplete-dropdown">
             <div class="autocomplete-no-results">
                 <i class="bi bi-search"></i>
                 <span>No results found for "@_displayText"</span>
+
                 @if (ShowAddNewOption)
                 {
                     <button type="button"
                             class="autocomplete-add-new"
-                            @onclick="@AddNewItem"
-                            @onmousedown:stopPropagation="true">
-                        <i class="bi bi-plus-circle"></i> Add "@_displayText" as new item
+                            @onclick="AddNewItem">
+                        <i class="bi bi-plus-circle"></i> Add "@_displayText"
                     </button>
                 }
             </div>

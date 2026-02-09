@@ -1,18 +1,23 @@
-﻿
-<button class="page__clear-filters-btn"
+﻿<button class="page__clear-filters-btn @CssClass"
         @onclick="ClearAll"
-        title="Clear all filters">
-    <FluentIcon Value="@(new Icons.Regular.Size20.FilterDismiss())" Class="clear-icon"/>
+        title="@(string.IsNullOrEmpty(ButtonText) ? "Clear all filters" : ButtonText)"
+        disabled="@IsDisabled">
+    <FluentIcon Value="@(new Icons.Regular.Size20.FilterDismiss())" Class="clear-icon" aria-hidden="true" />
+    @if (!string.IsNullOrEmpty(ButtonText))
+    {
+        <span class="button-text">@ButtonText</span>
+    }
 </button>
 
 @code {
-
     [Parameter] public EventCallback OnClear { get; set; }
-    [Parameter] public string? ButtonText { get; set; } = "Clear";
+    [Parameter] public string? ButtonText { get; set; }
     [Parameter] public string? CssClass { get; set; }
+    [Parameter] public bool IsDisabled { get; set; }
 
     private async Task ClearAll()
     {
+        if (IsDisabled) return;
         await OnClear.InvokeAsync();
     }
 }

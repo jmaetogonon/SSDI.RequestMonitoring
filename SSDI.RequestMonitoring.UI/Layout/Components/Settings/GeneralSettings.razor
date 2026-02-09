@@ -59,12 +59,12 @@
     private string language = "en";
     private string timezone = "UTC";
     private string theme = "light";
-    private bool isLoading = true;
+    // private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadSettings();
-        isLoading = false;
+        // isLoading = false;
     }
 
     private async Task LoadSettings()

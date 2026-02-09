@@ -9,11 +9,11 @@ namespace SSDI.RequestMonitoring.UI.Pages.Settings.SystemConfig.MasterData;
 
 public partial class Division_Index : ComponentBase
 {
-    private List<DivisionVM> AllItems = [];
-    private List<DivisionVM> FilteredItems = [];
-    private string searchValue = "";
-    private bool showValidations = false;
-    private Confirmation__Modal? confirmModal;
+    private List<DivisionVM> _allItems = [];
+    private List<DivisionVM> _filteredItems = [];
+    private string _searchValue = "";
+    private bool _showValidations = false;
+    private Confirmation__Modal? _confirmModal;
 
     protected override async Task OnInitializedAsync()
     {
@@ -28,41 +28,41 @@ public partial class Division_Index : ComponentBase
 
     private async Task LoadDivisions()
     {
-        AllItems = await divisionSvc.GetAllDivisions();
-        FilteredItems = [.. AllItems];
+        _allItems = await divisionSvc.GetAllDivisions();
+        _filteredItems = [.. _allItems];
     }
 
     private void ApplyFilter()
     {
-        if (string.IsNullOrWhiteSpace(searchValue))
+        if (string.IsNullOrWhiteSpace(_searchValue))
         {
-            FilteredItems = [.. AllItems];
+            _filteredItems = [.. _allItems];
         }
         else
         {
-            var term = searchValue.ToLower();
-            FilteredItems = [.. AllItems.Where(r =>
-                r.Name != null && r.Name.Contains(searchValue, StringComparison.OrdinalIgnoreCase)
+            var term = _searchValue.ToLower();
+            _filteredItems = [.. _allItems.Where(r =>
+                r.Name != null && r.Name.Contains(_searchValue, StringComparison.OrdinalIgnoreCase)
                 )];
         }
     }
 
     private void ClearSearch()
     {
-        searchValue = "";
+        _searchValue = "";
         ApplyFilter();
     }
 
     private async void OnAdd()
     {
         var newDivision = new DivisionVM { Id = 0, Name = "" };
-        AllItems.Add(newDivision);
+        _allItems.Add(newDivision);
 
         // Update filtered list if search is active
-        if (string.IsNullOrWhiteSpace(searchValue) ||
-            (newDivision.Name != null && newDivision.Name.Contains(searchValue, StringComparison.OrdinalIgnoreCase)))
+        if (string.IsNullOrWhiteSpace(_searchValue) ||
+            (newDivision.Name != null && newDivision.Name.Contains(_searchValue, StringComparison.OrdinalIgnoreCase)))
         {
-            FilteredItems.Add(newDivision);
+            _filteredItems.Add(newDivision);
         }
 
         // Wait for the UI to update, then scroll
@@ -86,18 +86,18 @@ public partial class Division_Index : ComponentBase
 
     private void OnRemoveNew(DivisionVM division)
     {
-        AllItems.Remove(division);
-        FilteredItems.Remove(division);
+        _allItems.Remove(division);
+        _filteredItems.Remove(division);
         ApplyFilter();
     }
 
     private void OnDelete(DivisionVM division)
     {
-        AllItems.Remove(division);
-        FilteredItems.Remove(division);
+        _allItems.Remove(division);
+        _filteredItems.Remove(division);
     }
 
-    private void OnInputKeyDown(KeyboardEventArgs e, DivisionVM division)
+    private static void OnInputKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
@@ -107,10 +107,10 @@ public partial class Division_Index : ComponentBase
 
     private async Task OnSave(MouseEventArgs args)
     {
-        showValidations = true;
+        _showValidations = true;
 
         // Validate all divisions, not just filtered ones
-        var hasErrors = AllItems.Any(d => string.IsNullOrWhiteSpace(d.Name));
+        var hasErrors = _allItems.Any(d => string.IsNullOrWhiteSpace(d.Name));
         if (hasErrors)
         {
             toastSvc.ShowError("Please fill in all required fields.");
@@ -126,15 +126,15 @@ public partial class Division_Index : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         try
         {
-            await confirmModal!.SetLoadingAsync(true);
+            await _confirmModal!.SetLoadingAsync(true);
 
 
-            var response = await divisionSvc.BulkUpsertDivisions(AllItems);
+            var response = await divisionSvc.BulkUpsertDivisions(_allItems);
 
             await CloseModalWithLoading();
 
@@ -160,7 +160,7 @@ public partial class Division_Index : ComponentBase
             await LoadDivisions();
             toastSvc.ShowSuccess("Changes applied successfully.");
 
-            showValidations = false;
+            _showValidations = false;
         }
         catch (Exception ex)
         {
@@ -172,8 +172,8 @@ public partial class Division_Index : ComponentBase
 
     private async Task CloseModalWithLoading()
     {
-        await confirmModal!.SetLoadingAsync(false);
-        await confirmModal!.HideAsync();
+        await _confirmModal!.SetLoadingAsync(false);
+        await _confirmModal!.HideAsync();
     }
 
     private void OnCancel(MouseEventArgs args)

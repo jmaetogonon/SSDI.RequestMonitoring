@@ -92,7 +92,7 @@
 
                 if (currentUser.IsAdmin && Request?.Status == RequestStatus.ForRequisition)
                 {
-                    Message = $"Requisition in progress for {FormatDaysAgo(daysAgo)}.";
+                    Message = $"Requisition in progress for {FormatDaysSimple(daysAgo)}.";
                 }
             }
 

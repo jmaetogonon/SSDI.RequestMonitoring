@@ -1,69 +1,72 @@
 ﻿@inherits ComponentBase
 
-<div class="pdf-modal @(IsVisible ? "pdf-modal--visible" : "")">
-    <div class="pdf-modal__overlay" @onclick="Close"></div>
-    <div class="pdf-modal__dialog" @onclick:stopPropagation>
-        <!-- Header -->
-        <div class="pdf-modal__header">
-            <div class="pdf-modal__title">
-                <i class="bi bi-file-earmark-pdf pdf-modal__icon"></i>
-                <div class="pdf-modal__title-content">
-                    <h3>@FileName</h3>
-                    <span class="pdf-modal__subtitle">PDF Preview</span>
-                </div>
-            </div>
-            <button class="pdf-modal__close" @onclick="Close" title="Close">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-
-        <!-- Body -->
-        <div class="pdf-modal__body">
-            @if (string.IsNullOrWhiteSpace(PdfBase64) || isLoading)
-            {
-                <div class="pdf-modal__loading">
-                    <div class="pdf-modal__spinner"></div>
-                    <p>Loading PDF preview...</p>
-                </div>
-            }
-            else
-            {
-                <div class="pdf-viewer">
-                    <iframe src="data:application/pdf;base64,@PdfBase64#toolbar=1&navpanes=0&scrollbar=1"
-                            width="100%" height="100%"
-                            style="border:none;"
-                            title="PDF Document Viewer"
-                            @onload="OnPdfLoaded"
-                            @onerror="OnPdfError">
-                    </iframe>
-                    <div class="pdf-viewer__fallback @(showPdfFallback ? "pdf-viewer__fallback--visible" : "")">
-                        <i class="bi bi-file-earmark-pdf pdf-viewer__fallback-icon"></i>
-                        <h4>PDF Preview Not Available</h4>
-                        <p>Your browser doesn't support embedded PDF preview.</p>
-                        <button class="btn btn--primary" @onclick="DownloadPdf">
-                            <i class="bi bi-download"></i>
-                            Download PDF
-                        </button>
+@if (IsVisible)
+{
+    <div class="pdf-modal ">
+        <div class="pdf-modal__overlay" @onclick="Close"></div>
+        <div class="pdf-modal__dialog" @onclick:stopPropagation>
+            <!-- Header -->
+            <div class="pdf-modal__header">
+                <div class="pdf-modal__title">
+                    <i class="bi bi-file-earmark-pdf pdf-modal__icon"></i>
+                    <div class="pdf-modal__title-content">
+                        <h3>@FileName</h3>
+                        <span class="pdf-modal__subtitle">PDF Preview</span>
                     </div>
                 </div>
-            }
-        </div>
-
-        <!-- Footer -->
-        <div class="pdf-modal__footer">
-            <div class="pdf-modal__footer-actions">
-                <button class="btn btn--primary" @onclick="DownloadPdf" title="Download PDF">
-                    <i class="bi bi-download"></i>
-                    Download PDF
-                </button>
-                <button class="btn btn--outline" @onclick="Close" title="Close preview">
+                <button class="pdf-modal__close" @onclick="Close" title="Close">
                     <i class="bi bi-x-lg"></i>
-                    Close
                 </button>
+            </div>
+
+            <!-- Body -->
+            <div class="pdf-modal__body">
+                @if (string.IsNullOrWhiteSpace(PdfBase64) || _isLoading)
+                {
+                    <div class="pdf-modal__loading">
+                        <div class="pdf-modal__spinner"></div>
+                        <p>Loading PDF preview...</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="pdf-viewer">
+                        <iframe src="data:application/pdf;base64,@PdfBase64#toolbar=1&navpanes=0&scrollbar=1"
+                                width="100%" height="100%"
+                                style="border:none;"
+                                title="PDF Document Viewer"
+                                @onload="OnPdfLoaded"
+                                @onerror="OnPdfError">
+                        </iframe>
+                        <div class="pdf-viewer__fallback @(_showPdfFallback ? "pdf-viewer__fallback--visible" : "")">
+                            <i class="bi bi-file-earmark-pdf pdf-viewer__fallback-icon"></i>
+                            <h4>PDF Preview Not Available</h4>
+                            <p>Your browser doesn't support embedded PDF preview.</p>
+                            <button class="btn btn--primary" @onclick="DownloadPdf">
+                                <i class="bi bi-download"></i>
+                                Download PDF
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Footer -->
+            <div class="pdf-modal__footer">
+                <div class="pdf-modal__footer-actions">
+                    <button class="btn btn--primary" @onclick="DownloadPdf" title="Download PDF">
+                        <i class="bi bi-download"></i>
+                        Download PDF
+                    </button>
+                    <button class="btn btn--outline" @onclick="Close" title="Close preview">
+                        <i class="bi bi-x-lg"></i>
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
 
 @code {
     [Parameter] public string? PdfBase64 { get; set; }
@@ -71,28 +74,28 @@
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private bool showPdfFallback = false;
-    private bool isLoading = true;
+    private bool _showPdfFallback = false;
+    private bool _isLoading = true;
 
     protected override void OnParametersSet()
     {
         if (IsVisible && !string.IsNullOrWhiteSpace(PdfBase64))
         {
-            isLoading = false;
-            showPdfFallback = false;
+            _isLoading = false;
+            _showPdfFallback = false;
         }
     }
 
     private void OnPdfLoaded()
     {
-        isLoading = false;
+        _isLoading = false;
         StateHasChanged();
     }
 
     private void OnPdfError()
     {
-        isLoading = false;
-        showPdfFallback = true;
+        _isLoading = false;
+        _showPdfFallback = true;
         StateHasChanged();
     }
 
@@ -112,8 +115,8 @@
 
     private async Task Close()
     {
-        isLoading = true;
-        showPdfFallback = false;
+        _isLoading = true;
+        _showPdfFallback = false;
         await OnClose.InvokeAsync();
     }
 }

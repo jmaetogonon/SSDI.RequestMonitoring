@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace SSDI.RequestMonitoring.UI.JComponents.Controls;
 
 public partial class Autocomplete__Control<TItem, TValue> : ComponentBase, IAsyncDisposable
-{
+{ 
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
+
     [Parameter] public TItem? SelectedItem { get; set; }
     [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
@@ -20,8 +20,6 @@ public partial class Autocomplete__Control<TItem, TValue> : ComponentBase, IAsyn
     [Parameter] public string? SearchText { get; set; }
     [Parameter] public EventCallback<string?> SearchTextChanged { get; set; }
 
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = Enumerable.Empty<TItem>();
-
     [Parameter] public Expression<Func<TItem, string>>? TextSelector { get; set; }
     [Parameter] public Expression<Func<TItem, TValue>>? ValueSelector { get; set; }
 
@@ -33,42 +31,41 @@ public partial class Autocomplete__Control<TItem, TValue> : ComponentBase, IAsyn
     [Parameter] public bool ShowAddNewOption { get; set; }
     [Parameter] public bool ShowLoading { get; set; }
     [Parameter] public bool HasMoreItems { get; set; }
+    [Parameter] public int MaxResults { get; set; } = 20;
 
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
-
     [Parameter] public EventCallback OnAddNew { get; set; }
     [Parameter] public EventCallback OnLoadMore { get; set; }
 
-    [Parameter] public int MaxResults { get; set; } = 20;
+    private ElementReference _searchInput;
+    private DotNetObjectReference<Autocomplete__Control<TItem, TValue>>? _dotNetRef;
 
-    private ElementReference searchInput;
-    private ElementReference dropdownList;
-    private DotNetObjectReference<Autocomplete__Control<TItem, TValue>>? dotNetRef;
-
-    private bool IsDropdownVisible { get; set; }
-    private TItem? HoveredItem { get; set; }
-    private IEnumerable<TItem> FilteredItems { get; set; } = [];
-    private string? _previousSearchText;
-    private string _displayText = string.Empty;
+    private bool _isDropdownVisible;
+    private TItem? _hoveredItem;
     private TItem? _internalSelectedItem;
-    private Dictionary<TItem, string> _displayTextCache = [];
+    private string _displayText = string.Empty;
+    private string? _previousSearchText;
 
+    private IEnumerable<TItem> _filteredItems = [];
+    private readonly Dictionary<TItem, string> _displayTextCache = [];
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            dotNetRef = DotNetObjectReference.Create(this);
-            UpdateInternalState();
-            await jsRuntime.InvokeVoidAsync("autocomplete.initClickOutside", dotNetRef, searchInput);
-        }
-    }
+    private Func<TItem, string>? _textFunc;
+    private Func<TItem, TValue>? _valueFunc;
+    private int _itemsCount;
+    private bool _disposed;
 
     protected override void OnParametersSet()
     {
+        _itemsCount = Items is ICollection<TItem> c ? c.Count : Items.Count();
+
+        if (TextSelector != null && _textFunc == null)
+            _textFunc = TextSelector.Compile();
+
+        if (ValueSelector != null && _valueFunc == null)
+            _valueFunc = ValueSelector.Compile();
+
         UpdateInternalState();
 
-        // Only refilter if search text changed
         if (_previousSearchText != _displayText)
         {
             _previousSearchText = _displayText;
@@ -76,59 +73,33 @@ public partial class Autocomplete__Control<TItem, TValue> : ComponentBase, IAsyn
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await jsRuntime.InvokeVoidAsync("autocomplete.initClickOutside", _dotNetRef, _searchInput);
+        }
+    }
+
     private void UpdateInternalState()
     {
-        // Determine the selected item
-        if (SelectedItemChanged.HasDelegate && SelectedItem != null)
+        if (SelectedItem != null)
         {
-            // Using SelectedItem binding
             _internalSelectedItem = SelectedItem;
-            _displayText = GetItemDisplayText(SelectedItem);
+            _displayText = GetItemDisplayTextCached(SelectedItem);
         }
-        else if (SelectedValueChanged.HasDelegate && SelectedValue != null && ValueSelector != null)
+        else if (SelectedValue != null && _valueFunc != null)
         {
-            // Using SelectedValue binding - find matching item
-            var valueFunc = ValueSelector.Compile();
-            _internalSelectedItem = Items.FirstOrDefault(item =>
-            {
-                var itemValue = valueFunc(item);
-                return itemValue != null && itemValue.Equals(SelectedValue);
-            });
+            _internalSelectedItem = Items.FirstOrDefault(i =>
+                EqualityComparer<TValue>.Default.Equals(_valueFunc(i), SelectedValue));
 
             if (_internalSelectedItem != null)
-            {
-                _displayText = GetItemDisplayText(_internalSelectedItem);
-            }
-            else
-            {
-                _displayText = SelectedText ?? string.Empty;
-            }
+                _displayText = GetItemDisplayTextCached(_internalSelectedItem);
         }
-        else if (SelectedTextChanged.HasDelegate && !string.IsNullOrEmpty(SelectedText))
+        else if (!string.IsNullOrEmpty(SelectedText))
         {
-            // Using SelectedText binding
-            _displayText = SelectedText;
-            _internalSelectedItem = default;
-        }
-        else if (SelectedValue != null && ValueSelector != null && Items.Any())
-        {
-            // Initial load with SelectedValue set
-            var valueFunc = ValueSelector.Compile();
-            _internalSelectedItem = Items.FirstOrDefault(item =>
-            {
-                var itemValue = valueFunc(item);
-                return itemValue != null && itemValue.Equals(SelectedValue);
-            });
-
-            if (_internalSelectedItem != null)
-            {
-                _displayText = GetItemDisplayText(_internalSelectedItem);
-            }
-        }
-        else
-        {
-            // No binding or clear state
-            _displayText = string.Empty;
+            _displayText = SelectedText!;
             _internalSelectedItem = default;
         }
     }
@@ -137,120 +108,64 @@ public partial class Autocomplete__Control<TItem, TValue> : ComponentBase, IAsyn
     {
         _displayText = args.Value?.ToString() ?? string.Empty;
 
-        await InvokeAsync(async () =>
-        {
-            var tasks = new List<Task>();
+        if (SearchTextChanged.HasDelegate)
+            await SearchTextChanged.InvokeAsync(_displayText);
 
-            if (SearchTextChanged.HasDelegate)
-                tasks.Add(SearchTextChanged.InvokeAsync(_displayText));
+        if (SelectedTextChanged.HasDelegate)
+            await SelectedTextChanged.InvokeAsync(_displayText);
 
-            if (SelectedTextChanged.HasDelegate)
-                tasks.Add(SelectedTextChanged.InvokeAsync(_displayText));
-
-            if (tasks.Any())
-                await Task.WhenAll(tasks);
-
-            FilterItems();
-
-            if (!string.IsNullOrEmpty(_displayText) && !IsDropdownVisible)
-                IsDropdownVisible = true;
-
-            StateHasChanged();
-        });
+        FilterItems();
+        _isDropdownVisible = true;
+        StateHasChanged();
     }
 
     private void HandleFocus()
     {
         if (Disabled) return;
-
-        if (!IsDropdownVisible)
-        {
-            IsDropdownVisible = true;
-            FilterItems();
-            StateHasChanged();
-        }
-    }
-
-    private void HandleBlur()
-    {
-        // Blur is handled by JavaScript click outside detection
-    }
-
-    [JSInvokable]
-    public async Task HandleClickOutside()
-    {
-        await Task.Delay(100); // Small delay to allow click events to process
-
-        // Only close if dropdown is visible
-        if (IsDropdownVisible)
-        {
-            IsDropdownVisible = false;
-            HoveredItem = default;
-
-            // Restore selected item text if nothing was selected
-            if (_internalSelectedItem != null && string.IsNullOrEmpty(_displayText))
-            {
-                _displayText = GetItemDisplayText(_internalSelectedItem);
-            }
-
-            await InvokeAsync(StateHasChanged);
-        }
+        _isDropdownVisible = true;
+        FilterItems();
     }
 
     private void FilterItems()
     {
-        // Clear cache if items changed significantly
-        if (_displayTextCache.Count > Items.Count() * 2)
-        {
+        if (_displayTextCache.Count > _itemsCount * 2)
             _displayTextCache.Clear();
-        }
 
-        if (string.IsNullOrEmpty(_displayText))
+        if (string.IsNullOrWhiteSpace(_displayText))
         {
-            FilteredItems = Items.Take(MaxResults);
+            _filteredItems = Items.Take(MaxResults);
             return;
         }
 
-        var searchTerms = _displayText.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var terms = _displayText
+            .ToLowerInvariant()
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        FilteredItems = Items.Where(item =>
-        {
-            var itemText = GetItemDisplayText(item).ToLower();
-            return searchTerms.All(term => itemText.Contains(term));
-        }).Take(MaxResults);
+        _filteredItems = Items
+            .Where(item =>
+            {
+                var text = GetItemDisplayTextCached(item).ToLowerInvariant();
+                return terms.All(t => text.Contains(t));
+            })
+            .Take(MaxResults);
     }
 
     private async Task SelectItem(TItem item)
     {
         _internalSelectedItem = item;
-        _displayText = GetItemDisplayText(item);
+        _displayText = GetItemDisplayTextCached(item);
 
-        // Update all relevant bindings
         if (SelectedItemChanged.HasDelegate)
-        {
             await SelectedItemChanged.InvokeAsync(item);
-        }
 
-        if (SelectedValueChanged.HasDelegate && ValueSelector != null)
-        {
-            var valueFunc = ValueSelector.Compile();
-            await SelectedValueChanged.InvokeAsync(valueFunc(item));
-        }
+        if (SelectedValueChanged.HasDelegate && _valueFunc != null)
+            await SelectedValueChanged.InvokeAsync(_valueFunc(item));
 
         if (SelectedTextChanged.HasDelegate)
-        {
             await SelectedTextChanged.InvokeAsync(_displayText);
-        }
 
-        if (SearchTextChanged.HasDelegate)
-        {
-            await SearchTextChanged.InvokeAsync(_displayText);
-        }
-
-        IsDropdownVisible = false;
-        HoveredItem = default;
-
-        await InvokeAsync(StateHasChanged);
+        _isDropdownVisible = false;
+        StateHasChanged();
     }
 
     private async Task ClearSelection()
@@ -258,133 +173,71 @@ public partial class Autocomplete__Control<TItem, TValue> : ComponentBase, IAsyn
         _internalSelectedItem = default;
         _displayText = string.Empty;
 
-        // Clear all bindings
-        if (SelectedItemChanged.HasDelegate)
-        {
-            await SelectedItemChanged.InvokeAsync(default);
-        }
+        await SelectedItemChanged.InvokeAsync(default);
+        await SelectedValueChanged.InvokeAsync(default);
+        await SelectedTextChanged.InvokeAsync(default);
+        await SearchTextChanged.InvokeAsync(default);
 
-        if (SelectedValueChanged.HasDelegate)
-        {
-            await SelectedValueChanged.InvokeAsync(default);
-        }
-
-        if (SelectedTextChanged.HasDelegate)
-        {
-            await SelectedTextChanged.InvokeAsync(default);
-        }
-
-        if (SearchTextChanged.HasDelegate)
-        {
-            await SearchTextChanged.InvokeAsync(default);
-        }
-
-        // Close dropdown
-        IsDropdownVisible = false;
-        HoveredItem = default;
-
-        // Focus back on input
-        await searchInput.FocusAsync();
-
-        await InvokeAsync(StateHasChanged);
+        _isDropdownVisible = false;
+        await _searchInput.FocusAsync();
     }
 
     private void ToggleDropdown()
     {
         if (Disabled) return;
-
-        IsDropdownVisible = !IsDropdownVisible;
-        if (IsDropdownVisible)
-        {
+        _isDropdownVisible = !_isDropdownVisible;
+        if (_isDropdownVisible)
             FilterItems();
-            StateHasChanged();
-        }
-        else
-        {
-            StateHasChanged();
-        }
     }
 
-    private void SetHoveredItem(TItem item)
-    {
-        HoveredItem = item;
-    }
+    private async Task AddNewItem() => await OnAddNew.InvokeAsync();
+    private async Task LoadMoreItems() => await OnLoadMore.InvokeAsync();
 
-    private async Task AddNewItem()
-    {
-        await OnAddNew.InvokeAsync();
-        IsDropdownVisible = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task LoadMoreItems()
-    {
-        await OnLoadMore.InvokeAsync();
-    }
-
-    private string GetItemDisplayText(TItem item)
-    {
-        if (DisplayTextSelector != null)
-        {
-            return DisplayTextSelector(item);
-        }
-
-        if (TextSelector != null)
-        {
-            var func = TextSelector.Compile();
-            return func(item) ?? string.Empty;
-        }
-
-        return item?.ToString() ?? string.Empty;
-    }
-
-    private bool IsSelected(TItem item)
-    {
-        if (_internalSelectedItem == null || item == null) return false;
-
-        if (ValueSelector != null)
-        {
-            var valueFunc = ValueSelector.Compile();
-            var selectedValue = valueFunc(_internalSelectedItem);
-            var itemValue = valueFunc(item);
-            return selectedValue != null && selectedValue.Equals(itemValue);
-        }
-
-        return Equals(_internalSelectedItem, item);
-    }
     private string GetItemDisplayTextCached(TItem item)
     {
         if (!_displayTextCache.TryGetValue(item, out var text))
         {
-            text = GetItemDisplayText(item);
-            _displayTextCache[item] = text;
+            text = DisplayTextSelector?.Invoke(item)
+                   ?? _textFunc?.Invoke(item)
+                   ?? item?.ToString()
+                   ?? string.Empty;
+
+            _displayTextCache[item!] = text;
         }
         return text;
     }
 
+    private bool IsSelected(TItem item)
+    {
+        if (_internalSelectedItem == null) return false;
+
+        if (_valueFunc != null)
+            return EqualityComparer<TValue>.Default.Equals(
+                _valueFunc(_internalSelectedItem),
+                _valueFunc(item));
+
+        return EqualityComparer<TItem>.Default.Equals(_internalSelectedItem, item);
+    }
+
+    [JSInvokable]
+    public void HandleClickOutside()
+    {
+        if (_disposed) return;
+        _isDropdownVisible = false;
+        StateHasChanged();
+    }
+
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
         try
         {
-            await jsRuntime.InvokeVoidAsync(
-                "autocomplete.removeClickOutside",
-                searchInput
-            );
+            await jsRuntime.InvokeVoidAsync("autocomplete.removeClickOutside", _searchInput);
+        }
+        catch { }
 
-            // Also clear .NET references
-            dotNetRef?.Dispose();
-            dotNetRef = null;
-
-            // Clear caches 
-            _displayTextCache?.Clear();
-        }
-        catch (TaskCanceledException)
-        {
-            // Ignore if JS runtime disposed
-        }
-        catch (JSDisconnectedException)
-        {
-            // Ignore if circuit disconnected
-        }
+        _dotNetRef?.Dispose();
+        _displayTextCache.Clear();
+        GC.SuppressFinalize(this);
     }
 }

@@ -10,17 +10,17 @@
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 @implements IAsyncDisposable
 
-<NewRequisition__Modal RequestHeader="@Request" RequestType="RequestType" AttachSvc="AttachSvc" RSSlipSvc="RSSlipSvc" IsModalVisible="@showNewSlipModal" OnSave="@SaveNewSlip" OnClose="CloseSlipModal" />
+<NewRequisition__Modal RequestHeader="@Request" RequestType="@RequestType" AttachSvc="@AttachSvc" RSSlipSvc="@RSSlipSvc" IsModalVisible="@_showNewSlipModal" OnSave="@SaveNewSlip" OnClose="@CloseSlipModal" ConfirmModal="@ConfirmModal" />
 
-<EditRequisition__Modal RequestHeader="@Request" RequestType="RequestType" AttachSvc="AttachSvc" RSSlipSvc="RSSlipSvc" Model="@(EditModel ?? new())" IsModalVisible="@showEditSlipModal" OnSave="@SaveEditSlip" OnClose="CloseSlipModal" />
+<EditRequisition__Modal RequestHeader="@Request" RequestType="@RequestType" AttachSvc="@AttachSvc" RSSlipSvc="@RSSlipSvc" Model="@(_editModel ?? new())" IsModalVisible="@_showEditSlipModal" OnSave="@SaveEditSlip" OnClose="@CloseSlipModal" ConfirmModal="@ConfirmModal" />
 
 <!-- PDF Viewer Modal -->
-<PdfViewer__Modal IsVisible="@showPdfModal"
-                  PdfBase64="@currentPdfBase64"
-                  FileName="@($"{(RequestType == RequestType.Purchase ? "PR" : "JO")}{Request.SeriesNumber} Req Slip #{selectedSlip?.Id}.pdf")"
+<PdfViewer__Modal IsVisible="@_showPdfModal"
+                  PdfBase64="@_currentPdfBase64"
+                  FileName="@($"{(RequestType == RequestType.Purchase ? "PR" : "JO")}{Request.SeriesNumber} Req Slip #{_selectedSlip?.Id}.pdf")"
                   OnClose="@ClosePdfModal" />
 
-<AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment)" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />
+<AttachmentViewer__Modal ShowPreview="@_showPreview" SelectedAttachment="@(_selectedAttachment)" PreviewUrl="@_previewUrl" IsLoadingPreview="@_isLoadingPreview" OnClose="@CloseAttachmentPreview" />
 
 <Details__Card NoMargin="true">
     <DetailsRow__Card Label="Requisition Slips" FullRow="true">
@@ -28,9 +28,9 @@
             <div class="slips-stats">
                 <i class="bi bi-file-earmark-text"></i>
                 <span>@Request.RequisitionSlips.Count forms attached</span>
-                @if (isDownloadingAll)
+                @if (_isDownloadingAll)
                 {
-                    <span class="download-progress">(@currentDownloadIndex/@Request.RequisitionSlips.Count)</span>
+                    <span class="download-progress">(@_currentDownloadIndex/@Request.RequisitionSlips.Count)</span>
                 }
             </div>
             <div class="slips-actions">
@@ -42,8 +42,8 @@
                     </button>
                 }
 
-                <button class="btn btn--outline btn--sm" @onclick="DownloadAllAsPdf" title="Download all as PDF" disabled="@(isDownloadingAll || !Request.RequisitionSlips.Any())">
-                    @if (isDownloadingAll)
+                <button class="btn btn--outline btn--sm" @onclick="DownloadAllAsPdf" title="Download all as PDF" @attributes="HtmlAttributes.DisabledIf(_isDownloadingAll || !Request.RequisitionSlips.Any())">
+                    @if (_isDownloadingAll)
                     {
                         <i class="bi bi-arrow-repeat spinning"></i>
                         <span>Generating...</span>
@@ -63,7 +63,7 @@
         <div class="slips-list">
             @foreach (var slip in Request.RequisitionSlips.OrderByDescending(s => s.DateOfRequest))
             {
-                var isExpanded = expandedSlips.Contains(slip.Id);
+                var isExpanded = _expandedSlips.Contains(slip.Id);
 
                 <div class="slip-card @(isExpanded ? "slip-card--expanded" : "") @(IsSlipPastDue(slip) ? "slip-card--past-due" : "")">
                     <!-- Slip Header -->
@@ -92,11 +92,11 @@
                             <!-- Action Buttons (Show on Hover) -->
                             <div class="slip-card__actions">
                                 <button class="slip-card__btn"
-                                        disabled="@viewLoading.GetValueOrDefault(slip.Id)"
+                                        disabled="@_viewLoading.GetValueOrDefault(slip.Id)"
                                         @onclick="@((e) => ViewSlip(slip))"
                                         @onclick:stopPropagation="true"
                                         title="View PDF">
-                                    @if (viewLoading.GetValueOrDefault(slip.Id))
+                                    @if (_viewLoading.GetValueOrDefault(slip.Id))
                                     {
                                         <i class="bi bi-arrow-repeat spinning"></i>
                                     }
@@ -107,11 +107,11 @@
                                 </button>
 
                                 <button class="slip-card__btn"
-                                        disabled="@downloadLoading.GetValueOrDefault(slip.Id)"
+                                        disabled="@_downloadLoading.GetValueOrDefault(slip.Id)"
                                         @onclick="(e) => DownloadSlipPdf(slip)"
                                         @onclick:stopPropagation="true"
                                         title="Download PDF">
-                                    @if (downloadLoading.GetValueOrDefault(slip.Id))
+                                    @if (_downloadLoading.GetValueOrDefault(slip.Id))
                                     {
                                         <i class="bi bi-arrow-repeat spinning"></i>
                                     }
@@ -124,11 +124,11 @@
                                 @if (currentUser.IsAdmin && Request?.Status == RequestStatus.ForRequisition && slip.Approval is ApprovalAction.Pending)
                                 {
                                     <button class="slip-card__btn"
-                                            disabled="@editLoading.GetValueOrDefault(slip.Id)"
+                                            disabled="@_editLoading.GetValueOrDefault(slip.Id)"
                                             @onclick="(e) => EditSlip(slip)"
                                             @onclick:stopPropagation="true"
                                             title="Edit Slip">
-                                        @if (editLoading.GetValueOrDefault(slip.Id))
+                                        @if (_editLoading.GetValueOrDefault(slip.Id))
                                         {
                                             <i class="bi bi-arrow-repeat spinning"></i>
                                         }
@@ -167,8 +167,8 @@
                                                 <button class="slip-approval__btn slip-approval__btn--approve"
                                                         @onclick="(e) => ApproveSlip(slip)"
                                                         @onclick:stopPropagation="true"
-                                                        disabled="@(approveLoading.GetValueOrDefault(slip.Id))">
-                                                    @if (approveLoading.GetValueOrDefault(slip.Id))
+                                                        @attributes="HtmlAttributes.DisabledIf(_approveLoading.GetValueOrDefault(slip.Id))">
+                                                    @if (_approveLoading.GetValueOrDefault(slip.Id))
                                                     {
                                                         <i class="bi bi-arrow-repeat spinning"></i>
                                                         <span>Approving...</span>
@@ -182,8 +182,8 @@
                                                 <button class="slip-approval__btn slip-approval__btn--reject"
                                                         @onclick="(e) => RejectSlip(slip)"
                                                         @onclick:stopPropagation="true"
-                                                        disabled="@(rejectLoading.GetValueOrDefault(slip.Id))">
-                                                    @if (rejectLoading.GetValueOrDefault(slip.Id))
+                                                        @attributes="HtmlAttributes.DisabledIf(_rejectLoading.GetValueOrDefault(slip.Id))">
+                                                    @if (_rejectLoading.GetValueOrDefault(slip.Id))
                                                     {
                                                         <i class="bi bi-arrow-repeat spinning"></i>
                                                         <span>Rejecting...</span>
@@ -338,13 +338,13 @@
                             <!-- Attachments Section -->
                             <div class="attachments-section">
                                 <div class="attachments-tabs">
-                                    <button class="attachments-tab @(activeAttachmentTab == "receipts" ? "attachments-tab--active" : "")"
+                                    <button class="attachments-tab @(_activeAttachmentTab == "receipts" ? "attachments-tab--active" : "")"
                                             @onclick="@(() => SwitchAttachmentTab("receipts"))">
                                         <i class="bi bi-receipt"></i>
                                         Receipts
                                         <span class="tab-badge">@(Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Count() ?? 0)</span>
                                     </button>
-                                    <button class="attachments-tab @(activeAttachmentTab == "requisition" ? "attachments-tab--active" : "")"
+                                    <button class="attachments-tab @(_activeAttachmentTab == "requisition" ? "attachments-tab--active" : "")"
                                             @onclick="@(() => SwitchAttachmentTab("requisition"))">
                                         <i class="bi bi-file-earmark"></i>
                                         Requisition Attachments
@@ -356,7 +356,7 @@
                                     @if ((currentUser.IsAdmin || currentUser.IsCEO) && Request.Status == RequestStatus.ForRequisition)
                                     {
                                         <div class="attachments-upload">
-                                            @if (activeAttachmentTab == "receipts")
+                                            @if (_activeAttachmentTab == "receipts")
                                             {
                                                 <label for="@($"file-upload-add{slip.Id}")" class="btn btn--outline btn--sm" title="Add Receipt">
                                                     <i class="bi bi-plus-lg"></i>
@@ -379,15 +379,15 @@
                                 </div>
 
                                 <div class="attachments-content">
-                                    @if (activeAttachmentTab == "receipts")
+                                    @if (_activeAttachmentTab == "receipts")
                                     {
                                         <div class="attachments-list">
                                             @if (Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id)?.Any() == true)
                                             {
                                                 @foreach (var receipt in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Receipt && e.RequisitionId == slip.Id))
                                                 {
-                                                    var isDownloadingThis = (downloadingAttachments.Contains(receipt.Id.ToString()));
-                                                    var isDeletingThis = (deletingAttachments.Contains(receipt.Id.ToString()));
+                                                    var isDownloadingThis = (_downloadingAttachments.Contains(receipt.Id.ToString()));
+                                                    var isDeletingThis = (_deletingAttachments.Contains(receipt.Id.ToString()));
 
                                                     <div class="attachment-item">
                                                         <div class="attachment-icon">
@@ -452,8 +452,8 @@
                                             {
                                                 @foreach (var attachment in Request!.Attachments.Where(e => e.AttachType == RequestAttachType.Requisition && e.RequisitionId == slip.Id))
                                                 {
-                                                    var isDeletingThis = (deletingAttachments.Contains(attachment.Id.ToString()));
-                                                    var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
+                                                    var isDeletingThis = (_deletingAttachments.Contains(attachment.Id.ToString()));
+                                                    var isDownloadingThis = (_downloadingAttachments.Contains(attachment.Id.ToString()));
 
                                                     <div class="attachment-item">
                                                         <div class="attachment-icon">

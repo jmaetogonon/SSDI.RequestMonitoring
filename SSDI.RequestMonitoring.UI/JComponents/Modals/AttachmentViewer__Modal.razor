@@ -5,12 +5,12 @@
 @using SSDI.RequestMonitoring.UI.Models.Requests.Purchase
 @inject IAttachSvc attachSvc
 
-@if (SelectedAttachment != null)
+@if (ShowPreview && SelectedAttachment != null)
 {
-    <div class="attachment-preview-modal @(ShowPreview ? "attachment-preview-modal--visible" : "")"
+    <div class="attachment-preview-modal"
          @onkeydown="HandleKeyDown"
          tabindex="0"
-         @ref="modalElement">
+         @ref="_modalElement">
 
         <div class="attachment-preview-modal__overlay" @onclick="ClosePreview"></div>
 
@@ -37,11 +37,11 @@
                             <img src="@PreviewUrl"
                                  alt="@SelectedAttachment.FileName"
                                  class="preview-image"
-                                 style="transform: scale(@imageScale)"
+                                 style="transform: scale(@_imageScale)"
                                  @onload="OnImageLoad"
                                  @onerror="OnImageError" />
 
-                            @if (!isImageLoaded && !isImageError)
+                            @if (!_isImageLoaded && !_isImageError)
                             {
                                 <div class="image-loading">
                                     <div class="image-loading__spinner"></div>
@@ -49,7 +49,7 @@
                                 </div>
                             }
 
-                            @if (isImageError)
+                            @if (_isImageError)
                             {
                                 <div class="image-error">
                                     <i class="bi bi-exclamation-triangle"></i>
@@ -58,13 +58,13 @@
                             }
                         </div>
 
-                        @if (isImageLoaded)
+                        @if (_isImageLoaded)
                         {
                             <div class="image-controls">
                                 <button class="control-btn" @onclick="ZoomOut" title="Zoom Out">
                                     <i class="bi bi-dash-lg"></i>
                                 </button>
-                                <span class="zoom-level">@((imageScale * 100).ToString("0"))%</span>
+                                <span class="zoom-level">@((_imageScale * 100).ToString("0"))%</span>
                                 <button class="control-btn" @onclick="ZoomIn" title="Zoom In">
                                     <i class="bi bi-plus-lg"></i>
                                 </button>
@@ -90,7 +90,7 @@
                             </div>
                         </object>
 
-                        @if (!isPdfLoaded && !isPdfError)
+                        @if (!_isPdfLoaded && !_isPdfError)
                         {
                             <div class="pdf-loading">
                                 <div class="pdf-loading__spinner"></div>
@@ -98,7 +98,7 @@
                             </div>
                         }
 
-                        @if (isPdfError)
+                        @if (_isPdfError)
                         {
                             <div class="pdf-error">
                                 <i class="bi bi-exclamation-triangle"></i>
@@ -143,18 +143,18 @@
     [Parameter] public string? PreviewUrl { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private ElementReference modalElement;
-    private bool isImageLoaded = false;
-    private bool isImageError = false;
-    private bool isPdfLoaded = false;
-    private bool isPdfError = false;
-    private double imageScale = 1.0;
+    private ElementReference _modalElement;
+    private bool _isImageLoaded = false;
+    private bool _isImageError = false;
+    private bool _isPdfLoaded = false;
+    private bool _isPdfError = false;
+    private double _imageScale = 1.0;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (ShowPreview)
         {
-            await modalElement.FocusAsync();
+            await _modalElement.FocusAsync();
         }
     }
 
@@ -164,69 +164,69 @@
         {
             if (IsImage(SelectedAttachment.FileName))
             {
-                isImageLoaded = false;
-                isImageError = false;
-                imageScale = 1.0;
+                _isImageLoaded = false;
+                _isImageError = false;
+                _imageScale = 1.0;
             }
             else if (IsPdf(SelectedAttachment.FileName))
             {
-                isPdfLoaded = false;
-                isPdfError = false;
+                _isPdfLoaded = false;
+                _isPdfError = false;
             }
         }
         else if (!ShowPreview)
         {
-            isImageLoaded = false;
-            isImageError = false;
-            isPdfLoaded = false;
-            isPdfError = false;
-            imageScale = 1.0;
+            _isImageLoaded = false;
+            _isImageError = false;
+            _isPdfLoaded = false;
+            _isPdfError = false;
+            _imageScale = 1.0;
         }
     }
 
     private void OnImageLoad()
     {
-        isImageLoaded = true;
-        isImageError = false;
+        _isImageLoaded = true;
+        _isImageError = false;
         StateHasChanged();
     }
 
     private void OnImageError()
     {
-        isImageLoaded = false;
-        isImageError = true;
+        _isImageLoaded = false;
+        _isImageError = true;
         StateHasChanged();
     }
 
     private void OnPdfLoad()
     {
-        isPdfLoaded = true;
-        isPdfError = false;
+        _isPdfLoaded = true;
+        _isPdfError = false;
         StateHasChanged();
     }
 
     private void OnPdfError()
     {
-        isPdfLoaded = false;
-        isPdfError = true;
+        _isPdfLoaded = false;
+        _isPdfError = true;
         StateHasChanged();
     }
 
     private void ZoomIn()
     {
-        imageScale = Math.Min(imageScale + 0.25, 3.0);
+        _imageScale = Math.Min(_imageScale + 0.25, 3.0);
         StateHasChanged();
     }
 
     private void ZoomOut()
     {
-        imageScale = Math.Max(imageScale - 0.25, 0.5);
+        _imageScale = Math.Max(_imageScale - 0.25, 0.5);
         StateHasChanged();
     }
 
     private void ResetZoom()
     {
-        imageScale = 1.0;
+        _imageScale = 1.0;
         StateHasChanged();
     }
 
@@ -259,11 +259,11 @@
         SelectedAttachment = null;
         PreviewUrl = null;
         IsLoadingPreview = false;
-        isImageLoaded = false;
-        isImageError = false;
-        isPdfLoaded = false;
-        isPdfError = false;
-        imageScale = 1.0;
+        _isImageLoaded = false;
+        _isImageError = false;
+        _isPdfLoaded = false;
+        _isPdfError = false;
+        _imageScale = 1.0;
 
         if (OnClose.HasDelegate)
         {

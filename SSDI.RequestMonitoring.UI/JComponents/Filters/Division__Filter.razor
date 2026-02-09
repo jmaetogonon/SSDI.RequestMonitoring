@@ -12,8 +12,8 @@
         <FluentStack Orientation="Orientation.Vertical" VerticalGap="2">
             <!-- All checkbox -->
             <FluentCheckbox Class="page__filter-checkbox"
-                            @bind-Value="@IsAllSelected"
-                            Disabled="@IsAllSelected"
+                            @bind-Value="@_isAllSelected"
+                            Disabled="@_isAllSelected"
                             @bind-Value:after="@ToggleAll">
                 All
             </FluentCheckbox>
@@ -21,7 +21,7 @@
             <div class="page__filterBy-lists-divider"></div>
 
             <!-- Individual division checkboxes -->
-            @foreach (var division in Divisions ?? [])
+            @foreach (var division in _divisions ?? [])
             {
                 <FluentCheckbox Class="page__filter-checkbox"
                                 @bind-Value:get="@division.IsChecked"

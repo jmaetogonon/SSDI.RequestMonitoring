@@ -3,18 +3,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace SSDI.RequestMonitoring.UI.Services.Base;
 
-public class BaseHttpService
+public class BaseHttpService(IClient client, ILocalStorageService localStorage, NavigationManager navigationManager)
 {
-    protected IClient _client;
-    protected readonly ILocalStorageService _localStorage;
-    private readonly NavigationManager _navigationManager;
-
-    public BaseHttpService(IClient client, ILocalStorageService localStorage, NavigationManager navigationManager)
-    {
-        _client = client;
-        _localStorage = localStorage;
-        _navigationManager = navigationManager;
-    }
+    protected IClient _client = client;
+    protected readonly ILocalStorageService _localStorage = localStorage;
+    private readonly NavigationManager _navigationManager = navigationManager;
 
     protected async Task<T> SafeApiCall<T>(Func<Task<T>> apiCall)
     {
@@ -56,7 +49,7 @@ public class BaseHttpService
         }
     }
 
-    protected Response<Guid> ConvertApiExceptions<Guid>(ApiException ex)
+    protected static Response<Guid> ConvertApiExceptions<Guid>(ApiException ex)
     {
         return ex.StatusCode switch
         {

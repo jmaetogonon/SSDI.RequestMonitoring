@@ -56,22 +56,22 @@
 
     <!-- Request Type Tabs -->
     <div class="dashboard__tabs">
-        <button class="dashboard__tab @(activeTab == "all" ? "dashboard__tab--active" : "")"
+        <button class="dashboard__tab @(_activeTab == "all" ? "dashboard__tab--active" : "")"
                 @onclick="@(() => SwitchTab("all"))">
             <i class="bi bi-grid"></i>
             All Requests
         </button>
-        <button class="dashboard__tab @(activeTab == "purchase" ? "dashboard__tab--active" : "")"
+        <button class="dashboard__tab @(_activeTab == "purchase" ? "dashboard__tab--active" : "")"
                 @onclick="@(() => SwitchTab("purchase"))">
             <i class="bi bi-cart"></i>
             Purchase Requests
-            <span class="tab-badge">@purchaseRequestMetrics.TotalCount</span>
+            <span class="tab-badge">@_purchaseRequestMetrics.TotalCount</span>
         </button>
-        <button class="dashboard__tab @(activeTab == "joborder" ? "dashboard__tab--active" : "")"
+        <button class="dashboard__tab @(_activeTab == "joborder" ? "dashboard__tab--active" : "")"
                 @onclick="@(() => SwitchTab("joborder"))">
             <i class="bi bi-tools"></i>
             Job Orders
-            <span class="tab-badge">@jobOrderMetrics.TotalCount</span>
+            <span class="tab-badge">@_jobOrderMetrics.TotalCount</span>
         </button>
     </div>
 
@@ -80,107 +80,106 @@
         <div class="metrics-container">
             <!-- Desktop Grid View (default) -->
             <div class="metrics-grid">
-                @if (activeTab == "all")
+                @if (_activeTab == "all")
                 {
                     <StatusWBar__Card Label="Total Requests"
-                                      Count="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Count="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
+                                      TotalCount="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-inbox"
                                       OnClick="@(() => ViewAllRequests())" />
 
                     <StatusWBar__Card Label="Pendings"
-                                      Count="@(purchaseRequestMetrics.AllPendingCount + jobOrderMetrics.AllPendingCount)"
-                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Count="@(_purchaseRequestMetrics.AllPendingCount + _jobOrderMetrics.AllPendingCount)"
+                                      TotalCount="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-clock"
                                       OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
 
                     <StatusWBar__Card Label="Rejected"
-                                      Count="@(purchaseRequestMetrics.RejectedCount + jobOrderMetrics.RejectedCount)"
-                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Count="@(_purchaseRequestMetrics.RejectedCount + _jobOrderMetrics.RejectedCount)"
+                                      TotalCount="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-x-circle"
                                       OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
 
                     <StatusWBar__Card Label="Closed"
-                                      Count="@(purchaseRequestMetrics.CompletedCount + jobOrderMetrics.CompletedCount)"
-                                      TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                                      Count="@(_purchaseRequestMetrics.CompletedCount + _jobOrderMetrics.CompletedCount)"
+                                      TotalCount="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-check-circle"
                                       OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
                 }
-                else if (activeTab == "purchase")
+                else if (_activeTab == "purchase")
                 {
                     <StatusWBar__Card Label="Total Purchase Requests"
-                                      Count="@purchaseRequestMetrics.TotalCount"
-                                      TotalCount="@purchaseRequestMetrics.TotalCount"
+                                      Count="@_purchaseRequestMetrics.TotalCount"
+                                      TotalCount="@_purchaseRequestMetrics.TotalCount"
                                       Icon="bi bi-cart"
                                       OnClick="@(() => ViewAllRequests())" />
 
                     <StatusWBar__Card Label="Pendings"
-                                      Count="@(purchaseRequestMetrics.AllPendingCount)"
-                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                                      Count="@(_purchaseRequestMetrics.AllPendingCount)"
+                                      TotalCount="@(_purchaseRequestMetrics.TotalCount)"
                                       Icon="bi bi-clock"
                                       OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
 
                     <StatusWBar__Card Label="Rejected"
-                                      Count="@(purchaseRequestMetrics.RejectedCount)"
-                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                                      Count="@(_purchaseRequestMetrics.RejectedCount)"
+                                      TotalCount="@(_purchaseRequestMetrics.TotalCount)"
                                       Icon="bi bi-x-circle"
                                       OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
 
                     <StatusWBar__Card Label="Closed"
-                                      Count="@(purchaseRequestMetrics.CompletedCount)"
-                                      TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                                      Count="@(_purchaseRequestMetrics.CompletedCount)"
+                                      TotalCount="@(_purchaseRequestMetrics.TotalCount)"
                                       Icon="bi bi-check-circle"
                                       OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
                 }
-                else if (activeTab == "joborder")
+                else if (_activeTab == "joborder")
                 {
                     <StatusWBar__Card Label="Total Job Orders"
-                                      Count="@jobOrderMetrics.TotalCount"
-                                      TotalCount="@jobOrderMetrics.TotalCount"
+                                      Count="@_jobOrderMetrics.TotalCount"
+                                      TotalCount="@_jobOrderMetrics.TotalCount"
                                       Icon="bi bi-tools"
                                       OnClick="@(() => ViewAllRequests())" />
 
                     <StatusWBar__Card Label="Pendings"
-                                      Count="@(jobOrderMetrics.AllPendingCount)"
-                                      TotalCount="@(jobOrderMetrics.TotalCount)"
+                                      Count="@(_jobOrderMetrics.AllPendingCount)"
+                                      TotalCount="@(_jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-clock"
                                       OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
 
                     <StatusWBar__Card Label="Rejected"
-                                      Count="@(jobOrderMetrics.RejectedCount)"
-                                      TotalCount="@(jobOrderMetrics.TotalCount)"
+                                      Count="@(_jobOrderMetrics.RejectedCount)"
+                                      TotalCount="@(_jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-x-circle"
                                       OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
 
                     <StatusWBar__Card Label="Closed"
-                                      Count="@(jobOrderMetrics.CompletedCount)"
-                                      TotalCount="@(jobOrderMetrics.TotalCount)"
+                                      Count="@(_jobOrderMetrics.CompletedCount)"
+                                      TotalCount="@(_jobOrderMetrics.TotalCount)"
                                       Icon="bi bi-check-circle"
                                       OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
                 }
             </div>
 
             <!-- Mobile Carousel View -->
-            <div class="metrics-carousel" @ref="carouselContainer" @onwheel="HandleWheel">
+            <div class="metrics-carousel" @ref="_carouselContainer" @onwheel="HandleWheel">
                 <!-- Previous Button (Left side) -->
                 <div class="carousel-nav prev">
-                    <button class="carousel-btn prev-btn" @onclick="PrevSlide"
-                            disabled="@(currentSlide == 0)" title="Previous">
+                    <button class="carousel-btn prev-btn" @onclick="PrevSlide" @attributes="HtmlAttributes.DisabledIf(_currentSlide == 0)" title="Previous">
                         <i class="bi bi-chevron-left"></i>
                     </button>
                 </div>
 
                 <!-- Carousel Slides -->
-                <div class="carousel-inner" style="transform: translateX(@($"-{currentSlide * 100}%"));">
-                    @if (activeTab == "all")
+                <div class="carousel-inner" style="transform: translateX(@($"-{_currentSlide * 100}%"));">
+                    @if (_activeTab == "all")
                     {
                         @RenderCarouselSlidesForAll()
                     }
-                    else if (activeTab == "purchase")
+                    else if (_activeTab == "purchase")
                     {
                         @RenderCarouselSlidesForPurchase()
                     }
-                    else if (activeTab == "joborder")
+                    else if (_activeTab == "joborder")
                     {
                         @RenderCarouselSlidesForJobOrder()
                     }
@@ -188,8 +187,7 @@
 
                 <!-- Next Button (Right side) -->
                 <div class="carousel-nav next">
-                    <button class="carousel-btn next-btn" @onclick="NextSlide"
-                            disabled="@(currentSlide == GetTotalSlides() - 1)" title="Next">
+                    <button class="carousel-btn next-btn" @onclick="NextSlide" @attributes="HtmlAttributes.DisabledIf(_currentSlide == GetTotalSlides() - 1)" title="Next">
                         <i class="bi bi-chevron-right"></i>
                     </button>
                 </div>
@@ -198,7 +196,7 @@
                 <div class="carousel-indicators">
                     @for (int i = 0; i < GetTotalSlides(); i++)
                     {
-                        <button class="indicator @(i == currentSlide ? "active" : "")"
+                        <button class="indicator @(i == _currentSlide ? "active" : "")"
                                 @onclick="@(() => GoToSlide(i))"
                                 aria-label="Go to slide @(i + 1)">
                         </button>
@@ -214,38 +212,38 @@
                 <!-- Supervisor Specific: Team Requests -->
                 @if (currentUser.IsSupervisor)
                 {
-                    <TeamRequest__Card Items="teamRequestsNeedingAttention" RequestType="requestType" />
+                    <TeamRequest__Card Items="_teamRequestsNeedingAttention" RequestType="_requestType" />
                 }
 
                 <!-- User Recent Activity -->
                 @if (currentUser.IsUser || !currentUser.IsSupervisor)
                 {
-                    <RecentActivity__Card Items="recentActivity" RequestType="requestType" />
+                    <RecentActivity__Card Items="_recentActivity" RequestType="_requestType" />
                 }
 
                 <!-- Performance Stats -->
-                <PerformanceOverview__Card JobOrderMetrics="jobOrderMetrics" PurchaseRequestMetrics="purchaseRequestMetrics" Purchase_Requests="purchaseRequests" Job_Orders="jobOrders" RequestType="requestType" />
+                <PerformanceOverview__Card JobOrderMetrics="_jobOrderMetrics" PurchaseRequestMetrics="_purchaseRequestMetrics" Purchase_Requests="_purchaseRequests" Job_Orders="_jobOrders" RequestType="_requestType" />
             </div>
 
             <!-- Right Column: Charts -->
             <div class="dashboard__column">
                 <!-- Volume Comparison Chart -->
-                <VolumeComparison__Bar PurchaseRequests="purchaseRequests" JobOrders="jobOrders" RequestType="requestType" />
+                <VolumeComparison__Bar PurchaseRequests="_purchaseRequests" JobOrders="_jobOrders" RequestType="_requestType" />
 
                 @if (currentUser.IsSupervisor)
                 {
-                    <ApprovedRequests__Card Items="approveReqyestItems" RequestType="requestType" />
+                    <ApprovedRequests__Card Items="_approveRequestItems" RequestType="_requestType" />
                 }
 
                 <!-- Status Overview -->
-                <StatusDistribution__Bar PurchaseRequests="purchaseRequests" JobOrders="jobOrders" RequestType="requestType" />
+                <StatusDistribution__Bar PurchaseRequests="_purchaseRequests" JobOrders="_jobOrders" RequestType="_requestType" />
             </div>
         </div>
     </div>
 </div>
-<Confirmation__Modal @ref="confirmModal" />
+<Confirmation__Modal @ref="_confirmModal" />
 
-@if (isLoading)
+@if (_isLoading)
 {
     <div class="dashboard-loading">
         <div class="loading-spinner"></div>
@@ -256,32 +254,32 @@
     private RenderFragment RenderCarouselSlidesForAll() => @<text>
         <div class="carousel-slide">
             <StatusWBar__Card Label="Total Requests"
-                              Count="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
-                              TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              Count="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
+                              TotalCount="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
                               Icon="bi bi-inbox"
                               OnClick="@(() => ViewAllRequests())" />
         </div>
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Pendings"
-                              Count="@(purchaseRequestMetrics.AllPendingCount + jobOrderMetrics.AllPendingCount)"
-                              TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              Count="@(_purchaseRequestMetrics.AllPendingCount + _jobOrderMetrics.AllPendingCount)"
+                              TotalCount="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
                               Icon="bi bi-clock"
                               OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
         </div>
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Rejected"
-                              Count="@(purchaseRequestMetrics.RejectedCount + jobOrderMetrics.RejectedCount)"
-                              TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              Count="@(_purchaseRequestMetrics.RejectedCount + _jobOrderMetrics.RejectedCount)"
+                              TotalCount="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
                               Icon="bi bi-x-circle"
                               OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
         </div>
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Closed"
-                              Count="@(purchaseRequestMetrics.CompletedCount + jobOrderMetrics.CompletedCount)"
-                              TotalCount="@(purchaseRequestMetrics.TotalCount + jobOrderMetrics.TotalCount)"
+                              Count="@(_purchaseRequestMetrics.CompletedCount + _jobOrderMetrics.CompletedCount)"
+                              TotalCount="@(_purchaseRequestMetrics.TotalCount + _jobOrderMetrics.TotalCount)"
                               Icon="bi bi-check-circle"
                               OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
         </div>
@@ -291,32 +289,32 @@
     private RenderFragment RenderCarouselSlidesForPurchase() => @<text>
         <div class="carousel-slide">
             <StatusWBar__Card Label="Total Purchase Requests"
-                              Count="@purchaseRequestMetrics.TotalCount"
-                              TotalCount="@purchaseRequestMetrics.TotalCount"
+                              Count="@_purchaseRequestMetrics.TotalCount"
+                              TotalCount="@_purchaseRequestMetrics.TotalCount"
                               Icon="bi bi-cart"
                               OnClick="@(() => ViewAllRequests())" />
         </div>
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Pendings"
-                              Count="@(purchaseRequestMetrics.AllPendingCount)"
-                              TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                              Count="@(_purchaseRequestMetrics.AllPendingCount)"
+                              TotalCount="@(_purchaseRequestMetrics.TotalCount)"
                               Icon="bi bi-clock"
                               OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
         </div>
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Rejected"
-                              Count="@(purchaseRequestMetrics.RejectedCount)"
-                              TotalCount="@(purchaseRequestMetrics.TotalCount)"
+                              Count="@(_purchaseRequestMetrics.RejectedCount)"
+                              TotalCount="@(_purchaseRequestMetrics.TotalCount)"
                               Icon="bi bi-x-circle"
                               OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
         </div>
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Closed"
-                              Count="@purchaseRequestMetrics.CompletedCount"
-                              TotalCount="@purchaseRequestMetrics.TotalCount"
+                              Count="@_purchaseRequestMetrics.CompletedCount"
+                              TotalCount="@_purchaseRequestMetrics.TotalCount"
                               Icon="bi bi-check-circle"
                               OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
         </div>
@@ -325,8 +323,8 @@
     private RenderFragment RenderCarouselSlidesForJobOrder() => @<text>
         <div class="carousel-slide">
             <StatusWBar__Card Label="Total Job Orders"
-                              Count="@jobOrderMetrics.TotalCount"
-                              TotalCount="@jobOrderMetrics.TotalCount"
+                              Count="@_jobOrderMetrics.TotalCount"
+                              TotalCount="@_jobOrderMetrics.TotalCount"
                               Icon="bi bi-tools"
                               OnClick="@(() => ViewAllRequests())" />
         </div>
@@ -334,24 +332,24 @@
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Pendings"
-                              Count="@(jobOrderMetrics.AllPendingCount)"
-                              TotalCount="@(jobOrderMetrics.TotalCount)"
+                              Count="@(_jobOrderMetrics.AllPendingCount)"
+                              TotalCount="@(_jobOrderMetrics.TotalCount)"
                               Icon="bi bi-clock"
                               OnClick="@(() => FilterByStatus(RequestStatus.PendingRequesterClosure))" />
         </div>
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Rejected"
-                              Count="@(jobOrderMetrics.RejectedCount)"
-                              TotalCount="@(jobOrderMetrics.TotalCount)"
+                              Count="@(_jobOrderMetrics.RejectedCount)"
+                              TotalCount="@(_jobOrderMetrics.TotalCount)"
                               Icon="bi bi-x-circle"
                               OnClick="@(() => FilterByStatus(RequestStatus.Rejected))" />
         </div>
 
         <div class="carousel-slide">
             <StatusWBar__Card Label="Closed"
-                              Count="@jobOrderMetrics.CompletedCount"
-                              TotalCount="@jobOrderMetrics.TotalCount"
+                              Count="@_jobOrderMetrics.CompletedCount"
+                              TotalCount="@_jobOrderMetrics.TotalCount"
                               Icon="bi bi-check-circle"
                               OnClick="@(() => FilterByStatus(RequestStatus.Closed))" />
         </div>

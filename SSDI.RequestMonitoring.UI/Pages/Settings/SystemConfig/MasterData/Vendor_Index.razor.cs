@@ -8,11 +8,11 @@ namespace SSDI.RequestMonitoring.UI.Pages.Settings.SystemConfig.MasterData;
 
 public partial class Vendor_Index : ComponentBase
 {
-    private List<VendorVM> AllItems = [];
-    private List<VendorVM> FilteredItems = [];
-    private string searchValue = "";
-    private Confirmation__Modal? confirmModal;
-    private bool IsAddModalVisible = false;
+    private List<VendorVM> _allItems = [];
+    private List<VendorVM> _filteredItems = [];
+    private string _searchValue = "";
+    private Confirmation__Modal? _confirmModal;
+    private bool _isAddModalVisible = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -27,39 +27,39 @@ public partial class Vendor_Index : ComponentBase
 
     private async Task LoadItems()
     {
-        AllItems = await vendorSvc.GetAllVendors();
-        FilteredItems = [.. AllItems];
+        _allItems = await vendorSvc.GetAllVendors();
+        _filteredItems = [.. _allItems];
     }
 
     private void ApplyFilter()
     {
-        if (string.IsNullOrWhiteSpace(searchValue))
+        if (string.IsNullOrWhiteSpace(_searchValue))
         {
-            FilteredItems = [.. AllItems];
+            _filteredItems = [.. _allItems];
         }
         else
         {
-            var term = searchValue.ToLower();
-            FilteredItems = [.. AllItems.Where(r =>
-                r.Vendor_Name != null && r.Vendor_Name.Contains(searchValue, StringComparison.OrdinalIgnoreCase)||
-                r.Payment_Details != null && r.Payment_Details.Contains(searchValue, StringComparison.OrdinalIgnoreCase)
+            var term = _searchValue.ToLower();
+            _filteredItems = [.. _allItems.Where(r =>
+                r.Vendor_Name != null && r.Vendor_Name.Contains(_searchValue, StringComparison.OrdinalIgnoreCase)||
+                r.Payment_Details != null && r.Payment_Details.Contains(_searchValue, StringComparison.OrdinalIgnoreCase)
                 )];
         }
     }
 
     private void ClearSearch()
     {
-        searchValue = "";
+        _searchValue = "";
         ApplyFilter();
     }
 
-    private void OnAdd() => IsAddModalVisible = true;
+    private void OnAdd() => _isAddModalVisible = true;
 
-    private void OnCloseNewVendorModal() => IsAddModalVisible = false;
+    private void OnCloseNewVendorModal() => _isAddModalVisible = false;
 
     private async Task OnSaveNewVendorModal()
     {
-        IsAddModalVisible = false;
+        _isAddModalVisible = false;
         toastSvc.ShowSuccess("The new vendor has been added successfully.");
 
         var syncResponse = await vendorSvc.SyncVendors();
@@ -84,12 +84,12 @@ public partial class Vendor_Index : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         try
         {
-            await confirmModal!.SetLoadingAsync(true);
+            await _confirmModal!.SetLoadingAsync(true);
 
             var response = await vendorSvc.SyncVendors();
 
@@ -115,8 +115,8 @@ public partial class Vendor_Index : ComponentBase
 
     private async Task CloseModalWithLoading()
     {
-        await confirmModal!.SetLoadingAsync(false);
-        await confirmModal!.HideAsync();
+        await _confirmModal!.SetLoadingAsync(false);
+        await _confirmModal!.HideAsync();
     }
 
     private void OnCancel(MouseEventArgs args)

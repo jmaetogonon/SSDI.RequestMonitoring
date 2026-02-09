@@ -9,8 +9,8 @@ public partial class Vendor_AddDialog : ComponentBase
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback<VendorVM> OnSave { get; set; }
+    [Parameter] public Confirmation__Modal? ConfirmModal { get; set; }
 
-    private Confirmation__Modal? confirmModal;
     private VendorVM FormModel { get; set; } = new();
 
     private bool IsShowAlert { get; set; }
@@ -42,10 +42,10 @@ public partial class Vendor_AddDialog : ComponentBase
             CancelText = "Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await ConfirmModal!.ShowAsync(options);
         if (result)
         {
-            await confirmModal!.SetLoadingAsync(true);
+            await ConfirmModal!.SetLoadingAsync(true);
 
             IsShowAlert = false;
 
@@ -65,8 +65,8 @@ public partial class Vendor_AddDialog : ComponentBase
 
     private async Task CloseModalWithLoading()
     {
-        await confirmModal!.SetLoadingAsync(false);
-        await confirmModal!.HideAsync();
+        await ConfirmModal!.SetLoadingAsync(false);
+        await ConfirmModal!.HideAsync();
     }
     private void ResetForm()
     {

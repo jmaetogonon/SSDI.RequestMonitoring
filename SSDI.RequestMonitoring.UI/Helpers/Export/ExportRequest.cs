@@ -7,10 +7,12 @@ namespace SSDI.RequestMonitoring.UI.Helpers.Export;
 
 public class ExportRequest
 {
-    public async Task<byte[]> Export(
+    public static async Task<byte[]> Export(
         List<RequestExportRow> data,
         string statusFilter = "All",
         string priorityFilter = "All",
+        DateTime? startDate = null,
+        DateTime? endDate = null,
         string type = "Purchase",
         byte[]? bannerBytes = null,
         IProgress<int>? progress = null)
@@ -28,7 +30,6 @@ public class ExportRequest
         package.Workbook.Properties.Subject = "System Requests";
         package.Workbook.Properties.Created = DateTime.Now;
 
-        // Updated column count: Added Business Unit (8) and Amount (9)
         const int totalColumns = 9;
         int currentRow = 1;
 
@@ -97,27 +98,70 @@ public class ExportRequest
         currentRow++;
 
         // ======================
-        // FILTERS
+        // FILTERS SECTION
         // ======================
-        ws.Cells[currentRow, 1].Value = "Status Filter:";
-        ws.Cells[currentRow, 2].Value = statusFilter;
-        ws.Cells[currentRow, 2, currentRow, 3].Merge = true;
+        int filterRow = currentRow;
 
-        ws.Cells[currentRow, 5].Value = "Priority Filter:";
-        ws.Cells[currentRow, 6].Value = priorityFilter;
-        ws.Cells[currentRow, 6, currentRow, 7].Merge = true;
+        // Status Filter
+        ws.Cells[filterRow, 1].Value = "Status Filter:";
+        ws.Cells[filterRow, 2].Value = statusFilter;
+        ws.Cells[filterRow, 2, filterRow, 3].Merge = true;
 
-        for (int col = 1; col <= totalColumns; col++)
+        // Priority Filter
+        ws.Cells[filterRow, 5].Value = "Priority Filter:";
+        ws.Cells[filterRow, 6].Value = priorityFilter;
+        ws.Cells[filterRow, 6, filterRow, 7].Merge = true;
+
+        // Date Range Filter
+        string dateRangeText = "All Dates";
+        if (startDate.HasValue && endDate.HasValue)
         {
-            ws.Cells[currentRow, col].Style.Font.Size = 10;
-            if (col == 1 || col == 5)
+            if (startDate.Value.Date == endDate.Value.Date)
             {
-                ws.Cells[currentRow, col].Style.Font.Bold = true;
+                dateRangeText = startDate.Value.ToString("MMMM dd, yyyy");
+            }
+            else
+            {
+                dateRangeText = $"{startDate.Value:MMMM dd, yyyy} to {endDate.Value:MMMM dd, yyyy}";
             }
         }
-        ws.Row(currentRow).Height = 22;
-        currentRow++;
+        else if (startDate.HasValue)
+        {
+            dateRangeText = $"From {startDate.Value:MMMM dd, yyyy}";
+        }
+        else if (endDate.HasValue)
+        {
+            dateRangeText = $"To {endDate.Value:MMMM dd, yyyy}";
+        }
 
+        // If we have at least one date, add it to the next row
+        if (startDate.HasValue || endDate.HasValue)
+        {
+            ws.Cells[filterRow + 1, 1].Value = "Date Range:";
+            ws.Cells[filterRow + 1, 2].Value = dateRangeText;
+            ws.Cells[filterRow + 1, 2, filterRow + 1, 3].Merge = true;
+        }
+
+        // Format filter rows
+        for (int i = 0; i <= 1; i++) // Two possible filter rows
+        {
+            for (int col = 1; col <= totalColumns; col++)
+            {
+                var cell = ws.Cells[filterRow + i, col];
+                cell.Style.Font.Size = 10;
+                if (col == 1 || col == 5)
+                {
+                    cell.Style.Font.Bold = true;
+                }
+            }
+            ws.Row(filterRow + i).Height = 22;
+        }
+
+        currentRow = filterRow + (startDate.HasValue || endDate.HasValue ? 2 : 1);
+
+        // ======================
+        // REQUEST COUNT
+        // ======================
         ws.Cells[currentRow, 1].Value = "Request Count:";
         ws.Cells[currentRow, 2].Value = data.Count;
         ws.Cells[currentRow, 1].Style.Font.Bold = true;
@@ -139,7 +183,7 @@ public class ExportRequest
 
         // Updated headers with Business Unit and Amount
         string[] headers =
-        {
+        [
             "Series No",
             "Requested By",
             "Nature Of Request",
@@ -149,7 +193,7 @@ public class ExportRequest
             "Status",
             "Amount", // NEW COLUMN
             "Date Requested"
-        };
+        ];
 
         for (int col = 0; col < headers.Length; col++)
         {
@@ -303,7 +347,7 @@ public class ExportRequest
         // Set column widths
         ws.Column(1).Width = Math.Max(ws.Column(1).Width, 15);  // Series No
         ws.Column(2).Width = Math.Max(ws.Column(2).Width, 25);  // Requested By
-        ws.Column(3).Width = Math.Max(ws.Column(3).Width, 35);  // Nature Of Request
+        ws.Column(3).Width = 45;   // Nature Of Request
         ws.Column(4).Width = Math.Max(ws.Column(4).Width, 25);  // Division/Dept
         ws.Column(5).Width = Math.Max(ws.Column(5).Width, 20);  // Business Unit
         ws.Column(6).Width = Math.Max(ws.Column(6).Width, 15);  // Priority

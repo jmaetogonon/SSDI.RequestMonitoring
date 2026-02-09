@@ -7,21 +7,21 @@
             <h3>  Requests Pending After Your Approval   </h3>
             @if (Items.Any())
             {
-                <span class="card-count">@FilteredItems.Where(e => e.PendingSince != null).Count()</span>
+                <span class="card-count">@_filteredItems.Where(e => e.PendingSince != null).Count()</span>
             }
         </div>
         <div class="approved-request-filter">
-            <button class="filter-btn @(filter == "all" ? "filter-btn--active" : "")"
+            <button class="filter-btn @(_filter == "all" ? "filter-btn--active" : "")"
                     @onclick="@(() => ApplyTeamRequestFilter("all"))"
                     title="All requests">
                 All
             </button>
-            <button class="filter-btn @(filter == "purchase" ? "filter-btn--active" : "")"
+            <button class="filter-btn @(_filter == "purchase" ? "filter-btn--active" : "")"
                     @onclick="@(() => ApplyTeamRequestFilter("purchase"))"
                     title="Purchase requests">
                 <i class="bi bi-cart"></i> Purchases
             </button>
-            <button class="filter-btn @(filter == "joborder" ? "filter-btn--active" : "")"
+            <button class="filter-btn @(_filter == "joborder" ? "filter-btn--active" : "")"
                     @onclick="@(() => ApplyTeamRequestFilter("joborder"))"
                     title="Job orders">
                 <i class="bi bi-tools"></i> Jobs
@@ -30,10 +30,10 @@
     </div>
 
     <div class="approved-requests">
-        @if (FilteredItems.Where(e => e.PendingSince != null).Any())
+        @if (_filteredItems.Where(e => e.PendingSince != null).Any())
         {
             <div class="approved-requests__list">
-                @foreach (var request in FilteredItems.Where(e=>e.PendingSince != null))
+                @foreach (var request in _filteredItems.Where(e => e.PendingSince != null))
                 {
                     <div class="approved-request-item" @onclick="@(() => ViewRequestDetails(request))">
 
@@ -67,7 +67,7 @@
 
 
                                 <span class="dashboard-status-badge" data-status="@request.Status">
-                                    @utils.GetStatusDisplay(request.Status)
+                                    @Utils.GetStatusDisplay(request.Status)
                                 </span>
                             </div>
                         </div>
@@ -90,31 +90,31 @@
     [Parameter] public List<ApprovedRequestItem> Items { get; set; } = new();
     [Parameter] public RequestType RequestType { get; set; } = RequestType.All;
 
-    private string filter = "all";
-    private List<ApprovedRequestItem> FilteredItems = [];
+    private string _filter = "all";
+    private List<ApprovedRequestItem> _filteredItems = [];
 
     protected override void OnParametersSet()
     {
-        filter = RequestType switch
+        _filter = RequestType switch
         {
             RequestType.Purchase => "purchase",
             RequestType.JobOrder => "joborder",
             _ => "all"
         };
 
-        ApplyFilter(filter);
+        ApplyFilter(_filter);
     }
 
     private async Task ApplyTeamRequestFilter(string filter)
     {
         await Task.Delay(1);
-        this.filter = filter;
+        this._filter = filter;
         ApplyFilter(filter);
     }
 
     private void ApplyFilter(string filter)
     {
-        FilteredItems = filter switch
+        _filteredItems = filter switch
         {
             "purchase" => Items.Where(a => a.RequestType == "purchase").ToList(),
             "joborder" => Items.Where(a => a.RequestType == "joborder").ToList(),
@@ -175,5 +175,4 @@
         if (days <= 365) return $"{days / 30}m ago";
         return $"{days / 365}y ago";
     }
-
 }

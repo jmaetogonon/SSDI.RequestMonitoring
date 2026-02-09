@@ -25,6 +25,15 @@ public class UserSvc : BaseHttpService, IUserSvc
         });
     }
 
+    public async Task<List<UserVM>> GetUsers()
+    {
+        return await SafeApiCall(async () =>
+        {
+            var requests = await _client.GetAllUsersAsync();
+            return _mapper.Map<List<UserVM>>(requests);
+        });
+    }
+
     public async Task<bool> SyncUsers()
     {
         try

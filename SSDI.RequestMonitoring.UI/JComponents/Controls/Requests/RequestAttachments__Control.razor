@@ -6,15 +6,21 @@
 @using SSDI.RequestMonitoring.UI.Models.Requests
 @implements IAsyncDisposable
 
+<AttachmentViewer__Modal ShowPreview="@_showPreview"
+                         SelectedAttachment="@_selectedAttachment"
+                         PreviewUrl="@_previewUrl"
+                         IsLoadingPreview="@_isLoadingPreview"
+                         OnClose="@CloseAttachmentPreview" />
+
 <Details__Card>
     <DetailsRow__Card Label="Supporting Documents" FullRow="true">
         <div class="attachments-header">
             <div class="attachments-stats">
                 <i class="bi bi-paperclip"></i>
                 <span>@Request.Attachments.Where(x => x.AttachType == AttachType).Count() files attached</span>
-                @if (isDownloadingAll)
+                @if (_isDownloadingAll)
                 {
-                    <span class="download-progress">(@currentDownloadIndex/@Request.Attachments.Where(x => x.AttachType == AttachType).Count())</span>
+                    <span class="download-progress">(@_currentDownloadIndex/@Request.Attachments.Where(x => x.AttachType == AttachType).Count())</span>
                 }
             </div>
 
@@ -36,8 +42,8 @@
                 <button class="btn btn--outline btn--sm"
                         @onclick="DownloadAll"
                         title="Download all files"
-                        disabled="@isDownloadingAll">
-                    @if (isDownloadingAll)
+                        disabled="@_isDownloadingAll">
+                    @if (_isDownloadingAll)
                     {
                         <i class="bi bi-arrow-repeat spinning"></i>
                         <span>Downloading...</span>
@@ -57,8 +63,8 @@
         <div class="attachments-grid">
             @foreach (var attachment in Request.Attachments.Where(x => x.AttachType == AttachType))
             {
-                var isDownloadingThis = (downloadingAttachments.Contains(attachment.Id.ToString()));
-                var isLoadingPreview = (loadingPreviewId == attachment.Id.ToString());
+                var isDownloadingThis = (_downloadingAttachments.Contains(attachment.Id.ToString()));
+                var isLoadingPreview = (_loadingPreviewId == attachment.Id.ToString());
 
                 <div class="attachment-card" @onclick="() => ViewAttachment(attachment)" title="Click to view">
                     <div class="attachment-card__icon">
@@ -118,5 +124,3 @@
         </DetailsRow__Card>
     }
 </Details__Card>
-
-<AttachmentViewer__Modal ShowPreview="@showPreview" SelectedAttachment="@(selectedAttachment)" PreviewUrl="@previewUrl" IsLoadingPreview="@isLoadingPreview" OnClose="@CloseAttachmentPreview" />

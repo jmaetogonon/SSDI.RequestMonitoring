@@ -14,11 +14,11 @@ public partial class NewRequisition__Modal : ComponentBase
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public Confirmation__Modal? ConfirmModal { get; set; }
 
     private Request_RS_SlipVM Model { get; set; } = default!;
-    private bool isPR => RequestType is RequestType.Purchase;
-    private ICollection<Request_AttachVM> Attachments { get; set; } = [];
-    private Confirmation__Modal? confirmModal;
+    private bool IsPR => RequestType is RequestType.Purchase;
+    private ICollection<Request_AttachVM> Attachments { get; set; } = []; 
 
     private bool _isDisabledBtns = false;
     private bool IsShowAlert { get; set; }
@@ -60,10 +60,10 @@ public partial class NewRequisition__Modal : ComponentBase
             CancelText = "Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await ConfirmModal!.ShowAsync(options);
         if (result)
         {
-            await confirmModal!.SetLoadingAsync(true);
+            await ConfirmModal!.SetLoadingAsync(true);
 
             _isDisabledBtns = true;
             IsShowAlert = false;
@@ -76,7 +76,7 @@ public partial class NewRequisition__Modal : ComponentBase
             {
                 if (Attachments.Where(e => e.AttachType == RequestAttachType.Requisition).Any())
                 {
-                    var res = await AttachSvc.UploadAsync(RequestHeader!.Id, isPR, Attachments, RequestAttachType.Requisition, response.Data);
+                    var res = await AttachSvc.UploadAsync(RequestHeader!.Id, IsPR, Attachments, RequestAttachType.Requisition, response.Data);
                     if (!res.Success)
                     {
                         toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -84,16 +84,16 @@ public partial class NewRequisition__Modal : ComponentBase
                 }
 
                 ResetForm();
-                await confirmModal!.SetLoadingAsync(false);
-                await confirmModal!.HideAsync();
+                await ConfirmModal!.SetLoadingAsync(false);
+                await ConfirmModal!.HideAsync();
                 await OnSave.InvokeAsync(null);
                 return;
             }
 
             HandleFormAlert((response.Message, AlertType.error));
             _isDisabledBtns = false;
-            await confirmModal!.SetLoadingAsync(false);
-            await confirmModal!.HideAsync();
+            await ConfirmModal!.SetLoadingAsync(false);
+            await ConfirmModal!.HideAsync();
         }
     }
 

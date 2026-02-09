@@ -8,6 +8,8 @@
 
 <PageTitle>Divisions</PageTitle>
 
+<Confirmation__Modal @ref="_confirmModal" />
+
 <div class="main--content">
     <BreadcrumbNav IsNoPadding="true">
         <BreadcrumbItem Label="System Configuration" Href="/system-configuration" />
@@ -34,7 +36,7 @@
 
     <!-- Filter Bar -->
     <div class="sysconfig-filter-container">
-        <FluentSearch @bind-Value="@searchValue"
+        <FluentSearch @bind-Value="@_searchValue"
                       @bind-Value:after="HandleSearch"
                       Immediate="true"
                       Placeholder="Search"
@@ -43,14 +45,14 @@
 
     <div class="sysconfig-page__main__section">
         <div class="sysconfig__table-container">
-            @if (AllItems == null)
+            @if (_allItems == null)
             {
                 <div class="sysconfig-loading">
                     <div class="loading-spinner"></div>
                     <p>Loading divisions...</p>
                 </div>
             }
-            else if (AllItems.Count == 0)
+            else if (_allItems.Count == 0)
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-building"></i>
@@ -61,12 +63,12 @@
                     </button>
                 </div>
             }
-            else if (FilteredItems.Count == 0)
+            else if (_filteredItems.Count == 0)
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-search"></i>
                     <h3>No Results Found</h3>
-                    <p>No divisions match your search "<strong>@searchValue</strong>"</p>
+                    <p>No divisions match your search "<strong>@_searchValue</strong>"</p>
                     <button class="btn btn--ghost" @onclick="ClearSearch">
                         <i class="bi bi-x-lg"></i> Clear Search
                     </button>
@@ -89,7 +91,7 @@
                         @{
                             var displayIndex = 1;
                         }
-                        @foreach (var division in FilteredItems)
+                        @foreach (var division in _filteredItems)
                         {
                             var isNew = division.Id == 0;
                             <div class="sysconfig-table-row data-row @(isNew ? "new-item" : "")" key="@division.Id">
@@ -103,13 +105,13 @@
                                                @bind="division.Name"
                                                @bind:event="oninput"
                                                placeholder="Enter division name"
-                                               @onkeydown="@(e => OnInputKeyDown(e, division))" />
+                                               @onkeydown="@(e => OnInputKeyDown(e))" />
                                         @if (!string.IsNullOrEmpty(division.Name) && division.Name.Length > 0)
                                         {
                                             <span class="input-counter">@division.Name.Length/100</span>
                                         }
                                     </div>
-                                    @if (string.IsNullOrEmpty(division.Name) && showValidations)
+                                    @if (string.IsNullOrEmpty(division.Name) && _showValidations)
                                     {
                                         <span class="validation-error">Division name is required</span>
                                     }
@@ -141,11 +143,11 @@
                         <i class="bi bi-plus-lg"></i> Add New Division
                     </button>
 
-                    @if (AllItems.Any(d => d.Id == 0))
+                    @if (_allItems.Any(d => d.Id == 0))
                     {
                         <div class="new-items-count" @onclick="ScrollToNewItems" title="Click to scroll to new items">
                             <i class="bi bi-arrow-down-circle"></i>
-                            <span>@AllItems.Count(d => d.Id == 0) new division(s) pending save</span>
+                            <span>@_allItems.Count(d => d.Id == 0) new division(s) pending save</span>
                         </div>
                     }
                 </div>
@@ -153,5 +155,3 @@
         </div>
     </div>
 </div>
-
-<Confirmation__Modal @ref="confirmModal" /> 

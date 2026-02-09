@@ -18,6 +18,11 @@
 
 <PageTitle>Purchase Requests</PageTitle>
 
+
+<Confirmation__Modal @ref="_confirmModal" />
+    <NewRequest__Modal IsModalVisible="@_isNewRequestModalVisible" Departments="@_departments" Divisions="@_divisions" OnSave="@OnSaveNewReqModal" OnClose="@OnCloseNewReqModal" ConfirmModal="@_confirmModal" />
+
+
 <div class="main--content">
     <div class="page__header">
         <div class="page__title-section">
@@ -35,15 +40,12 @@
         }
     </div>
 
-    <Confirmation__Modal @ref="confirmModal" />
-    <NewRequest__Modal IsModalVisible="@isNewRequestModalVisible" Departments="departments" Divisions="divisions" OnSave="@OnSaveNewReqModal" OnClose="OnCloseNewReqModal" />
-
     <div class="page__main__section">
         <!-- Metrics Container -->
         <div class="metrics-container">
             <!-- Desktop Grid View -->
             <div class="metrics-grid">
-                @foreach (var summary in StatusSummaries)
+                @foreach (var summary in _statusSummaries)
                 {
                     <StatusWBar__Card Label="@summary.Label"
                                       Count="@summary.Count"
@@ -54,18 +56,17 @@
             </div>
 
             <!-- Mobile Carousel View -->
-            <div class="metrics-carousel" @ref="carouselContainer" @onwheel="HandleWheel">
+            <div class="metrics-carousel" @ref="_carouselContainer" @onwheel="HandleWheel">
                 <!-- Previous Button (Left side) -->
                 <div class="carousel-nav prev">
-                    <button class="carousel-btn prev-btn" @onclick="PrevSlide"
-                            disabled="@(currentSlide == 0)" title="Previous">
+                    <button class="carousel-btn prev-btn" @onclick="PrevSlide" @attributes="HtmlAttributes.DisabledIf(_currentSlide == 0)" title="Previous">
                         <i class="bi bi-chevron-left"></i>
                     </button>
                 </div>
 
                 <!-- Carousel Slides -->
-                <div class="carousel-inner" style="transform: translateX(@($"-{currentSlide * 100}%"));">
-                    @foreach (var summary in StatusSummaries)
+                <div class="carousel-inner" style="transform: translateX(@($"-{_currentSlide * 100}%"));">
+                    @foreach (var summary in _statusSummaries)
                     {
                         <div class="carousel-slide">
                             <StatusWBar__Card Label="@summary.Label"
@@ -79,17 +80,16 @@
 
                 <!-- Next Button (Right side) -->
                 <div class="carousel-nav next">
-                    <button class="carousel-btn next-btn" @onclick="NextSlide"
-                            disabled="@(currentSlide == StatusSummaries.Count - 1)" title="Next">
+                    <button class="carousel-btn next-btn" @onclick="NextSlide" @attributes="HtmlAttributes.DisabledIf(_currentSlide == _statusSummaries.Count - 1)" title="Next">
                         <i class="bi bi-chevron-right"></i>
                     </button>
                 </div>
 
                 <!-- Slide Indicators (Below the card) -->
                 <div class="carousel-indicators">
-                    @for (int i = 0; i < StatusSummaries.Count; i++)
+                    @for (int i = 0; i < _statusSummaries.Count; i++)
                     {
-                        <button class="indicator @(i == currentSlide ? "active" : "")"
+                        <button class="indicator @(i == _currentSlide ? "active" : "")"
                                 @onclick="@(() => GoToSlide(i))"
                                 aria-label="Go to slide @(i + 1)">
                         </button>
@@ -101,21 +101,27 @@
         <div class="page__filters">
             <!-- LEFT FILTERS -->
             <div class="page__filters-left">
-                <FluentSearch @bind-Value="@searchValue"
+                <FluentSearch @bind-Value="@_searchValue"
                               @bind-Value:after="HandleSearch"
                               Immediate="true"
                               Placeholder="Search"
                               Class="page__filters-search" />
 
-                <Status__Filter @ref="statusFilter" SelectedStatusesChanged="@OnStatusFilterChanged" AnchorId="purchaseRequestStatusFilter" />
-                <Priority__Filter @ref="priorityFilter" SelectedPrioritiesChanged="@OnPriorityFilterChanged" AnchorId="purchaseRequestPriorityFilter" />
-                <Clear__Filters OnClear="@ClearAllFilters" />
+                <Status__Filter @ref="_statusFilter" SelectedStatusesChanged="@OnStatusFilterChanged" AnchorId="purchaseRequestStatusFilter" />
+                <Priority__Filter @ref="_priorityFilter" SelectedPrioritiesChanged="@OnPriorityFilterChanged" AnchorId="purchaseRequestPriorityFilter" />
+                <Clear__Filters OnClear="ClearAllFilters" ButtonText="Clear Filters" />
             </div>
 
             <!-- RIGHT ACTION -->
             <div class="page__filters-right">
+                <DateRange__Filter @ref="_dateRangeFilter"
+                                   Position="right"
+                                   OnDateRangeChanged="@OnDateRangeChanged"
+                                   StartDateChanged="@OnStartDateChanged"
+                                   EndDateChanged="@OnEndDateChanged" />
+
                 <button class="page__filters-btn page__export-btn"
-                        disabled="@(FilteredItems == null || !FilteredItems.Any())"
+                        @attributes="HtmlAttributes.DisabledIf(_filteredItems == null || !_filteredItems.Any())"
                         @onclick="ExportToExcel"
                         title="Export to Excel">
                     <i class="bi bi-file-earmark-excel"></i>
@@ -125,13 +131,13 @@
         </div>
 
         <div class="page__table-container @(uiStateSvc.IsStriped ? "striped-grid" : "")" tabindex="-1">
-            @if (AllItems == null || isLoading)
+            @if (_allItems == null || _isLoading)
             {
                 <div class="page__table-loading">
                     <p>Loading purchase requests...</p>
                 </div>
             }
-            else if (AllItems.Count() == 0)
+            else if (_allItems.Count() == 0)
             {
                 <div class="page__table-empty">
                     <i class="bi bi-inbox"></i>
@@ -139,22 +145,22 @@
                     <p class="text-muted">Create your first request to get started</p>
                 </div>
             }
-            else if (FilteredItems?.Count() == 0 && !string.IsNullOrEmpty(searchValue))
+            else if (_filteredItems?.Count() == 0 && !string.IsNullOrEmpty(_searchValue))
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-search"></i>
                     <h3>No purchase requests found</h3>
-                    <p>No purchase requests match your search "<strong>@searchValue</strong>"</p>
+                    <p>No purchase requests match your search "<strong>@_searchValue</strong>"</p>
                     <button class="btn btn--ghost" @onclick="ClearSearch">
                         <i class="bi bi-x-lg"></i> Clear Search
                     </button>
                 </div>
             }
-            else if (FilteredItems?.Count() == 0)
+            else if (_filteredItems?.Count() == 0)
             {
                 <div class="sysconfig-empty">
                     <i class="bi bi-search"></i>
-                    <h3>No matching purchase requests orders</h3>
+                    <h3>No matching purchase requests</h3>
                     <p>No purchase requests match the selected filters</p>
                     <button class="btn btn--ghost" @onclick="ClearAllFilters">
                         <i class="bi bi-x-lg"></i> Clear All Filters
@@ -167,16 +173,11 @@
                     <FluentDataGrid Class="page__table"
                                     TGridItem="Purchase_RequestVM"
                                     ShowHover="true"
-                                    Pagination="@pagination"
+                                    Pagination="@_pagination"
                                     OnRowClick="@OnViewDetails"
                                     GenerateHeader="GenerateHeaderOption.Sticky"
                                     RowSize="DataGridRowSize.Medium"
-                                    Items="FilteredItems">
-                        @* <TemplateColumn Title="View" Width="100px">
-                        <button type="button" class="page__table-btn page__view__details__btn" title="View details">
-                            <i class="bi bi-eye-fill"></i>
-                        </button>
-                    </TemplateColumn> *@
+                                    Items="_filteredItems">
                         <PropertyColumn Title="ID" Property="@(c => c.Id)" Width="100px" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn=true />
                         <PropertyColumn Title="Series" Property="@(c => c.SeriesNumber)" Sortable="true" />
                         <PropertyColumn Title="Requested By" Property="@(c => c.Name)" Sortable="true" />
@@ -189,20 +190,20 @@
                                     @context.DateRequested?.ToString("MMM dd, yyyy")
                                 </span>
                                 <span class="page__table-date-relative">
-                                    @(utils.GetRelativeTime(context.DateRequested))
+                                    @(Utils.GetRelativeTime(context.DateRequested))
                                 </span>
                             </div>
                         </TemplateColumn>
                         <TemplateColumn Title="Priority" Align="Align.Center">
                             <div class="page__table-priority">
                                 <div class="priority-dot" data-prio="@context.Priority"></div>
-                                <span>@(utils.GetPriorityDisplay(context.Priority, context.OtherPriority, true))</span>
+                                <span>@(Utils.GetPriorityDisplay(context.Priority, context.OtherPriority, true))</span>
                             </div>
                         </TemplateColumn>
-                        <TemplateColumn Title="Status" Align="Align.Center" Sortable="true" SortBy="sortStatus">
+                        <TemplateColumn Title="Status" Align="Align.Center" Sortable="true" SortBy="_sortStatus">
                             <div class="page__table-status" data-status="@context.Status">
-                                <i class="@utils.GetStatusIcon(context.Status)"></i>
-                                <span class="page__table-status-text">@utils.GetStatusDisplay(context.Status)</span>
+                                <i class="@Utils.GetStatusIcon(context.Status)"></i>
+                                <span class="page__table-status-text">@Utils.GetStatusDisplay(context.Status)</span>
                             </div>
                         </TemplateColumn>
                         @* <TemplateColumn Title="Actions" Width="140px" Align="Align.Center">
@@ -222,7 +223,7 @@
                     </FluentDataGrid>
                 </div>
 
-                <Pagination__Control Pagination="@pagination" PageSizeChanged="@OnPageSizeChanged" IsStripedChanged="@(() => StateHasChanged())" />
+                <Pagination__Control Pagination="@_pagination" PageSizeChanged="@OnPageSizeChanged" IsStripedChanged="@(() => StateHasChanged())" />
             }
         </div>
     </div>

@@ -20,10 +20,12 @@
     <BreadcrumbItem Label="Details" IsCurrent="true" />
 </BreadcrumbNav>
 
-<Confirmation__Modal @ref="confirmModal" />
-<EditRequest__Modal IsModalVisible="@isEditRequestModalVisible" RequestType="RequestType.Purchase" Departments="departments" Divisions="divisions" OnSave="@OnSaveEditReqModal" OnClose="OnCloseEditReqModal" RequestModel="Request ?? new()" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" />
-<PdfViewer__Modal IsVisible="@isPdfModalVisible"
-                  PdfBase64="@pdfBase64"
+<Confirmation__Modal @ref="_confirmModal" />
+
+<EditRequest__Modal IsModalVisible="@_isEditRequestModalVisible" RequestType="@RequestType.Purchase" Departments="@_departments" Divisions="@_divisions" OnSave="@OnSaveEditReqModal" OnClose="@OnCloseEditReqModal" RequestModel="@(Request ?? new())" IsResubmit="@(Request is not null && Request.Status is RequestStatus.Rejected)" ConfirmModal="@_confirmModal" />
+
+<PdfViewer__Modal IsVisible="@_isPdfModalVisible"
+                  PdfBase64="@_pdfBase64"
                   FileName="@($"PR{Request?.SeriesNumber}.pdf")"
                   OnClose="@ClosePdfModal" />
 
@@ -58,12 +60,12 @@
             {
                 <div class="tabs">
                     <div class="tabs__header">
-                        <button class="tabs__button @(ActiveTab == "details" ? "tabs__button--active" : "")"
+                        <button class="tabs__button @(_activeTab == "details" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("details"))">
                             <i class="bi bi-info-circle"></i>
                             Details
                         </button>
-                        <button class="tabs__button @(ActiveTab == "attachments" ? "tabs__button--active" : "")"
+                        <button class="tabs__button @(_activeTab == "attachments" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("attachments"))">
                             <i class="bi bi-paperclip"></i>
                             Attachments
@@ -72,7 +74,7 @@
                                 <span class="tabs__badge">@Request.Attachments.Where(e => e.AttachType == RequestAttachType.Request).Count()</span>
                             }
                         </button>
-                        <button class="tabs__button @(ActiveTab == "slips" ? "tabs__button--active" : "")"
+                        <button class="tabs__button @(_activeTab == "slips" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("slips"))">
                             <i class="bi bi-file-earmark-text"></i>
                             Requisition/PO Slip
@@ -81,12 +83,12 @@
                                 <span class="tabs__badge">@(Request.RequisitionSlips?.Count + Request.POSlips.Count)</span>
                             }
                         </button>
-                        <button class="tabs__button @(ActiveTab == "approval" ? "tabs__button--active" : "")"
+                        <button class="tabs__button @(_activeTab == "approval" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("approval"))">
                             <i class="bi bi-clipboard-check"></i>
                             Approval Process
                         </button>
-                        <button class="tabs__button @(ActiveTab == "timeline" ? "tabs__button--active" : "")"
+                        <button class="tabs__button @(_activeTab == "timeline" ? "tabs__button--active" : "")"
                                 @onclick="@(() => SetActiveTab("timeline"))">
                             <i class="bi bi-clock-history"></i>
                             Timeline
@@ -94,23 +96,23 @@
                     </div>
 
                     <div class="tabs__content">
-                        @if (ActiveTab == "details")
+                        @if (_activeTab == "details")
                         {
-                            <RequestDetails__Control Request="Request" ReportType="@ReportType" AwaitingApprovalDate="@awaitingApprovalDate" />
+                            <RequestDetails__Control Request="Request" ReportType="@ReportType" AwaitingApprovalDate="@AwaitingApprovalDate" />
                         }
-                        else if (ActiveTab == "slips")
+                        else if (_activeTab == "slips")
                         {
-                            <SlipTabs__Control Request="Request" RequestType="RequestType.Purchase" AttachSvc="attachSvc" RSSlipSvc="rsSlipSvc" POSlipSvc="poSlipSvc" OnRequestChanged="Reload" ConfirmModal="confirmModal" />
+                            <SlipTabs__Control Request="Request" RequestType="RequestType.Purchase" AttachSvc="attachSvc" RSSlipSvc="rsSlipSvc" POSlipSvc="poSlipSvc" OnRequestChanged="Reload" ConfirmModal="_confirmModal" />
                         }
-                        else if (ActiveTab == "approval")
+                        else if (_activeTab == "approval")
                         {
                             <RequestApprovalProcess__Control Request="Request" />
                         }
-                        else if (ActiveTab == "attachments")
+                        else if (_activeTab == "attachments")
                         {
-                            <RequestAttachments__Control Request="Request" RequestType="RequestType.Purchase" AttachSvc="attachSvc" OnRequestChanged="Reload" AttachType="RequestAttachType.Request" ConfirmModal="confirmModal" ReportType="@ReportType" />
+                            <RequestAttachments__Control Request="Request" RequestType="RequestType.Purchase" AttachSvc="attachSvc" OnRequestChanged="Reload" AttachType="RequestAttachType.Request" ConfirmModal="_confirmModal" ReportType="@ReportType" />
                         }
-                        else if (ActiveTab == "timeline")
+                        else if (_activeTab == "timeline")
                         {
                             <RequestTimeline__Control Request="Request" />
                         }

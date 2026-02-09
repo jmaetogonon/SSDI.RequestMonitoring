@@ -13,7 +13,7 @@ public partial class NewRequestLogin__Modal : ComponentBase
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
 
-    private Confirmation__Modal? confirmModal;
+    private Confirmation__Modal? _confirmModal;
     private Purchase_RequestVM RequestModel { get; set; } = new();
 
     private bool _isDisabledBtns = false;
@@ -64,10 +64,10 @@ public partial class NewRequestLogin__Modal : ComponentBase
             CancelText = "Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (result)
         {
-            await confirmModal!.SetLoadingAsync(true);
+            await _confirmModal!.SetLoadingAsync(true);
 
 
             _isDisabledBtns = true;
@@ -81,8 +81,8 @@ public partial class NewRequestLogin__Modal : ComponentBase
             if (response.Success)
             {
                 ResetForm();
-                await confirmModal!.SetLoadingAsync(false);
-                await confirmModal!.HideAsync();
+                await _confirmModal!.SetLoadingAsync(false);
+                await _confirmModal!.HideAsync();
                 await OnSave.InvokeAsync(null);
                 return;
             }
@@ -90,8 +90,8 @@ public partial class NewRequestLogin__Modal : ComponentBase
             IsShowAlert = true;
             AlertMessage = response.Message;
             _isDisabledBtns = false;
-            await confirmModal!.SetLoadingAsync(false);
-            await confirmModal!.HideAsync();
+            await _confirmModal!.SetLoadingAsync(false);
+            await _confirmModal!.HideAsync();
         }
 
     }

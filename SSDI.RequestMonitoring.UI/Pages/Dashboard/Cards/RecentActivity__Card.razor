@@ -7,17 +7,17 @@
         <h3>Recent Activity</h3>
 
         <div class="activity-filters">
-            <button class="filter-btn @(activityFilter == "all" ? "filter-btn--active" : "")"
+            <button class="filter-btn @(_activityFilter == "all" ? "filter-btn--active" : "")"
                     @onclick="@(() => ChangeFilter("all"))">
                 All
             </button>
 
-            <button class="filter-btn @(activityFilter == "purchase" ? "filter-btn--active" : "")"
+            <button class="filter-btn @(_activityFilter == "purchase" ? "filter-btn--active" : "")"
                     @onclick="@(() => ChangeFilter("purchase"))"> 
                 <i class="bi bi-cart"></i> Purchases
             </button>
 
-            <button class="filter-btn @(activityFilter == "joborder" ? "filter-btn--active" : "")"
+            <button class="filter-btn @(_activityFilter == "joborder" ? "filter-btn--active" : "")"
                     @onclick="@(() => ChangeFilter("joborder"))">
                 <i class="bi bi-tools"></i> Jobs
             </button>
@@ -25,9 +25,9 @@
     </div>
 
     <div class="recent-activity">
-        @if (FilteredActivity?.Any() == true)
+        @if (_filteredActivity?.Any() == true)
         {
-            @foreach (var activity in FilteredActivity)
+            @foreach (var activity in _filteredActivity)
             {
                 <div class="activity-item" @onclick="() => ViewRequestDetails(activity.RequestType, activity.Id)">
 
@@ -45,11 +45,11 @@
 
                         <div class="activity-item__meta">
                             <span class="dashboard-status-badge" data-status="@activity.Status">
-                                @utils.GetStatusDisplay(activity.Status)
+                                @Utils.GetStatusDisplay(activity.Status)
                             </span>
 
                             <span class="activity-item__date">
-                                @utils.GetRelativeTime(activity.Date)
+                                @Utils.GetRelativeTime(activity.Date)
                             </span>
                         </div>
                     </div>
@@ -70,13 +70,13 @@
     [Parameter] public List<ActivityItem> Items { get; set; } = new();
     [Parameter] public RequestType RequestType { get; set; } = RequestType.All;
 
-    private string activityFilter = "all";
-    private List<ActivityItem> FilteredActivity = [];
+    private string _activityFilter = "all";
+    private List<ActivityItem> _filteredActivity = [];
 
     protected override void OnParametersSet()
     {
         // Sync the activity filter from the RequestType parameter
-        activityFilter = RequestType switch
+        _activityFilter = RequestType switch
         {
             RequestType.Purchase => "purchase",
             RequestType.JobOrder => "joborder",
@@ -84,7 +84,7 @@
         };
 
         // Apply the filter to Items
-        FilteredActivity = activityFilter switch
+        _filteredActivity = _activityFilter switch
         {
             "purchase" => Items.Where(a => a.RequestType == "purchase").ToList(),
             "joborder" => Items.Where(a => a.RequestType == "joborder").ToList(),
@@ -95,8 +95,8 @@
     private async Task ChangeFilter(string filter)
     {
         await Task.Delay(1);
-        activityFilter = filter;
-        FilteredActivity = filter switch
+        _activityFilter = filter;
+        _filteredActivity = filter switch
            {
             "purchase" => Items.Where(a => a.RequestType == "purchase").ToList(),
             "joborder" => Items.Where(a => a.RequestType == "joborder").ToList(),

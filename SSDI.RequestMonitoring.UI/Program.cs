@@ -50,7 +50,6 @@ builder.Services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
 
 builder.Services.AddScoped<IUIStateService, UIStateService>();
 builder.Services.AddScoped<CurrentUser>();
-builder.Services.AddScoped<Utils>();
 
 builder.Services.AddTransient<ExportRequest>();
 

@@ -1,0 +1,239 @@
+﻿@namespace SSDI.RequestMonitoring.UI.JComponents.Filters
+@inherits FluentComponentBase
+
+<div class="date-range-filter @PositionClass" @ref="_filterContainer">
+    <!-- Main Filter Button -->
+    <button class="date-range-btn"
+            @onclick="@ToggleDropdown"
+            @onmousedown:stopPropagation="true"
+            title="Date Range Filter"
+            type="button">
+        <i class="bi bi-calendar-range"></i>
+        <span class="date-range-label">
+            @GetDateRangeLabel()
+        </span>
+        @if (HasActiveFilter)
+        {
+            <span class="filter-badge"></span>
+        }
+        <i class="bi @(_sDropdownVisible ? "bi-chevron-up" : "bi-chevron-down") date-range-arrow"></i>
+    </button>
+
+    <!-- Click Outside Overlay -->
+    @if (_sDropdownVisible)
+    {
+        <div class="date-range-overlay"
+             @onclick="() => _sDropdownVisible = false"
+             @onmousedown:stopPropagation="true"></div>
+    }
+
+    <!-- Dropdown Content -->
+    @if (_sDropdownVisible)
+    {
+        <div class="date-range-dropdown @PositionClass" @onmousedown:stopPropagation="true">
+            <div class="date-range-header">
+                <span>Date Range</span>
+                <button class="clear-btn" @onclick="Clear" @onmousedown:stopPropagation="true" type="button">
+                    Clear
+                </button>
+            </div>
+
+            <div class="date-range-presets">
+                <button class="preset-btn @(IsPresetActive("today") ? "active" : "")"
+                        @onclick="@(() => ApplyPreset("today"))"
+                        type="button">
+                    Today
+                </button>
+                <button class="preset-btn @(IsPresetActive("yesterday") ? "active" : "")"
+                        @onclick="@(() => ApplyPreset("yesterday"))"
+                        type="button">
+                    Yesterday
+                </button>
+                <button class="preset-btn @(IsPresetActive("last7") ? "active" : "")"
+                        @onclick="@(() => ApplyPreset("last7"))"
+                        type="button">
+                    Last 7 days
+                </button>
+                <button class="preset-btn @(IsPresetActive("thisMonth") ? "active" : "")"
+                        @onclick="@(() => ApplyPreset("thisMonth"))"
+                        type="button">
+                    This Month
+                </button>
+                <button class="preset-btn @(IsPresetActive("lastMonth") ? "active" : "")"
+                        @onclick="@(() => ApplyPreset("lastMonth"))"
+                        type="button">
+                    Last Month
+                </button>
+                <button class="preset-btn @(IsPresetActive("lastYear") ? "active" : "")"
+                        @onclick="@(() => ApplyPreset("lastYear"))"
+                        type="button">
+                    Last Year
+                </button>
+            </div>
+
+            <div class="date-range-custom">
+                <div class="date-input-group">
+                    <label>From</label>
+                    <FluentDatePicker @bind-Value="_startDate"
+                                      Format="yyyy-MM-dd"
+                                      Max="@(_endDate ?? DateTime.Now)"
+                                      Class="date-picker"
+                                      @onchange="@OnStartDateChanged" />
+                </div>
+
+                <div class="date-input-group">
+                    <label>To</label>
+                    <FluentDatePicker @bind-Value="_endDate"
+                                      Format="yyyy-MM-dd"
+                                      Min="@_startDate"
+                                      Max="@DateTime.Now"
+                                      Class="date-picker"
+                                      @onchange="@OnEndDateChanged" />
+                </div>
+
+                <div class="date-range-actions">
+                    <button class="apply-btn" @onclick="ApplyCustomRange" @onmousedown:stopPropagation="true" type="button">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public EventCallback<DateTime?> StartDateChanged { get; set; }
+    [Parameter] public EventCallback<DateTime?> EndDateChanged { get; set; }
+    [Parameter] public EventCallback OnDateRangeChanged { get; set; }
+    [Parameter] public string Position { get; set; } = "left"; // "left" or "right"
+
+    private ElementReference _filterContainer;
+    private bool _sDropdownVisible { get; set; }
+    private DateTime? _startDate { get; set; }
+    private DateTime? _endDate { get; set; }
+    private string? _activePreset;
+    private bool HasActiveFilter => _startDate.HasValue || _endDate.HasValue;
+
+    private string PositionClass => $"date-range-{Position}";
+
+    private void ToggleDropdown()
+    {
+        _sDropdownVisible = !_sDropdownVisible;
+    }
+
+    private string GetDateRangeLabel()
+    {
+        if (!_startDate.HasValue && !_endDate.HasValue)
+            return "Date Range";
+
+        if (_startDate.HasValue && _endDate.HasValue)
+        {
+            if (_startDate.Value.Date == _endDate.Value.Date)
+                return _startDate.Value.ToString("MMM dd, yyyy");
+
+            return $"{_startDate.Value:MMM dd} - {_endDate.Value:MMM dd, yyyy}";
+        }
+
+        if (_startDate.HasValue)
+            return $"From {_startDate.Value:MMM dd, yyyy}";
+
+        if (_endDate.HasValue)
+            return $"To {_endDate.Value:MMM dd, yyyy}";
+
+        return "Date Range";
+    }
+
+    private bool IsPresetActive(string preset)
+    {
+        return _activePreset == preset;
+    }
+
+    private async Task ApplyPreset(string preset)
+    {
+        _activePreset = preset;
+        var today = DateTime.Today;
+
+        switch (preset)
+        {
+            case "today":
+                _startDate = today;
+                _endDate = today;
+                break;
+            case "yesterday":
+                _startDate = today.AddDays(-1);
+                _endDate = today.AddDays(-1);
+                break;
+            case "last7":
+                _startDate = today.AddDays(-7);
+                _endDate = today;
+                break;
+            case "thisMonth":
+                _startDate = new DateTime(today.Year, today.Month, 1);
+                _endDate = today;
+                break;
+            case "lastMonth":
+                var lastMonth = today.AddMonths(-1);
+                _startDate = new DateTime(lastMonth.Year, lastMonth.Month, 1);
+                _endDate = new DateTime(lastMonth.Year, lastMonth.Month, DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month));
+                break;
+            case "lastYear":
+                var lastYear = today.AddYears(-1);
+                _startDate = new DateTime(lastYear.Year, 1, 1);
+                _endDate = new DateTime(lastYear.Year, 12, 31);
+                break;
+        }
+
+        await ApplyDateRange();
+    }
+
+    private async Task OnStartDateChanged()
+    {
+        _activePreset = null;
+        await ApplyDateRange();
+    }
+
+    private async Task OnEndDateChanged()
+    {
+        _activePreset = null;
+        await ApplyDateRange();
+    }
+
+    private async Task ApplyCustomRange()
+    {
+        if (_startDate.HasValue && _endDate.HasValue && _startDate > _endDate)
+        {
+            // Swap dates if start is after end
+            (_startDate, _endDate) = (_endDate, _startDate);
+        }
+
+        _activePreset = null;
+        await ApplyDateRange();
+        _sDropdownVisible = false;
+    }
+
+    private async Task ApplyDateRange()
+    {
+        await StartDateChanged.InvokeAsync(_startDate);
+        await EndDateChanged.InvokeAsync(_endDate);
+        await OnDateRangeChanged.InvokeAsync();
+    }
+
+    public void Clear()
+    {
+        _startDate = null;
+        _endDate = null;
+        _activePreset = null;
+        StartDateChanged.InvokeAsync(_startDate);
+        EndDateChanged.InvokeAsync(_endDate);
+        OnDateRangeChanged.InvokeAsync();
+        _sDropdownVisible = false;
+    }
+
+    public void SetDateRange(DateTime? start, DateTime? end)
+    {
+        _startDate = start;
+        _endDate = end;
+        _activePreset = null;
+        StateHasChanged();
+    }
+}

@@ -19,14 +19,14 @@ public partial class VolumeComparison__Bar : ComponentBase
     [Parameter] public string EmptyMessage { get; set; } = "No data available for the selected period";
     [Parameter] public RequestType RequestType { get; set; } = RequestType.All;
 
-    private string chartPeriod = "monthly";
-    protected List<VolumeChartItem> ChartData = [];
+    private string _chartPeriod = "monthly";
+    protected List<VolumeChartItem> _chartData = [];
     private bool _jsReady = false;
 
     private string ChartTitle =>
-    $"{utils.GetRequestTypeName(RequestType)} Requests Comparison ({utils.FirstCharToUpper(chartPeriod)})";
+    $"{Utils.GetRequestTypeName(RequestType)} Requests Comparison ({Utils.FirstCharToUpper(_chartPeriod)})";
 
-    private BarConfig chartConfig = new()
+    private readonly BarConfig _chartConfig = new()
     {
         Options = new BarOptions
         {
@@ -55,8 +55,8 @@ public partial class VolumeComparison__Bar : ComponentBase
             },
             Scales = new BarScales
             {
-                XAxes = new List<CartesianAxis>
-                    {
+                XAxes =
+                    [
                         new BarCategoryAxis
                         {
                             GridLines = new GridLines { Display = false },
@@ -66,9 +66,9 @@ public partial class VolumeComparison__Bar : ComponentBase
                                 MaxRotation = 0
                             }
                         }
-                    },
-                YAxes = new List<CartesianAxis>
-                    {
+                    ],
+                YAxes =
+                    [
                         new LinearCartesianAxis
                         {
                             GridLines = new GridLines { DrawBorder = false },
@@ -79,7 +79,7 @@ public partial class VolumeComparison__Bar : ComponentBase
                                 Precision = 0
                             }
                         }
-                    }
+                    ]
             },
             Animation = new Animation
             {
@@ -89,7 +89,7 @@ public partial class VolumeComparison__Bar : ComponentBase
         }
     };
 
-    private Chart? chartRef;
+    private Chart? _chartRef;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -117,15 +117,15 @@ public partial class VolumeComparison__Bar : ComponentBase
         await LoadChartData();
         UpdateChart();
 
-        if (chartRef != null)
+        if (_chartRef != null)
         {
-            await chartRef.Update();
+            await _chartRef.Update();
         }
     }
 
     private async Task LoadChartData()
     {
-        ChartData = chartPeriod switch
+        _chartData = _chartPeriod switch
         {
             "daily" => await GetDailyData(),
             "weekly" => await GetWeeklyData(),
@@ -135,11 +135,11 @@ public partial class VolumeComparison__Bar : ComponentBase
         // Apply RequestType filter
         if (RequestType == RequestType.Purchase)
         {
-            ChartData.ForEach(x => x.JobOrderCount = 0);
+            _chartData.ForEach(x => x.JobOrderCount = 0);
         }
         else if (RequestType == RequestType.JobOrder)
         {
-            ChartData.ForEach(x => x.PurchaseCount = 0);
+            _chartData.ForEach(x => x.PurchaseCount = 0);
         }
         StateHasChanged();
     }
@@ -155,12 +155,12 @@ public partial class VolumeComparison__Bar : ComponentBase
             .Select(i => DateTime.Now.AddMonths(-i))
             .Reverse();
 
-        return months.Select(m => new VolumeChartItem
+        return [.. months.Select(m => new VolumeChartItem
         {
             Label = m.ToString("MMM yyyy"),
             PurchaseCount = pr.Count(r => r.DateRequested?.Month == m.Month && r.DateRequested?.Year == m.Year),
             JobOrderCount = jo.Count(r => r.DateRequested?.Month == m.Month && r.DateRequested?.Year == m.Year)
-        }).ToList();
+        })];
     }
 
     private async Task<List<VolumeChartItem>> GetWeeklyData()
@@ -174,7 +174,7 @@ public partial class VolumeComparison__Bar : ComponentBase
             .Select(i => DateTime.Now.AddDays(-i * 7))
             .Reverse();
 
-        return weeks.Select(w => new VolumeChartItem
+        return [.. weeks.Select(w => new VolumeChartItem
         {
             Label = $"W{GetWeekNumber(w)}",
             PurchaseCount = pr.Count(r =>
@@ -183,7 +183,7 @@ public partial class VolumeComparison__Bar : ComponentBase
             JobOrderCount = jo.Count(r =>
                 GetWeekNumber(r.DateRequested ?? DateTime.MinValue) == GetWeekNumber(w) &&
                 r.DateRequested?.Year == w.Year)
-        }).ToList();
+        })];
     }
 
     private async Task<List<VolumeChartItem>> GetDailyData()
@@ -197,21 +197,21 @@ public partial class VolumeComparison__Bar : ComponentBase
             .Select(i => DateTime.Now.AddDays(-i))
             .Reverse();
 
-        return days.Select(d => new VolumeChartItem
+        return [.. days.Select(d => new VolumeChartItem
         {
             Label = d.ToString("ddd dd"),
             PurchaseCount = pr.Count(r => r.DateRequested?.Date == d.Date),
             JobOrderCount = jo.Count(r => r.DateRequested?.Date == d.Date)
-        }).ToList();
+        })];
     }
 
     //private async Task<(List<Purchase_RequestVM>, List<Job_OrderVM>)> LoadPRandJO()
     //{
-    //    var prTask = utils.IsSupervisor()
+    //    var prTask = Utils.IsSupervisor()
     //        ? purchaseRequestSvc.GetAllPurchaseReqBySupervisor(currentUser.UserId, true, true)
     //        : purchaseRequestSvc.GetAllPurchaseRequestsByUser(currentUser.UserId);
 
-    //    var joTask = utils.IsSupervisor()
+    //    var joTask = Utils.IsSupervisor()
     //        ? jobOrderSvc.GetAllJobOrderBySupervisor(currentUser.UserId, true, true)
     //        : jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
 
@@ -219,7 +219,7 @@ public partial class VolumeComparison__Bar : ComponentBase
     //    return (prTask.Result, joTask.Result);
     //}
 
-    private int GetWeekNumber(DateTime date)
+    private static int GetWeekNumber(DateTime date)
     {
         var culture = System.Globalization.CultureInfo.CurrentCulture;
         return culture.Calendar.GetWeekOfYear(date,
@@ -229,17 +229,17 @@ public partial class VolumeComparison__Bar : ComponentBase
 
     private void UpdateChart()
     {
-        chartConfig.Data.Datasets.Clear();
-        chartConfig.Data.Labels.Clear();
+        _chartConfig.Data.Datasets.Clear();
+        _chartConfig.Data.Labels.Clear();
 
         // Add labels
-        foreach (var item in ChartData)
-            chartConfig.Data.Labels.Add(item.Label);
+        foreach (var item in _chartData)
+            _chartConfig.Data.Labels.Add(item.Label);
 
         // Always add Purchase dataset when All OR Purchase selected
         if (RequestType == RequestType.All || RequestType == RequestType.Purchase)
         {
-            chartConfig.Data.Datasets.Add(new BarDataset<int>(ChartData.Select(x => x.PurchaseCount).ToArray())
+            _chartConfig.Data.Datasets.Add(new BarDataset<int>([.. _chartData.Select(x => x.PurchaseCount)])
             {
                 Label = "Purchase Requests",
                 BackgroundColor = ColorUtil.ColorHexString(59, 130, 246),
@@ -253,7 +253,7 @@ public partial class VolumeComparison__Bar : ComponentBase
         // Add Job Order dataset when All OR JobOrder selected
         if (RequestType == RequestType.All || RequestType == RequestType.JobOrder)
         {
-            chartConfig.Data.Datasets.Add(new BarDataset<int>(ChartData.Select(x => x.JobOrderCount).ToArray())
+            _chartConfig.Data.Datasets.Add(new BarDataset<int>([.. _chartData.Select(x => x.JobOrderCount)])
             {
                 Label = "Job Orders",
                 BackgroundColor = ColorUtil.ColorHexString(245, 158, 11),

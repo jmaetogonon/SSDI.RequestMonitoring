@@ -7,19 +7,19 @@ public partial class Division__Filter : ComponentBase
 {
     [Parameter] public EventCallback<HashSet<int>> SelectedDivisionsChanged { get; set; }
     [Parameter] public string AnchorId { get; set; } = "divisionFilter";
-    [Parameter] public List<DivisionVM> Divisions { get; set; } = [];
+    [Parameter] public List<DivisionVM> _divisions { get; set; } = [];
 
     private bool _isVisible = false;
-    private bool IsAllSelected = true;
+    private bool _isAllSelected = true;
 
-    private string DisplayedDivisions => IsAllSelected ? "All" :
-        string.Join(", ", Divisions.Where(d => d.IsChecked).Select(d => d.Name).Take(2)) +
-        (Divisions.Count(d => d.IsChecked) > 2 ? $" (+{Divisions.Count(d => d.IsChecked) - 2})" : "");
+    private string DisplayedDivisions => _isAllSelected ? "All" :
+        string.Join(", ", _divisions.Where(d => d.IsChecked).Select(d => d.Name).Take(2)) +
+        (_divisions.Count(d => d.IsChecked) > 2 ? $" (+{_divisions.Count(d => d.IsChecked) - 2})" : "");
 
     protected override void OnInitialized()
     {
         // Initialize IsChecked property for all divisions
-        foreach (var division in Divisions)
+        foreach (var division in _divisions)
         {
             division.IsChecked = false;
         }
@@ -33,11 +33,11 @@ public partial class Division__Filter : ComponentBase
     private void ToggleAll()
     {
         // When "All" is selected, uncheck all individual divisions
-        foreach (var division in Divisions)
+        foreach (var division in _divisions)
         {
             division.IsChecked = false;
         }
-        IsAllSelected = true;
+        _isAllSelected = true;
         NotifySelectionChanged();
         StateHasChanged();
     }
@@ -56,18 +56,18 @@ public partial class Division__Filter : ComponentBase
 
     private void UpdateAllSelectionState()
     {
-        var checkedCount = Divisions.Count(d => d.IsChecked);
+        var checkedCount = _divisions.Count(d => d.IsChecked);
 
         if (checkedCount == 0)
         {
             // If nothing is checked, select "All"
-            IsAllSelected = true;
+            _isAllSelected = true;
         }
-        else if (checkedCount == Divisions.Count)
+        else if (checkedCount == _divisions.Count)
         {
             // If all are checked, also treat as "All"
-            IsAllSelected = true;
-            foreach (var division in Divisions)
+            _isAllSelected = true;
+            foreach (var division in _divisions)
             {
                 division.IsChecked = false;
             }
@@ -75,18 +75,18 @@ public partial class Division__Filter : ComponentBase
         else
         {
             // If some are checked, "All" is not selected
-            IsAllSelected = false;
+            _isAllSelected = false;
         }
     }
 
     private HashSet<int> GetSelectedDivisionIds()
     {
-        if (IsAllSelected)
+        if (_isAllSelected)
         {
             return [];
         }
 
-        return [.. Divisions
+        return [.. _divisions
             .Where(d => d.IsChecked)
             .Select(d => d.Id)];
     }
@@ -108,7 +108,7 @@ public partial class Division__Filter : ComponentBase
     {
         var divisionIdSet = divisionIds.ToHashSet();
 
-        if (divisionIdSet.Count == 0 || divisionIdSet.SetEquals(Divisions.Select(d => d.Id)))
+        if (divisionIdSet.Count == 0 || divisionIdSet.SetEquals(_divisions.Select(d => d.Id)))
         {
             // If empty or all divisions selected, treat as "All"
             ToggleAll();
@@ -116,11 +116,11 @@ public partial class Division__Filter : ComponentBase
         else
         {
             // Set specific divisions
-            foreach (var division in Divisions)
+            foreach (var division in _divisions)
             {
                 division.IsChecked = divisionIdSet.Contains(division.Id);
             }
-            IsAllSelected = false;
+            _isAllSelected = false;
             StateHasChanged();
             NotifySelectionChanged();
         }

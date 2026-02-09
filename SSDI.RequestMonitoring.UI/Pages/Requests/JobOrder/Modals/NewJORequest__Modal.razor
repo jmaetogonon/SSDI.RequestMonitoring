@@ -3,20 +3,21 @@
 @using SSDI.RequestMonitoring.UI.JComponents.Forms
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 
-
 @inject IJobOrderSvc jobOrderSvc
+ 
+@if (IsModalVisible)
+{
+    <div class="modal__overlay">
+        <div class="modal">
+            <div class="modal__header">
+                <h5 class="modal__header-title">NEW JOB ORDER REQUEST </h5>
+            </div>
 
-<Confirmation__Modal @ref="confirmModal" />
-<div class="modal__overlay" id="@(IsModalVisible ? "show__new__purchase-request-modal" : "hide__new__purchase-request-modal")">
-    <div class="modal">
-        <div class="modal__header">
-            <h5 class="modal__header-title">NEW JOB ORDER REQUEST </h5>
+            <div class="modal__alert">
+                <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
+            </div>
+
+            <JobOrder__Form FormModel="@RequestModel" FormDepartments="@Departments" FormDivisions="@Divisions" OnValidSubmit="@HandleSave" OnCloseModal="@CloseModal" IsDisabledBtns="@_isDisabledBtns" />
         </div>
-
-        <div class="modal__alert">
-            <Alert Message="@AlertMessage" Type="AlertType.error" ShowCloseButton="false" @bind-IsVisible="IsShowAlert" />
-        </div>
-
-        <JobOrder__Form FormModel="RequestModel" FormDepartments="Departments" FormDivisions="Divisions" OnValidSubmit="HandleSave" OnCloseModal="CloseModal" IsDisabledBtns="_isDisabledBtns" />
-    </div>
-</div> 
+    </div>             
+}

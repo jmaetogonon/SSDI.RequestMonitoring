@@ -18,19 +18,19 @@ public partial class RequestAttachments__Control : ComponentBase
     [Parameter] public RequestAttachType AttachType { get; set; }
     [Parameter] public RequestType RequestType { get; set; }
 
-    private bool isPR => RequestType is RequestType.Purchase;
-    private Request_AttachVM? selectedAttachment;
-    private bool showPreview = false;
-    private string? previewUrl;
-    private List<string> blobUrls = [];
+    private bool IsPR => RequestType is RequestType.Purchase;
+    private Request_AttachVM? _selectedAttachment;
+    private bool _showPreview = false;
+    private string? _previewUrl;
+    private readonly List<string> _blobUrls = [];
 
     // Loading states
-    private bool isLoadingPreview = false;
+    private bool _isLoadingPreview = false;
 
-    private string? loadingPreviewId = null;
-    private bool isDownloadingAll = false;
-    private int currentDownloadIndex = 0;
-    private HashSet<string> downloadingAttachments = [];
+    private string? _loadingPreviewId = null;
+    private bool _isDownloadingAll = false;
+    private int _currentDownloadIndex = 0;
+    private readonly HashSet<string> _downloadingAttachments = [];
 
     private async Task Refresh()
     { if (OnRequestChanged.HasDelegate) await OnRequestChanged.InvokeAsync(); }
@@ -69,14 +69,14 @@ public partial class RequestAttachments__Control : ComponentBase
                 ContentType = file.ContentType,
                 ImgData = fileBytes,
                 Size = file.Size,
-                UniqId = utils.GenerateUniqId(),
+                UniqId = Utils.GenerateUniqId(),
                 AttachType = AttachType
             };
 
             temps.Add(attachVM);
         }
 
-        var res = await AttachSvc.UploadAsync(Request.Id, isPR, temps, AttachType);
+        var res = await AttachSvc.UploadAsync(Request.Id, IsPR, temps, AttachType);
         if (!res.Success)
         {
             toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -87,36 +87,36 @@ public partial class RequestAttachments__Control : ComponentBase
 
     private async Task ViewAttachment(Request_AttachVM attachment)
     {
-        selectedAttachment = attachment;
-        loadingPreviewId = attachment.Id.ToString();
-        isLoadingPreview = true;
-        showPreview = true;
+        _selectedAttachment = attachment;
+        _loadingPreviewId = attachment.Id.ToString();
+        _isLoadingPreview = true;
+        _showPreview = true;
         StateHasChanged();
 
         try
         {
             if (IsPdf(attachment.FileName))
             {
-                previewUrl = await GetPdfBlobUrl(attachment);
+                _previewUrl = await GetPdfBlobUrl(attachment);
             }
             else if (IsImage(attachment.FileName))
             {
-                previewUrl = await GetImageDataUrl(attachment);
+                _previewUrl = await GetImageDataUrl(attachment);
             }
             else
             {
-                previewUrl = null;
+                _previewUrl = null;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading preview: {ex.Message}");
-            previewUrl = null;
+            _previewUrl = null;
         }
         finally
         {
-            isLoadingPreview = false;
-            loadingPreviewId = null;
+            _isLoadingPreview = false;
+            _loadingPreviewId = null;
             StateHasChanged();
         }
     }
@@ -134,7 +134,7 @@ public partial class RequestAttachments__Control : ComponentBase
 
             if (!string.IsNullOrEmpty(blobUrl))
             {
-                blobUrls.Add(blobUrl);
+                _blobUrls.Add(blobUrl);
             }
 
             return blobUrl;
@@ -176,13 +176,13 @@ public partial class RequestAttachments__Control : ComponentBase
 
     private async Task CloseAttachmentPreview()
     {
-        showPreview = false;
+        _showPreview = false;
         //selectedAttachment = new();
-        previewUrl = null;
-        isLoadingPreview = false;
+        _previewUrl = null;
+        _isLoadingPreview = false;
 
         // Clean up any blob URLs
-        foreach (var blobUrl in blobUrls)
+        foreach (var blobUrl in _blobUrls)
         {
             if (!string.IsNullOrEmpty(blobUrl))
             {
@@ -196,7 +196,7 @@ public partial class RequestAttachments__Control : ComponentBase
                 }
             }
         }
-        blobUrls.Clear();
+        _blobUrls.Clear();
 
         StateHasChanged();
         await Task.Delay(100); // Small delay to ensure clean state
@@ -204,10 +204,10 @@ public partial class RequestAttachments__Control : ComponentBase
 
     private async Task DownloadAttachment(Request_AttachVM attachment)
     {
-        if (downloadingAttachments.Contains(attachment.Id.ToString()))
+        if (_downloadingAttachments.Contains(attachment.Id.ToString()))
             return;
 
-        downloadingAttachments.Add(attachment.Id.ToString());
+        _downloadingAttachments.Add(attachment.Id.ToString());
         StateHasChanged();
 
         try
@@ -226,7 +226,7 @@ public partial class RequestAttachments__Control : ComponentBase
         }
         finally
         {
-            downloadingAttachments.Remove(attachment.Id.ToString());
+            _downloadingAttachments.Remove(attachment.Id.ToString());
             StateHasChanged();
         }
     }
@@ -252,17 +252,17 @@ public partial class RequestAttachments__Control : ComponentBase
 
     private async Task DownloadAll()
     {
-        if (isDownloadingAll || Request.Attachments == null)
+        if (_isDownloadingAll || Request.Attachments == null)
             return;
 
-        isDownloadingAll = true;
-        currentDownloadIndex = 0;
+        _isDownloadingAll = true;
+        _currentDownloadIndex = 0;
         StateHasChanged();
 
         try
         {
-            var fileBytes = await AttachSvc.DownloadAllReqZipAsync(Request.Id, isPR);
-            var fileName = $"{(isPR ? "PR" : "JO")}{Request.SeriesNumber} Attachments.zip";
+            var fileBytes = await AttachSvc.DownloadAllReqZipAsync(Request.Id, IsPR);
+            var fileName = $"{(IsPR ? "PR" : "JO")}{Request.SeriesNumber} Attachments.zip";
 
             if (fileBytes != null && fileBytes.Length > 0)
             {
@@ -275,13 +275,13 @@ public partial class RequestAttachments__Control : ComponentBase
         }
         finally
         {
-            isDownloadingAll = false;
-            currentDownloadIndex = 0;
+            _isDownloadingAll = false;
+            _currentDownloadIndex = 0;
             StateHasChanged();
         }
     }
 
-    private string GetFileIcon(string fileName)
+    private static string GetFileIcon(string fileName)
     {
         var extension = Path.GetExtension(fileName).ToLower();
         return extension switch
@@ -296,7 +296,7 @@ public partial class RequestAttachments__Control : ComponentBase
         };
     }
 
-    private string FormatFileSize(long bytes)
+    private static string FormatFileSize(long bytes)
     {
         string[] sizes = ["B", "KB", "MB", "GB"];
         int order = 0;
@@ -309,20 +309,20 @@ public partial class RequestAttachments__Control : ComponentBase
         return $"{len:0.##} {sizes[order]}";
     }
 
-    private bool IsImage(string fileName)
+    private static bool IsImage(string fileName)
     {
         var extension = Path.GetExtension(fileName).ToLower();
         return extension is ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp";
     }
 
-    private bool IsPdf(string fileName)
+    private static bool IsPdf(string fileName)
     {
         return Path.GetExtension(fileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
     }
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var blobUrl in blobUrls)
+        foreach (var blobUrl in _blobUrls)
         {
             if (!string.IsNullOrEmpty(blobUrl))
             {
@@ -336,6 +336,7 @@ public partial class RequestAttachments__Control : ComponentBase
                 }
             }
         }
-        blobUrls.Clear();
+        _blobUrls.Clear();
+        GC.SuppressFinalize(this);
     }
 }

@@ -14,9 +14,9 @@
     </div>
 
     <div class="chart-container">
-        @if (ChartData?.Any() == true)
+        @if (_chartData?.Any() == true)
         {
-            <Chart Config="chartConfig" @ref="chartRef" />
+            <Chart Config="_chartConfig" @ref="_chartRef" />
         }
         else
         {

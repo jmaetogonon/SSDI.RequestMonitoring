@@ -2,20 +2,20 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.FluentUI.AspNetCore.Components;
 using SSDI.RequestMonitoring.UI.JComponents.Modals;
-using SSDI.RequestMonitoring.UI.Models.MasterData;
+using SSDI.RequestMonitoring.UI.Models.Users;
 
 namespace SSDI.RequestMonitoring.UI.Pages.Settings.SystemConfig.MasterData;
 
-public partial class BusinessUnit_Index : ComponentBase
+public partial class Users_Index : ComponentBase
 {
-    private List<BusinessUnitVM> _allItems = [];
-    private List<BusinessUnitVM> _filteredItems = [];
+    private List<UserVM> _allItems = [];
+    private List<UserVM> _filteredItems = [];
     private string _searchValue = "";
     private Confirmation__Modal? _confirmModal;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadBusinessUnits();
+        await LoadItems();
     }
 
     private async Task HandleSearch()
@@ -24,9 +24,9 @@ public partial class BusinessUnit_Index : ComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task LoadBusinessUnits()
+    private async Task LoadItems()
     {
-        _allItems = await buSvc.GetAllBusinessUnits();
+        _allItems = await userSvc.GetUsers();
         _filteredItems = [.. _allItems];
     }
 
@@ -40,8 +40,8 @@ public partial class BusinessUnit_Index : ComponentBase
         {
             var term = _searchValue.ToLower();
             _filteredItems = [.. _allItems.Where(r =>
-                r.BU_Code != null && r.BU_Code.Contains(_searchValue, StringComparison.OrdinalIgnoreCase) ||
-                r.BU_Desc != null && r.BU_Desc.Contains(_searchValue, StringComparison.OrdinalIgnoreCase)
+                r.FullName != null && r.FullName.Contains(_searchValue, StringComparison.OrdinalIgnoreCase) ||
+                r.RoleDesc != null && r.RoleDesc.Contains(_searchValue, StringComparison.OrdinalIgnoreCase)
                 )];
         }
     }
@@ -54,18 +54,10 @@ public partial class BusinessUnit_Index : ComponentBase
 
     private async Task OnSync(MouseEventArgs args)
     {
-        // Validate all divisions, not just filtered ones
-        var hasErrors = _allItems.Any(d => string.IsNullOrWhiteSpace(d.BU_Code));
-        if (hasErrors)
-        {
-            toastSvc.ShowError("Please fill in all required fields.");
-            return;
-        }
-
         var options = new ConfirmationModalOptions
         {
-            Message = "Are you sure you want to sync business unit from server?",
-            Title = "Sync Business Units",
+            Message = "Are you sure you want to sync users from server?",
+            Title = "Sync Users",
             Variant = ConfirmationModalVariant.confirmation,
             ConfirmText = "Yes, Sync",
             CancelText = "No, Cancel",
@@ -78,26 +70,25 @@ public partial class BusinessUnit_Index : ComponentBase
         {
             await _confirmModal!.SetLoadingAsync(true);
 
-
-            var response = await buSvc.SyncBusinessUnits();
+            var response = await userSvc.SyncUsers();
 
             await CloseModalWithLoading();
 
             if (!response)
             {
                 var message = "Something went wrong. Reload the page and try again.";
-                await messageSvc.ShowMessageBarAsync(message, MessageIntent.Error, "BUSINESSUNITSC");
+                await messageSvc.ShowMessageBarAsync(message, MessageIntent.Error, "USERSC");
                 return;
             }
 
-            await LoadBusinessUnits();
+            await LoadItems();
             toastSvc.ShowSuccess("Synced successfully.");
         }
         catch (Exception ex)
         {
             await CloseModalWithLoading();
             var message = $"An error occurred while syncing: {ex.Message}";
-            await messageSvc.ShowMessageBarAsync(message, MessageIntent.Error, "BUSINESSUNITSC");
+            await messageSvc.ShowMessageBarAsync(message, MessageIntent.Error, "USERSC");
         }
     }
 

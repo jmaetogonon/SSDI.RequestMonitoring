@@ -10,25 +10,25 @@ namespace SSDI.RequestMonitoring.UI.Pages.Settings.SystemConfig.MasterData;
 
 public partial class Department_Index : ComponentBase
 {
-    private List<DepartmentVM> AllItems = [];
-    private List<DepartmentVM> FilteredItems = [];
-    private List<DivisionVM> Divisions = [];
-    private string searchValue = "";
-    private bool showValidations = false;
-    private Confirmation__Modal? confirmModal;
-    private Division__Filter? divisionFilter;
-    private HashSet<int> selectedDivisions = [];
+    private List<DepartmentVM> _allItems = [];
+    private List<DepartmentVM> _filteredItems = [];
+    private List<DivisionVM> _divisions = [];
+    private string _searchValue = "";
+    private bool _showValidations = false;
+    private Confirmation__Modal? _confirmModal;
+    private Division__Filter? _divisionFilter;
+    private HashSet<int> _selectedDivisions = [];
 
     protected override async Task OnInitializedAsync()
     {
-        Divisions = await divisionSvc.GetAllDivisions();
+        _divisions = await divisionSvc.GetAllDivisions();
         await LoadDepartments();
     }
 
     private async Task LoadDepartments()
     {
-        AllItems = await departmentSvc.GetAllDepartments();
-        FilteredItems = [.. AllItems];
+        _allItems = await departmentSvc.GetAllDepartments();
+        _filteredItems = [.. _allItems];
     }
 
     private async Task HandleSearch()
@@ -39,42 +39,42 @@ public partial class Department_Index : ComponentBase
 
     private void ApplyFilter()
     {
-        var query = AllItems.ToList();
+        var query = _allItems.ToList();
 
         //apply division filter
-        if (selectedDivisions.Count > 0)
+        if (_selectedDivisions.Count > 0)
         {
-            query = [.. query.Where(r => selectedDivisions.Contains(r.DivisionId))];
+            query = [.. query.Where(r => _selectedDivisions.Contains(r.DivisionId))];
         }
 
-        if (!string.IsNullOrWhiteSpace(searchValue))
+        if (!string.IsNullOrWhiteSpace(_searchValue))
         {
             query = [.. query.Where(r =>
-                (r.Name != null && r.Name.Contains(searchValue, StringComparison.OrdinalIgnoreCase))
+                (r.Name != null && r.Name.Contains(_searchValue, StringComparison.OrdinalIgnoreCase))
             )];
         }
 
-        FilteredItems = [.. query];
+        _filteredItems = [.. query];
     }
 
     private void ClearAllFilters()
     {
-        searchValue = "";
-        divisionFilter?.Reset();
-        selectedDivisions.Clear();
+        _searchValue = "";
+        _divisionFilter?.Reset();
+        _selectedDivisions.Clear();
         ApplyFilter();
         StateHasChanged();
     }
 
     private void ClearSearch()
     {
-        searchValue = "";
+        _searchValue = "";
         ApplyFilter();
     }
 
     private void OnDivisionFilterChanged(HashSet<int> _selectedDivisions)
     {
-        selectedDivisions = _selectedDivisions;
+        this._selectedDivisions = _selectedDivisions;
         ApplyFilter();
     }
 
@@ -86,13 +86,13 @@ public partial class Department_Index : ComponentBase
             Name = "",
             DivisionId = 0
         };
-        AllItems.Add(newDept);
+        _allItems.Add(newDept);
 
         // Update filtered list if search is active
-        if (string.IsNullOrWhiteSpace(searchValue) ||
-            (newDept.Name != null && newDept.Name.Contains(searchValue, StringComparison.OrdinalIgnoreCase)))
+        if (string.IsNullOrWhiteSpace(_searchValue) ||
+            (newDept.Name != null && newDept.Name.Contains(_searchValue, StringComparison.OrdinalIgnoreCase)))
         {
-            FilteredItems.Add(newDept);
+            _filteredItems.Add(newDept);
         }
 
         // Wait for the UI to update, then scroll
@@ -116,15 +116,15 @@ public partial class Department_Index : ComponentBase
 
     private void OnRemoveNew(DepartmentVM department)
     {
-        AllItems.Remove(department);
-        FilteredItems.Remove(department);
+        _allItems.Remove(department);
+        _filteredItems.Remove(department);
         ApplyFilter();
     }
 
     private void OnDelete(DepartmentVM department)
     {
-        AllItems.Remove(department);
-        FilteredItems.Remove(department);
+        _allItems.Remove(department);
+        _filteredItems.Remove(department);
     }
 
     private void OnInputKeyDown(KeyboardEventArgs e, DepartmentVM department)
@@ -138,10 +138,10 @@ public partial class Department_Index : ComponentBase
 
     private async Task OnSave(MouseEventArgs args)
     {
-        showValidations = true;
+        _showValidations = true;
 
         // Validate all departments, not just filtered ones
-        var hasErrors = AllItems.Any(d =>
+        var hasErrors = _allItems.Any(d =>
             string.IsNullOrWhiteSpace(d.Name) ||
             d.DivisionId == 0
         );
@@ -161,14 +161,14 @@ public partial class Department_Index : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         try
         {
-            await confirmModal!.SetLoadingAsync(true);
+            await _confirmModal!.SetLoadingAsync(true);
 
-            var response = await departmentSvc.BulkUpsertDepartments(AllItems);
+            var response = await departmentSvc.BulkUpsertDepartments(_allItems);
 
             await CloseModalWithLoading();
 
@@ -193,7 +193,7 @@ public partial class Department_Index : ComponentBase
             await LoadDepartments();
             toastSvc.ShowSuccess("Changes applied successfully.");
 
-            showValidations = false;
+            _showValidations = false;
         }
         catch (Exception ex)
         {
@@ -205,8 +205,8 @@ public partial class Department_Index : ComponentBase
 
     private async Task CloseModalWithLoading()
     {
-        await confirmModal!.SetLoadingAsync(false);
-        await confirmModal!.HideAsync();
+        await _confirmModal!.SetLoadingAsync(false);
+        await _confirmModal!.HideAsync();
     }
 
     private void OnCancel(MouseEventArgs args)

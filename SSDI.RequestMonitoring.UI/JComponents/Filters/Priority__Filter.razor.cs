@@ -9,23 +9,23 @@ public partial class Priority__Filter : ComponentBase
     [Parameter] public string AnchorId { get; set; } = "priorityFilter";
 
     private bool _isVisible = false;
-    private bool IsAllSelected = true;
+    private bool _isAllSelected = true;
 
-    private List<PriorityOption> PriorityOptions =
+    private readonly List<PriorityOption> _priorityOptions =
     [
         new PriorityOption { Value = RequestPriority.Hrs24, DisplayName = "24 hours", IsChecked = false },
         new PriorityOption { Value = RequestPriority.ThisWeek, DisplayName = "This week", IsChecked = false },
         new PriorityOption { Value = RequestPriority.Others, DisplayName = "Others", IsChecked = false }
     ];
 
-    private string DisplayedPriorities => IsAllSelected ? "All" :
-        string.Join(", ", PriorityOptions.Where(p => p.IsChecked).Select(p => p.DisplayName).Take(2)) +
-        (PriorityOptions.Count(p => p.IsChecked) > 2 ? $" (+{PriorityOptions.Count(p => p.IsChecked) - 2})" : "");
+    private string DisplayedPriorities => _isAllSelected ? "All" :
+        string.Join(", ", _priorityOptions.Where(p => p.IsChecked).Select(p => p.DisplayName).Take(2)) +
+        (_priorityOptions.Count(p => p.IsChecked) > 2 ? $" (+{_priorityOptions.Count(p => p.IsChecked) - 2})" : "");
 
     protected override void OnInitialized()
     {
         // Initialize all as unselected (which means "All" is selected)
-        foreach (var priority in PriorityOptions)
+        foreach (var priority in _priorityOptions)
         {
             priority.IsChecked = false;
         }
@@ -39,11 +39,11 @@ public partial class Priority__Filter : ComponentBase
     private void ToggleAll()
     {
         // When "All" is selected, uncheck all individual priorities
-        foreach (var priority in PriorityOptions)
+        foreach (var priority in _priorityOptions)
         {
             priority.IsChecked = false;
         }
-        IsAllSelected = true;
+        _isAllSelected = true;
         NotifySelectionChanged();
         StateHasChanged();
     }
@@ -62,18 +62,18 @@ public partial class Priority__Filter : ComponentBase
 
     private void UpdateAllSelectionState()
     {
-        var checkedCount = PriorityOptions.Count(p => p.IsChecked);
+        var checkedCount = _priorityOptions.Count(p => p.IsChecked);
 
         if (checkedCount == 0)
         {
             // If nothing is checked, select "All"
-            IsAllSelected = true;
+            _isAllSelected = true;
         }
-        else if (checkedCount == PriorityOptions.Count)
+        else if (checkedCount == _priorityOptions.Count)
         {
             // If all are checked, also treat as "All"
-            IsAllSelected = true;
-            foreach (var priority in PriorityOptions)
+            _isAllSelected = true;
+            foreach (var priority in _priorityOptions)
             {
                 priority.IsChecked = false;
             }
@@ -81,21 +81,20 @@ public partial class Priority__Filter : ComponentBase
         else
         {
             // If some are checked, "All" is not selected
-            IsAllSelected = false;
+            _isAllSelected = false;
         }
     }
 
     private HashSet<RequestPriority> GetSelectedPriorities()
     {
-        if (IsAllSelected)
+        if (_isAllSelected)
         {
-            return new HashSet<RequestPriority>();
+            return [];
         }
 
-        return PriorityOptions
+        return [.. _priorityOptions
             .Where(p => p.IsChecked)
-            .Select(p => p.Value)
-            .ToHashSet();
+            .Select(p => p.Value)];
     }
 
     private async void NotifySelectionChanged()
@@ -115,7 +114,7 @@ public partial class Priority__Filter : ComponentBase
     {
         var prioritySet = priorities.ToHashSet();
 
-        if (prioritySet.Count == 0 || prioritySet.SetEquals(PriorityOptions.Select(p => p.Value)))
+        if (prioritySet.Count == 0 || prioritySet.SetEquals(_priorityOptions.Select(p => p.Value)))
         {
             // If empty or all priorities selected, treat as "All"
             ToggleAll();
@@ -123,11 +122,11 @@ public partial class Priority__Filter : ComponentBase
         else
         {
             // Set specific priorities
-            foreach (var priority in PriorityOptions)
+            foreach (var priority in _priorityOptions)
             {
                 priority.IsChecked = prioritySet.Contains(priority.Value);
             }
-            IsAllSelected = false;
+            _isAllSelected = false;
             StateHasChanged();
             NotifySelectionChanged();
         }

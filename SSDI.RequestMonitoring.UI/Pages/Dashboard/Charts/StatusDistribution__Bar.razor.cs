@@ -18,11 +18,11 @@ public partial class StatusDistribution__Bar : ComponentBase
     [Parameter] public List<Job_OrderVM> JobOrders { get; set; } = [];
     [Parameter] public RequestType RequestType { get; set; } = RequestType.All;
 
-    private Chart? chartRef;
-    protected List<StatusCountItem> ChartData = new();
+    private Chart? _chartRef;
+    protected List<StatusCountItem> _chartData = [];
     private bool _jsReady = false;
 
-    private BarConfig chartConfig = new(horizontal: true)
+    private readonly BarConfig _chartConfig = new(horizontal: true)
     {
         Options = new BarOptions
         {
@@ -45,8 +45,8 @@ public partial class StatusDistribution__Bar : ComponentBase
             },
             Scales = new BarScales
             {
-                XAxes = new List<CartesianAxis>
-                {
+                XAxes =
+                [
                     new LinearCartesianAxis
                     {
                         Ticks = new LinearCartesianTicks
@@ -56,9 +56,9 @@ public partial class StatusDistribution__Bar : ComponentBase
                         },
                         GridLines = new GridLines { DrawBorder = false}
                     }
-                },
-                YAxes = new List<CartesianAxis>
-                {
+                ],
+                YAxes =
+                [
                     new BarCategoryAxis
                     {
                         Ticks = new CategoryTicks
@@ -68,7 +68,7 @@ public partial class StatusDistribution__Bar : ComponentBase
                         },
                         GridLines = new GridLines { DrawBorder = false }
                     }
-                }
+                ]
             }, 
             Animation = new Animation
             {
@@ -111,9 +111,9 @@ public partial class StatusDistribution__Bar : ComponentBase
         await LoadChartData();
         UpdateChart();
 
-        if (chartRef != null)
+        if (_chartRef != null)
         {
-            await chartRef.Update();
+            await _chartRef.Update();
         }
     }
 
@@ -143,34 +143,33 @@ public partial class StatusDistribution__Bar : ComponentBase
                         .Concat(JobOrders.Select(j => j.Status));
         }
 
-        ChartData = statuses
+        _chartData = [.. statuses
             .GroupBy(s => s)
             .Select(g => new StatusCountItem
             {
                 Status = g.Key,
                 Count = g.Count()
             })
-            .OrderByDescending(x => x.Count)
-            .ToList();
+            .OrderByDescending(x => x.Count)];
 
         StateHasChanged();
     }
 
     private void UpdateChart()
     {
-        chartConfig.Data.Datasets.Clear();
-        chartConfig.Data.Labels.Clear();
+        _chartConfig.Data.Datasets.Clear();
+        _chartConfig.Data.Labels.Clear();
 
-        foreach (var item in ChartData)
+        foreach (var item in _chartData)
         {
-            chartConfig.Data.Labels.Add(utils.GetStatusDisplay(item.Status));
+            _chartConfig.Data.Labels.Add(Utils.GetStatusDisplay(item.Status));
         }
 
         var colors = new IndexableOption<string>(
-                        ChartData.Select(x => utils.GetStatusColor(x.Status)).ToArray()
+                        [.. _chartData.Select(x => Utils.GetStatusColor(x.Status))]
                     );
 
-        var dataset = new BarDataset<int>(ChartData.Select(x => x.Count).ToArray(), horizontal: true)
+        var dataset = new BarDataset<int>([.. _chartData.Select(x => x.Count)], horizontal: true)
         {
             BackgroundColor = colors,
             BorderWidth = 1,
@@ -178,7 +177,7 @@ public partial class StatusDistribution__Bar : ComponentBase
             CategoryPercentage = 0.8
         };
 
-        chartConfig.Data.Datasets.Add(dataset);
+        _chartConfig.Data.Datasets.Add(dataset);
 
         StateHasChanged();
     }

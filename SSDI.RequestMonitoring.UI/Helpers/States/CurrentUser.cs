@@ -28,7 +28,7 @@ public class CurrentUser : IDisposable
     {
         _authenticationStateProvider = authenticationStateProvider;
 
-        // 🔥 Automatically reload user when auth state changes
+        // Automatically reload user when auth state changes
         _authenticationStateProvider.AuthenticationStateChanged += AuthStateChangedHandler;
     }
 
@@ -81,5 +81,6 @@ public class CurrentUser : IDisposable
     public void Dispose()
     {
         _authenticationStateProvider.AuthenticationStateChanged -= AuthStateChangedHandler;
+        GC.SuppressFinalize(this);
     }
 }

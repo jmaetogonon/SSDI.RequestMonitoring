@@ -3,18 +3,13 @@ using System.Net.Http.Headers;
 
 namespace SSDI.RequestMonitoring.UI.Handlers;
 
-public class JwtAuthorizationMessageHandler : DelegatingHandler
+public class JwtAuthorizationMessageHandler(ILocalStorageService localStorageService) : DelegatingHandler
 {
-    private readonly ILocalStorageService _localStorageService;
-
-    public JwtAuthorizationMessageHandler(ILocalStorageService localStorageService)
-    {
-        _localStorageService = localStorageService;
-    }
+    private readonly ILocalStorageService _localStorageService = localStorageService;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var token = await _localStorageService.GetItemAsync<string>("rmtoken");
+        var token = await _localStorageService.GetItemAsync<string>("rmtoken", cancellationToken);
         if (!string.IsNullOrEmpty(token))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

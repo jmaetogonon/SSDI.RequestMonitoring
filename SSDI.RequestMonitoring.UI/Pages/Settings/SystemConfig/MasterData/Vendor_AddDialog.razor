@@ -2,11 +2,9 @@
 @using SSDI.RequestMonitoring.UI.JComponents.Loading
 @using SSDI.RequestMonitoring.UI.JComponents.Modals
 
-
 @inject IVendorSvc vendorSvc
 
-<Confirmation__Modal @ref="confirmModal" />
-<div class="modal__overlay" id="@(IsModalVisible ? "show__new__vendor-modal" : "hide__new__vendor-modal")">
+ <div class="modal__overlay" id="@(IsModalVisible ? "show__new__vendor-modal" : "hide__new__vendor-modal")">
     <div class="modal">
         <div class="modal__header">
             <h5 class="modal__header-title">NEW VENDOR </h5>

@@ -14,11 +14,11 @@ public partial class NewPO__Modal : ComponentBase
     [Parameter] public bool IsModalVisible { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public Confirmation__Modal? ConfirmModal { get; set; }
 
     private Request_PO_SlipVM Model { get; set; } = new();
-    private ICollection<Request_AttachVM> Attachments { get; set; } = [];
-    private Confirmation__Modal? confirmModal;
-    private bool isPR => RequestType is RequestType.Purchase;
+    private ICollection<Request_AttachVM> Attachments { get; set; } = []; 
+    private bool IsPR => RequestType is RequestType.Purchase;
 
     private bool _isDisabledBtns = false;
     private bool IsShowAlert { get; set; }
@@ -47,10 +47,10 @@ public partial class NewPO__Modal : ComponentBase
             CancelText = "Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await ConfirmModal!.ShowAsync(options);
         if (result)
         {
-            await confirmModal!.SetLoadingAsync(true);
+            await ConfirmModal!.SetLoadingAsync(true);
 
             _isDisabledBtns = true;
             IsShowAlert = false;
@@ -63,7 +63,7 @@ public partial class NewPO__Modal : ComponentBase
             {
                 if (Attachments.Count != 0)
                 {
-                    var res = await AttachSvc.UploadAsync(RequestHeader!.Id, isPR, Attachments, RequestAttachType.PurchaseOrder, poID: response.Data);
+                    var res = await AttachSvc.UploadAsync(RequestHeader!.Id, IsPR, Attachments, RequestAttachType.PurchaseOrder, poID: response.Data);
                     if (!res.Success)
                     {
                         toastSvc.ShowError("Error uploading attachments. Please try again.");
@@ -71,8 +71,8 @@ public partial class NewPO__Modal : ComponentBase
                 }
 
                 ResetForm();
-                await confirmModal!.SetLoadingAsync(false);
-                await confirmModal!.HideAsync();
+                await ConfirmModal!.SetLoadingAsync(false);
+                await ConfirmModal!.HideAsync();
                 await OnSave.InvokeAsync(null);
                 return;
             }
@@ -80,8 +80,8 @@ public partial class NewPO__Modal : ComponentBase
             IsShowAlert = true;
             AlertMessage = response.Message;
             _isDisabledBtns = false;
-            await confirmModal!.SetLoadingAsync(false);
-            await confirmModal!.HideAsync();
+            await ConfirmModal!.SetLoadingAsync(false);
+            await ConfirmModal!.HideAsync();
         }
     }
 

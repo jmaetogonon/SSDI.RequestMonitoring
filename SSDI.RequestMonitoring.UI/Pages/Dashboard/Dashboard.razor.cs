@@ -11,54 +11,57 @@ namespace SSDI.RequestMonitoring.UI.Pages.Dashboard;
 
 public partial class Dashboard : ComponentBase, IAsyncDisposable
 {
-    private string activeTab = "all";
-    private int currentSlide = 0;
-    private ElementReference carouselContainer;
-    private DotNetObjectReference<Dashboard>? dotNetRef;
-    private IJSObjectReference? jsModule;
+    private string _activeTab = "all";
+    private int _currentSlide = 0;
+    private ElementReference _carouselContainer;
+    private DotNetObjectReference<Dashboard>? _dotNetRef;
+    private IJSObjectReference? _jsModule;
 
-    private RequestMetrics purchaseRequestMetrics = new();
-    private RequestMetrics jobOrderMetrics = new();
+    private RequestMetrics _purchaseRequestMetrics = new();
+    private RequestMetrics _jobOrderMetrics = new();
 
-    private List<Purchase_RequestVM> purchaseRequests = [];
-    private List<Job_OrderVM> jobOrders = [];
+    private List<Purchase_RequestVM> _purchaseRequests = [];
+    private List<Job_OrderVM> _jobOrders = [];
 
-    private List<ActivityItem> recentActivity = [];
-    private List<TeamRequestItem> teamRequestsNeedingAttention = [];
-    private List<ApprovedRequestItem> approveReqyestItems = [];
+    private List<ActivityItem> _recentActivity = [];
+    private List<TeamRequestItem> _teamRequestsNeedingAttention = [];
+    private List<ApprovedRequestItem> _approveRequestItems = [];
 
-    private int totalDraftCount = 0;
-    private int totalPendingSubmissionCount = 0;
+    private int _totalDraftCount = 0;
+    private int _totalPendingSubmissionCount = 0;
 
-    private bool isLoading = true;
-    private RequestType requestType = RequestType.All;
+    private bool _isLoading = true;
+    private RequestType _requestType = RequestType.All;
 
-    private Confirmation__Modal? confirmModal;
+    private Confirmation__Modal? _confirmModal;
 
     protected override async Task OnInitializedAsync()
     {
         await currentUser.InitializeAsync();
         await LoadDashboardData();
-        isLoading = false;
+        _isLoading = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Create a reference to this component for JavaScript to call
-            dotNetRef = DotNetObjectReference.Create(this);
+            _dotNetRef = DotNetObjectReference.Create(this);
 
-            // Initialize the carousel with JavaScript
-            await InitializeCarousel();
+            // Import JS module once
+            _jsModule = await jsRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./js/dashboard.js");
+
+            // Initialize carousel
+            await _jsModule.InvokeVoidAsync("initializeCarousel", _dotNetRef);
         }
     }
 
     private void SwitchTab(string tab)
     {
-        activeTab = tab;
-        currentSlide = 0; // Reset to first slide
-        requestType = tab switch
+        _activeTab = tab;
+        _currentSlide = 0; // Reset to first slide
+        _requestType = tab switch
         {
             "purchase" => RequestType.Purchase,
             "joborder" => RequestType.JobOrder,
@@ -70,17 +73,14 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        // Clean up JavaScript references
-        if (jsModule != null)
+        if (_jsModule != null)
         {
-            await jsModule.DisposeAsync();
+            await _jsModule.InvokeVoidAsync("disposeCarousel");
+            //await _jsModule.DisposeAsync();
         }
 
-        // Clean up global reference
-        await jsRuntime.InvokeVoidAsync("eval",
-            "if (window.__dashboardDotNetHelper) { window.__dashboardDotNetHelper = null; }");
-
-        dotNetRef?.Dispose();
+        _dotNetRef?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private async Task LoadDashboardData()
@@ -93,15 +93,14 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
 
             await Task.WhenAll(purchaseTask, jobOrderTask);
 
-            totalDraftCount = purchaseRequestMetrics.DraftCount + jobOrderMetrics.DraftCount;
-            totalPendingSubmissionCount = purchaseRequestMetrics.PendingSubmissionCount + jobOrderMetrics.PendingSubmissionCount;
+            _totalDraftCount = _purchaseRequestMetrics.DraftCount + _jobOrderMetrics.DraftCount;
+            _totalPendingSubmissionCount = _purchaseRequestMetrics.PendingSubmissionCount + _jobOrderMetrics.PendingSubmissionCount;
 
             // Combine recent activity
-            recentActivity = purchaseRequestMetrics.RecentActivity
-                .Concat(jobOrderMetrics.RecentActivity)
+            _recentActivity = [.. _purchaseRequestMetrics.RecentActivity
+                .Concat(_jobOrderMetrics.RecentActivity)
                 .OrderByDescending(a => a.Date)
-                .Take(10)
-                .ToList();
+                .Take(10)];
 
             // Load team requests for supervisors
             if (currentUser.IsSupervisor)
@@ -123,31 +122,31 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         {
             if (currentUser.IsUser)
             {
-                purchaseRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByUser(currentUser.UserId);
+                _purchaseRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByUser(currentUser.UserId);
             }
             else
             {
-                purchaseRequests = await purchaseRequestSvc.GetAllPurchaseReqBySupervisor(currentUser.UserId, true, true);
+                _purchaseRequests = await purchaseRequestSvc.GetAllPurchaseReqBySupervisor(currentUser.UserId, true, true);
 
                 if (currentUser.IsCEO)
                 {
                     var ceoRequests = await purchaseRequestSvc.GetAllPurchaseReqByCeo();
-                    purchaseRequests = purchaseRequests.Concat(ceoRequests).DistinctBy(e => e.Id).ToList();
+                    _purchaseRequests = [.. _purchaseRequests.Concat(ceoRequests).DistinctBy(e => e.Id)];
                 }
 
                 if (currentUser.IsAdmin)
                 {
                     var adminRequests = await purchaseRequestSvc.GetAllPurchaseRequestsByAdmin();
-                    purchaseRequests = purchaseRequests.Concat(adminRequests).DistinctBy(r => r.Id).ToList();
+                    _purchaseRequests = [.. _purchaseRequests.Concat(adminRequests).DistinctBy(r => r.Id)];
                 }
             }
 
-            purchaseRequestMetrics = CalculateMetrics(purchaseRequests, "purchase");
+            _purchaseRequestMetrics = CalculateMetrics(_purchaseRequests, "purchase");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading purchase requests: {ex.Message}");
-            purchaseRequestMetrics = new RequestMetrics();
+            _purchaseRequestMetrics = new RequestMetrics();
         }
     }
 
@@ -157,65 +156,66 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         {
             if (currentUser.IsUser)
             {
-                jobOrders = await jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
+                _jobOrders = await jobOrderSvc.GetAllJobOrdersByUser(currentUser.UserId);
             }
             else
             {
-                jobOrders = await jobOrderSvc.GetAllJobOrderBySupervisor(currentUser.UserId, true, true);
+                _jobOrders = await jobOrderSvc.GetAllJobOrderBySupervisor(currentUser.UserId, true, true);
 
                 if (currentUser.IsCEO)
                 {
                     var ceoRequests = await jobOrderSvc.GetAllJobOrderByCeo();
-                    jobOrders = jobOrders.Concat(ceoRequests).DistinctBy(e => e.Id).ToList();
+                    _jobOrders = [.. _jobOrders.Concat(ceoRequests).DistinctBy(e => e.Id)];
                 }
 
                 if (currentUser.IsAdmin)
                 {
                     var adminRequests = await jobOrderSvc.GetAllJobOrdersByAdmin();
-                    jobOrders = jobOrders.Concat(adminRequests).DistinctBy(r => r.Id).ToList();
+                    _jobOrders = [.. _jobOrders.Concat(adminRequests).DistinctBy(r => r.Id)];
                 }
             }
 
-            jobOrderMetrics = CalculateMetrics(jobOrders, "joborder");
+            _jobOrderMetrics = CalculateMetrics(_jobOrders, "joborder");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading job orders: {ex.Message}");
-            jobOrderMetrics = new RequestMetrics();
+            _jobOrderMetrics = new RequestMetrics();
         }
     }
 
-    private RequestMetrics CalculateMetrics<T>(List<T> requests, string requestType) where T : IRequestDetailVM
+    private static RequestMetrics CalculateMetrics<T>(List<T> requests, string requestType) where T : IRequestDetailVM
     {
-        var metrics = new RequestMetrics();
-        metrics.TotalCount = requests.Count;
+        var metrics = new RequestMetrics
+        {
+            TotalCount = requests.Count,
 
-        // Calculate status counts
-        metrics.DraftCount = requests.Count(r => r.Status == RequestStatus.Draft);
-        metrics.PendingSubmissionCount = requests.Count(r => r.Status == RequestStatus.Draft);
-        metrics.PendingEndorsementCount = requests.Count(r => r.Status == RequestStatus.ForEndorsement);
-        metrics.PendingAdminApprovalCount = requests.Count(r => r.Status == RequestStatus.ForAdminVerification);
-        metrics.PendingAdminRequisitionCount = requests.Count(r => r.Status == RequestStatus.ForRequisition);
-        metrics.PendingCEOApprovalCount = requests.Count(r => r.Status == RequestStatus.ForCeoApproval);
-        metrics.PendingClosureCount = requests.Count(r => r.Status == RequestStatus.PendingRequesterClosure);
-        metrics.AllPendingCount = requests.Count(r => r.Status != RequestStatus.Closed && r.Status != RequestStatus.Cancelled);
-        metrics.CompletedCount = requests.Count(r =>
-            r.Status == RequestStatus.Closed);
-        metrics.RejectedCount = requests.Count(r => r.Status == RequestStatus.Rejected);
+            // Calculate status counts
+            DraftCount = requests.Count(r => r.Status == RequestStatus.Draft),
+            PendingSubmissionCount = requests.Count(r => r.Status == RequestStatus.Draft),
+            PendingEndorsementCount = requests.Count(r => r.Status == RequestStatus.ForEndorsement),
+            PendingAdminApprovalCount = requests.Count(r => r.Status == RequestStatus.ForAdminVerification),
+            PendingAdminRequisitionCount = requests.Count(r => r.Status == RequestStatus.ForRequisition),
+            PendingCEOApprovalCount = requests.Count(r => r.Status == RequestStatus.ForCeoApproval),
+            PendingClosureCount = requests.Count(r => r.Status == RequestStatus.PendingRequesterClosure),
+            AllPendingCount = requests.Count(r => r.Status != RequestStatus.Closed && r.Status != RequestStatus.Cancelled),
+            CompletedCount = requests.Count(r =>
+                    r.Status == RequestStatus.Closed),
+            RejectedCount = requests.Count(r => r.Status == RequestStatus.Rejected),
 
-        // Recent activity
-        metrics.RecentActivity = requests
-            .OrderByDescending(r => r.DateModified)
-            .Take(5)
-            .Select(r => new ActivityItem
-            {
-                Id = r.Id,
-                RequestType = requestType,
-                Title = r.Nature_Of_Request,
-                Status = r.Status,
-                Date = r.DateModified ?? DateTime.Now
-            })
-            .ToList();
+            // Recent activity
+            RecentActivity = [.. requests
+                .OrderByDescending(r => r.DateModified)
+                .Take(5)
+                .Select(r => new ActivityItem
+                {
+                    Id = r.Id,
+                    RequestType = requestType,
+                    Title = r.Nature_Of_Request,
+                    Status = r.Status,
+                    Date = r.DateModified ?? DateTime.Now
+                })]
+        };
 
         return metrics;
     }
@@ -226,7 +226,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         {
             await Task.Delay(100);
             var purchaseTeamRequests = GetTeamRequests<Purchase_RequestVM>(
-               purchaseRequests,
+               _purchaseRequests,
                request => new TeamRequestItem
                {
                    Id = request.Id,
@@ -241,7 +241,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
            );
 
             var jobOrderTeamRequests = GetTeamRequests<Job_OrderVM>(
-                jobOrders,
+                _jobOrders,
                 request => new TeamRequestItem
                 {
                     Id = request.Id,
@@ -261,12 +261,12 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
                 .Take(10)
                 .ToList();
 
-            teamRequestsNeedingAttention = allTeamRequests;
+            _teamRequestsNeedingAttention = allTeamRequests;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading team requests: {ex.Message}");
-            teamRequestsNeedingAttention = [];
+            _teamRequestsNeedingAttention = [];
         }
     }
 
@@ -285,24 +285,24 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             (e.ReportToDivSupId == currentUser.UserId || e.UserDivisionHeadId == currentUser.UserId) &&
             e.Status == RequestStatus.ForEndorsement);
 
-        teamRequests = forSubmission.Concat(forEndorsement).ToList();
+        teamRequests = [.. forSubmission, .. forEndorsement];
 
         if (currentUser.IsAdmin)
         {
             var forAdminApproval = requests.Where(e =>
                 e.Status == RequestStatus.ForAdminVerification ||
                 e.Status == RequestStatus.ForRequisition);
-            teamRequests = teamRequests.Concat(forAdminApproval).ToList();
+            teamRequests = [.. teamRequests, .. forAdminApproval];
         }
 
         if (currentUser.IsCEO)
         {
             var forCEOApproval = requests.Where(e =>
                 e.Status == RequestStatus.ForCeoApproval || e.Status == RequestStatus.ForRequisition);
-            teamRequests = teamRequests.Concat(forCEOApproval).ToList();
+            teamRequests = [.. teamRequests, .. forCEOApproval];
         }
 
-        return teamRequests.Select(mapper).ToList();
+        return [.. teamRequests.Select(mapper)];
     }
 
     private async Task LoadApprovedRequests()
@@ -371,17 +371,17 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             }
 
             var allRequests =
-                purchaseRequests.Select(r => MapToApprovedItem(r, "purchase"))
-                .Concat(jobOrders.Select(r => MapToApprovedItem(r, "joborder")))
+                _purchaseRequests.Select(r => MapToApprovedItem(r, "purchase"))
+                .Concat(_jobOrders.Select(r => MapToApprovedItem(r, "joborder")))
                 .OrderByDescending(r => r.PendingSince)
                 .ToList();
 
-            approveReqyestItems = allRequests;
+            _approveRequestItems = allRequests;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading approved requests: {ex.Message}");
-            approveReqyestItems = [];
+            _approveRequestItems = [];
         }
     }
 
@@ -397,7 +397,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
         navigationManager.NavigateTo($"{GetRequestLink()}?status={status}");
     }
 
-    private string GetRequestLink() => requestType switch
+    private string GetRequestLink() => _requestType switch
     {
         RequestType.Purchase => "/requests/purchase-requests",
         RequestType.JobOrder => "/requests/job-orders",
@@ -415,14 +415,14 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (result)
         {
-            await confirmModal!.SetLoadingAsync(true);
+            await _confirmModal!.SetLoadingAsync(true);
             var isSuccess = await userSvc.SyncUsers();
 
-            await confirmModal!.SetLoadingAsync(false);
-            await confirmModal!.HideAsync();
+            await _confirmModal!.SetLoadingAsync(false);
+            await _confirmModal!.HideAsync();
             if (!isSuccess)
             {
                 toastSvc.ShowError("Sorry. You can't the sync users right now.");
@@ -434,17 +434,17 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
 
     private async Task RefreshDashboard()
     {
-        isLoading = true;
+        _isLoading = true;
         StateHasChanged();
 
         await LoadDashboardData();
 
-        isLoading = false;
+        _isLoading = false;
         StateHasChanged();
         toastSvc.ShowSuccess("Dashboard refreshed!");
     }
 
-    private string GetTimeOfDayGreeting()
+    private static string GetTimeOfDayGreeting()
     {
         var hour = DateTime.Now.Hour;
         return hour switch
@@ -456,88 +456,31 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
     }
 
     #region Carousel
-
-    private async Task InitializeCarousel()
-    {
-        try
-        {
-            // Add data-carousel attribute to the carousel container
-            await jsRuntime.InvokeVoidAsync("eval",
-                @"
-                (function() {
-                    const container = document.querySelector('.metrics-carousel');
-                    if (!container) return;
-
-                    // Add data attribute for identification
-                    container.setAttribute('data-carousel', 'true');
-
-                    let touchStartX = 0;
-                    let touchEndX = 0;
-                    const swipeThreshold = 50;
-
-                    // Touch events for swipe
-                    container.addEventListener('touchstart', (e) => {
-                        touchStartX = e.changedTouches[0].screenX;
-                    }, { passive: true });
-
-                    container.addEventListener('touchend', (e) => {
-                        touchEndX = e.changedTouches[0].screenX;
-                        handleSwipe();
-                    }, { passive: true });
-
-                    function handleSwipe() {
-                        const diff = touchStartX - touchEndX;
-
-                        if (Math.abs(diff) > swipeThreshold) {
-                            if (diff > 0) {
-                                // Swipe left - next slide
-                                if (window.__dashboardDotNetHelper) {
-                                    window.__dashboardDotNetHelper.invokeMethodAsync('NextSlideJS');
-                                }
-                            } else {
-                                // Swipe right - previous slide
-                                if (window.__dashboardDotNetHelper) {
-                                    window.__dashboardDotNetHelper.invokeMethodAsync('PrevSlideJS');
-                                }
-                            }
-                        }
-                    }
-                })();
-                ");
-
-            //// Store the .NET helper globally
-            //await JSRuntime.InvokeVoidAsync("eval",
-            //    "window.__dashboardDotNetHelper = arguments[0];", dotNetRef);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error initializing carousel: {ex.Message}");
-        }
-    }
+     
 
     // Carousel methods
     private void NextSlide()
     {
         var totalSlides = GetTotalSlides();
-        if (currentSlide < totalSlides - 1)
+        if (_currentSlide < totalSlides - 1)
         {
-            currentSlide++;
+            _currentSlide++;
             StateHasChanged();
         }
     }
 
     private void PrevSlide()
     {
-        if (currentSlide > 0)
+        if (_currentSlide > 0)
         {
-            currentSlide--;
+            _currentSlide--;
             StateHasChanged();
         }
     }
 
     private void GoToSlide(int slideIndex)
     {
-        currentSlide = slideIndex;
+        _currentSlide = slideIndex;
         StateHasChanged();
     }
 
@@ -584,15 +527,15 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
 
     private int GetTotalSlides()
     {
-        if (activeTab == "all")
+        if (_activeTab == "all")
         {
             var count = 1; // Total Requests
 
             if (currentUser.IsUser) count += 2; // My Drafts + Pending For Close
 
-            if (purchaseRequests.Any(e => e.ReportType == "Department")) count += 2; // For Submission + Rejected
+            if (_purchaseRequests.Any(e => e.ReportType == "Department")) count += 2; // For Submission + Rejected
 
-            if (purchaseRequests.Any(e => e.ReportType == "Division")) count += 1; // For Endorsement
+            if (_purchaseRequests.Any(e => e.ReportType == "Division")) count += 1; // For Endorsement
 
             if (currentUser.IsAdmin) count += 2; // For Approval + For Requisition
 
@@ -602,15 +545,15 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
 
             return Math.Max(1, count);
         }
-        else if (activeTab == "purchase" || activeTab == "joborder")
+        else if (_activeTab == "purchase" || _activeTab == "joborder")
         {
             var count = 1; // Total
 
             if (currentUser.IsUser) count += 2; // My Drafts + Pending For Close
 
-            if (purchaseRequests.Any(e => e.ReportType == "Department")) count += 2; // For Submission + Rejected
+            if (_purchaseRequests.Any(e => e.ReportType == "Department")) count += 2; // For Submission + Rejected
 
-            if (purchaseRequests.Any(e => e.ReportType == "Division")) count += 1; // For Endorsement
+            if (_purchaseRequests.Any(e => e.ReportType == "Division")) count += 1; // For Endorsement
 
             if (currentUser.IsAdmin) count += 2; // For Approval + For Requisition
 

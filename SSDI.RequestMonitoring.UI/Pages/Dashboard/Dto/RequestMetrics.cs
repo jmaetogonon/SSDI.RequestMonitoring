@@ -13,5 +13,5 @@ public class RequestMetrics
     public int AllPendingCount { get; set; }
     public int CompletedCount { get; set; }
     public int RejectedCount { get; set; }
-    public List<ActivityItem> RecentActivity { get; set; } = new();
+    public List<ActivityItem> RecentActivity { get; set; } = [];
 }

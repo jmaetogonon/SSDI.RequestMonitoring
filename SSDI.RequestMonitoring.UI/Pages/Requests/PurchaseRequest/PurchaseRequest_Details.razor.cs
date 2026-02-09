@@ -7,7 +7,7 @@ namespace SSDI.RequestMonitoring.UI.Pages.Requests.PurchaseRequest;
 
 public partial class PurchaseRequest_Details : ComponentBase
 {
-    [Parameter] public int paramId { get; set; }
+    [Parameter] public int ParamId { get; set; }
     [Parameter] public string? ReportType { get; set; }
 
     private Purchase_RequestVM? Request { get; set; }
@@ -19,24 +19,24 @@ public partial class PurchaseRequest_Details : ComponentBase
     private bool CanClose => CheckClosePermission();
     private bool CanCEOApproveSlips => CheckCEOApproveSlipPermission();
 
-    private bool isEditRequestModalVisible = false;
+    private bool _isEditRequestModalVisible = false;
     private string EditBtnText => SetEditBtnText();
 
-    private Confirmation__Modal? confirmModal;
+    private Confirmation__Modal? _confirmModal;
 
-    private List<DivisionVM> divisions = [];
-    private List<DepartmentVM> departments = [];
+    private List<DivisionVM> _divisions = [];
+    private List<DepartmentVM> _departments = [];
 
-    private string? pdfBase64;
-    private bool isPdfModalVisible = false;
+    private string? _pdfBase64;
+    private bool _isPdfModalVisible = false;
 
-    private string ActiveTab = "details";
-    public DateTime? awaitingApprovalDate => GetAwaitingApprovalDate();
+    private string _activeTab = "details";
+    public DateTime? AwaitingApprovalDate => GetAwaitingApprovalDate();
 
     protected override async Task OnInitializedAsync()
     {
-        divisions = await divisionSvc.GetAllDivisions();
-        departments = await departmentSvc.GetAllDepartments();
+        _divisions = await divisionSvc.GetAllDivisions();
+        _departments = await departmentSvc.GetAllDepartments();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -49,7 +49,7 @@ public partial class PurchaseRequest_Details : ComponentBase
         IsLoading = true;
         try
         {
-            Request = await purchaseRequestSvc.GetByIdPurchaseRequest(paramId);
+            Request = await purchaseRequestSvc.GetByIdPurchaseRequest(ParamId);
         }
         catch (Exception ex)
         {
@@ -65,18 +65,18 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task Reload()
     {
-        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(paramId);
+        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(ParamId);
     }
 
     private void NavigateToEdit()
     {
         Request?.Attachments.Clear();
-        isEditRequestModalVisible = true;
+        _isEditRequestModalVisible = true;
     }
 
     private async Task SubmitRequestByDept()
     {
-        var result = await confirmModal!.ShowSubmitAsync(Request!.RequestNumber);
+        var result = await _confirmModal!.ShowSubmitAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DepartmentHead, ApprovalAction.Approve, "submitted");
@@ -98,7 +98,7 @@ public partial class PurchaseRequest_Details : ComponentBase
             RemarksPlaceholder = "Please provide a reason for cancelling this request..."
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DepartmentHead, ApprovalAction.Cancel, "cancelled");
@@ -115,7 +115,7 @@ public partial class PurchaseRequest_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DivisionHead, ApprovalAction.Approve, "endorsed");
@@ -123,7 +123,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task RejectEndorseRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
+        var result = await _confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.DivisionHead, ApprovalAction.Reject, "rejected");
@@ -140,7 +140,7 @@ public partial class PurchaseRequest_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.Admin, ApprovalAction.Approve, "verified");
@@ -148,7 +148,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task RejectVerifyByAdminRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
+        var result = await _confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.Admin, ApprovalAction.Reject, "rejected");
@@ -165,7 +165,7 @@ public partial class PurchaseRequest_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.CeoOrAvp, ApprovalAction.Approve, "approved");
@@ -173,7 +173,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task RejectByCeoRequest()
     {
-        var result = await confirmModal!.ShowRejectAsync(Request!.RequestNumber);
+        var result = await _confirmModal!.ShowRejectAsync(Request!.RequestNumber);
         if (!result) return;
 
         await OnApproveRequest(ApprovalStage.CeoOrAvp, ApprovalAction.Reject, "rejected");
@@ -181,7 +181,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task OnApproveRequest(ApprovalStage stage, ApprovalAction action, string toastText)
     {
-        await confirmModal!.SetLoadingAsync(true);
+        await _confirmModal!.SetLoadingAsync(true);
 
         var command = new ApprovePurchaseRequestCommandVM
         {
@@ -189,7 +189,7 @@ public partial class PurchaseRequest_Details : ComponentBase
             Stage = stage,
             ApproverId = currentUser.UserId,
             Action = action,
-            Remarks = confirmModal!.Remarks
+            Remarks = _confirmModal!.Remarks
         };
 
         var apiResult = await purchaseRequestSvc.ApprovePurchaseRequest(command);
@@ -218,7 +218,7 @@ public partial class PurchaseRequest_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         var apiResult = await purchaseRequestSvc.InitiateClosePurchaseRequest(Request!.Id, currentUser.UserId);
@@ -242,7 +242,7 @@ public partial class PurchaseRequest_Details : ComponentBase
             CancelText = "No, Cancel",
         };
 
-        var result = await confirmModal!.ShowAsync(options);
+        var result = await _confirmModal!.ShowAsync(options);
         if (!result) return;
 
         var apiResult = await purchaseRequestSvc.ConfirmClosePurchaseRequest(Request!.Id, currentUser.UserId);
@@ -256,7 +256,7 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task KeepOpen()
     {
-        var result = await confirmModal!.ShowAsync(new ConfirmationModalOptions
+        var result = await _confirmModal!.ShowAsync(new ConfirmationModalOptions
         {
             Title = "Keep Open",
             Message = "Do you want to keep this request open?",
@@ -279,8 +279,8 @@ public partial class PurchaseRequest_Details : ComponentBase
     private async Task OnSaveEditReqModal()
     {
         await LoadRequestDetails();
-        isEditRequestModalVisible = false;
-        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(paramId);
+        _isEditRequestModalVisible = false;
+        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(ParamId);
         toastSvc.ShowSuccess("The request has been updated successfully.");
     }
 
@@ -296,8 +296,8 @@ public partial class PurchaseRequest_Details : ComponentBase
 
             byte[] pdfBytes;
 
-            var result = await confirmModal!.ShowPdfExportOptionsAsync($"PR{Request.SeriesNumber}.pdf");
-            await confirmModal!.SetLoadingAsync(true);
+            var result = await _confirmModal!.ShowPdfExportOptionsAsync($"PR{Request.SeriesNumber}.pdf");
+            await _confirmModal!.SetLoadingAsync(true);
 
             if (result)
             {
@@ -316,8 +316,8 @@ public partial class PurchaseRequest_Details : ComponentBase
                 return;
             }
 
-            pdfBase64 = Convert.ToBase64String(pdfBytes);
-            isPdfModalVisible = true;
+            _pdfBase64 = Convert.ToBase64String(pdfBytes);
+            _isPdfModalVisible = true;
         }
         catch (Exception ex)
         {
@@ -328,8 +328,8 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private void ClosePdfModal()
     {
-        isPdfModalVisible = false;
-        pdfBase64 = null;
+        _isPdfModalVisible = false;
+        _pdfBase64 = null;
     }
 
     private void NavigateBack()
@@ -340,7 +340,7 @@ public partial class PurchaseRequest_Details : ComponentBase
     private bool CheckDeptApprovalPermissions()
     {
         if (Request == null) return false;
-        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && utils.IsUserDepartmentHead(Request) && !currentUser.IsUser;
+        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && Utils.IsUserDepartmentHead(Request, currentUser) && !currentUser.IsUser;
     }
 
     private bool CheckDivApprovalPermissions()
@@ -350,9 +350,9 @@ public partial class PurchaseRequest_Details : ComponentBase
         var isSameSupervisor = Request.ReportToDeptSupId == Request.ReportToDivSupId || (!Request.IsNoUser && Request.UserDepartmentHeadId == Request.UserDivisionHeadId);
         if (isSameSupervisor)
         {
-            return Request.Status == RequestStatus.ForEndorsement && utils.IsUserDivisionHead(Request);
+            return Request.Status == RequestStatus.ForEndorsement && Utils.IsUserDivisionHead(Request, currentUser);
         }
-        return Request.Status == RequestStatus.ForEndorsement && utils.IsUserDivisionHead(Request);
+        return Request.Status == RequestStatus.ForEndorsement && Utils.IsUserDivisionHead(Request, currentUser);
     }
 
     private bool CheckAdminApprovalPermissions()
@@ -365,7 +365,7 @@ public partial class PurchaseRequest_Details : ComponentBase
     {
         if (Request == null) return false;
 
-        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && (utils.IsUserDepartmentHead(Request));
+        return (Request.Status == RequestStatus.Draft || Request.Status == RequestStatus.Rejected) && (Utils.IsUserDepartmentHead(Request, currentUser));
     }
 
     private bool CheckClosePermission()
@@ -533,19 +533,19 @@ public partial class PurchaseRequest_Details : ComponentBase
 
     private async Task OnCloseEditReqModal()
     {
-        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(paramId);
-        isEditRequestModalVisible = false;
+        Request = await purchaseRequestSvc.GetByIdPurchaseRequest(ParamId);
+        _isEditRequestModalVisible = false;
     }
 
     private async Task CloseModalWithLoading()
     {
-        await confirmModal!.SetLoadingAsync(false);
-        await confirmModal!.HideAsync();
+        await _confirmModal!.SetLoadingAsync(false);
+        await _confirmModal!.HideAsync();
     }
 
     private void SetActiveTab(string tab)
     {
-        ActiveTab = tab;
+        _activeTab = tab;
         StateHasChanged();
     }
 }

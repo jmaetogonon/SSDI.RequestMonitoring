@@ -2,10 +2,10 @@
 
 namespace SSDI.RequestMonitoring.UI.Helpers.States;
 
-public class UIStateService : IUIStateService
+public class UIStateService(ILocalStorageService localStorage) : IUIStateService
 {
-    private const string StorageKey = "uiPreferences";
-    private readonly ILocalStorageService _localStorage;
+    private const string _storageKey = "uiPreferences";
+    private readonly ILocalStorageService _localStorage = localStorage;
 
     public event Action? OnChange;
 
@@ -41,18 +41,13 @@ public class UIStateService : IUIStateService
         }
     }
 
-    public UIStateService(ILocalStorageService localStorage)
-    {
-        _localStorage = localStorage;
-    }
-
     public async Task LoadPreferencesAsync()
     {
         if (_isLoaded) return;
 
         try
         {
-            var preferences = await _localStorage.GetItemAsync<UIPreferences>(StorageKey);
+            var preferences = await _localStorage.GetItemAsync<UIPreferences>(_storageKey);
             if (preferences != null)
             {
                 _isStriped = preferences.IsStriped;
@@ -77,7 +72,7 @@ public class UIStateService : IUIStateService
                 IsStriped = _isStriped,
                 PageSize = _pageSize
             };
-            await _localStorage.SetItemAsync(StorageKey, preferences);
+            await _localStorage.SetItemAsync(_storageKey, preferences);
         }
         catch (Exception ex)
         {
@@ -85,10 +80,10 @@ public class UIStateService : IUIStateService
         }
     }
 
-    private bool IsValidPageSize(int pageSize)
+    private static bool IsValidPageSize(int pageSize)
     {
         // Define valid page sizes
-        int[] validPageSizes = { 10, 25, 50 };
+        int[] validPageSizes = [10, 25, 50];
         return validPageSizes.Contains(pageSize);
     }
 

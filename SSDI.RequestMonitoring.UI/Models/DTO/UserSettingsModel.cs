@@ -33,6 +33,6 @@ public class UserSettingsModel
 public class ESignatureSettings
 {
     // Add e-signature specific properties here
-    public string SignaturePath { get; set; }
+    public string SignaturePath { get; set; } = string.Empty;
     public bool IsConfigured { get; set; }
 }

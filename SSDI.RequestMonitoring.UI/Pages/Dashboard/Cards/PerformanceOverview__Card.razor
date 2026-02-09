@@ -11,17 +11,17 @@
             </div>
 
             <div class="activity-filters">
-                <button class="filter-btn @(activityFilter == "all" ? "filter-btn--active" : "")"
+                <button class="filter-btn @(_activityFilter == "all" ? "filter-btn--active" : "")"
                         @onclick="@(() => ChangeFilter("all"))">
                     All
                 </button>
 
-                <button class="filter-btn @(activityFilter == "purchase" ? "filter-btn--active" : "")"
+                <button class="filter-btn @(_activityFilter == "purchase" ? "filter-btn--active" : "")"
                         @onclick="@(() => ChangeFilter("purchase"))">
                     <i class="bi bi-cart"></i> Purchases
                 </button>
 
-                <button class="filter-btn @(activityFilter == "joborder" ? "filter-btn--active" : "")"
+                <button class="filter-btn @(_activityFilter == "joborder" ? "filter-btn--active" : "")"
                         @onclick="@(() => ChangeFilter("joborder"))">
                     <i class="bi bi-tools"></i> Jobs
                 </button>
@@ -79,51 +79,51 @@
     [Parameter] public RequestMetrics PurchaseRequestMetrics { get; set; } = new();
     [Parameter] public RequestMetrics JobOrderMetrics { get; set; } = new();
 
-    private string activityFilter = "all";
-    private List<Purchase_RequestVM> filteredPurchaseRequests = [];
-    private List<Job_OrderVM> filteredJobOrders = [];
+    private string _activityFilter = "all";
+    private List<Purchase_RequestVM> _filteredPurchaseRequests = [];
+    private List<Job_OrderVM> _filteredJobOrders = [];
 
     protected override void OnParametersSet()
     {
         // Sync with parent RequestType parameter
-        activityFilter = RequestType switch
+        _activityFilter = RequestType switch
         {
             RequestType.Purchase => "purchase",
             RequestType.JobOrder => "joborder",
             _ => "all"
         };
 
-        ApplyFilter(activityFilter);
+        ApplyFilter(_activityFilter);
     }
 
     private async Task ChangeFilter(string filter)
     {
         await Task.Delay(1);
-        activityFilter = filter;
+        _activityFilter = filter;
         ApplyFilter(filter);
     }
 
     private void ApplyFilter(string filter)
     {
-        filteredPurchaseRequests = Purchase_Requests;
-        filteredJobOrders = Job_Orders;
+        _filteredPurchaseRequests = Purchase_Requests;
+        _filteredJobOrders = Job_Orders;
 
         if (filter == "purchase")
         {
-            filteredJobOrders = [];
+            _filteredJobOrders = [];
         }
         else if (filter == "joborder")
         {
-            filteredPurchaseRequests = [];
+            _filteredPurchaseRequests = [];
         }
         // If "all", keep both as they are
     }
 
     private int GetTotalCount()
     {
-        if (activityFilter == "purchase")
+        if (_activityFilter == "purchase")
             return PurchaseRequestMetrics.TotalCount;
-        else if (activityFilter == "joborder")
+        else if (_activityFilter == "joborder")
             return JobOrderMetrics.TotalCount;
         else
             return PurchaseRequestMetrics.TotalCount + JobOrderMetrics.TotalCount;
@@ -131,9 +131,9 @@
 
     private int GetCompletedCount()
     {
-        if (activityFilter == "purchase")
+        if (_activityFilter == "purchase")
             return PurchaseRequestMetrics.CompletedCount;
-        else if (activityFilter == "joborder")
+        else if (_activityFilter == "joborder")
             return JobOrderMetrics.CompletedCount;
         else
             return PurchaseRequestMetrics.CompletedCount + JobOrderMetrics.CompletedCount;
@@ -141,9 +141,9 @@
 
     private int GetRejectedCount()
     {
-        if (activityFilter == "purchase")
+        if (_activityFilter == "purchase")
             return PurchaseRequestMetrics.RejectedCount;
-        else if (activityFilter == "joborder")
+        else if (_activityFilter == "joborder")
             return JobOrderMetrics.RejectedCount;
         else
             return PurchaseRequestMetrics.RejectedCount + JobOrderMetrics.RejectedCount;
@@ -161,14 +161,14 @@
     private int CalculateAverageProcessingDays()
     {
         // Get filtered completed requests
-        var allCompletedRequests = filteredPurchaseRequests
+        var allCompletedRequests = _filteredPurchaseRequests
             .Where(r => r.Status == RequestStatus.Closed)
             .Select(r => new PerformanceStatItem
             {
                 DateRequested = r.DateRequested,
                 DateClosed = r.DateCompleted
             })
-            .Concat(filteredJobOrders
+            .Concat(_filteredJobOrders
                 .Where(r => r.Status == RequestStatus.Closed)
                 .Select(r => new PerformanceStatItem
                 {

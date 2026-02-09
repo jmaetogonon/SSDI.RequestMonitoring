@@ -16,6 +16,7 @@
     position: relative;
     overflow: hidden;
     will-change: transform, border-color, box-shadow;
+    min-width: fit-content;
 }
 
     .page__clear-filters-btn::before {
@@ -35,37 +36,49 @@
 
     .page__clear-filters-btn ::deep svg.clear-icon {
         fill: var(--color-gray) !important;
+        flex-shrink: 0;
+        width: 18px !important;
     }
 
-.page__clear-filters-btn:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
-}
-    .page__clear-filters-btn:hover ::deep svg.clear-icon {
-        fill: var(--color-darkmidnightblue) !important;
+    .page__clear-filters-btn:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
     }
 
-.page__clear-filters-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
+        .page__clear-filters-btn:hover ::deep svg.clear-icon {
+            fill: var(--color-darkmidnightblue) !important;
+        }
 
-.page__clear-filters-btn:active:not(:disabled) {
-    transform: translateY(0);
-}
+    .page__clear-filters-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
 
-.page__clear-filters-btn:focus-visible {
-    outline: 2px solid #ef4444;
-    outline-offset: 2px;
-}
+    .page__clear-filters-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
 
-.page__clear-filters-btn i {
-    font-size: 0.875rem;
-    transition: transform 0.3s ease;
-}
+    .page__clear-filters-btn:focus-visible {
+        outline: 2px solid #ef4444;
+        outline-offset: 2px;
+    }
 
-.page__clear-filters-btn:hover:not(:disabled) i {
-    transform: scale(1.1);
+    /* Button text styling */
+    .page__clear-filters-btn .button-text {
+        white-space: nowrap;
+        font-weight: 500;
+        color: var(--color-darkmidnightblue);
+    }
+
+/* Responsive: Hide text on smaller screens if icon-only is preferred */
+@media (max-width: 768px) {
+    .page__clear-filters-btn.hide-text-on-mobile .button-text {
+        display: none;
+    }
+
+    .page__clear-filters-btn:not(.hide-text-on-mobile) {
+        padding: 0 0.75rem;
+    }
 }
